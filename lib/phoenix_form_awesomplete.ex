@@ -156,7 +156,11 @@ defmodule PhoenixFormAwesomplete do
       end
 
     data_val = if is_nil(fld_name) or (is_nil(descr_fld) and is_nil(label_fld)), do: "data", else: "data.value"
-    starts_with_filter_fun = if is_nil(descr_fld) and is_nil(label_fld) and maxItems !== 0 and filter_fun == "Awesomplete.FILTER_STARTSWITH", do: "#{@lea}.FILTER_STARTSWITH", else: "#{@util}.filterStartsWith"
+    starts_with_filter_fun = cond do
+      is_nil(descr_fld) and is_nil(label_fld) and maxItems !== 0 and filter_fun == "Awesomplete.FILTER_STARTSWITH" -> "#{@lea}.FILTER_STARTSWITH"
+      descr_search -> "function(data, input) { return #{@util}.filterStartsWith(data, #{filter_str}) || #{@lea}.FILTER_STARTSWITH(data.value.substring(data.value.lastIndexOf('|')+1), #{filter_str}); }"
+      true -> "#{@util}.filterStartsWith"
+    end
 
     filter_opts = cond do
       is_nil(multiple_char) and is_nil(filter_fun) and data_val == "data" -> []
@@ -166,6 +170,7 @@ defmodule PhoenixFormAwesomplete do
       is_nil(multiple_char) and starts_with and is_nil(item_fun) -> [filter: starts_with_filter_fun , item: "#{@util}.itemStartsWith"]
       is_nil(multiple_char) and starts_with -> [filter: starts_with_filter_fun]
       is_nil(multiple_char) -> [filter: "function(data, input) { return (#{filter_fun})(data.value, input); }"]
+      starts_with and descr_search -> [filter: starts_with_filter_fun]
       starts_with -> [filter: "function(data, input) { return #{@lea}.FILTER_STARTSWITH(#{data_val}, #{filter_str}); }"]
       is_nil(filter_fun) -> [filter: "function(data, input) { return #{@lea}.FILTER_CONTAINS(#{data_val}, #{filter_str}); }"]
       true -> [filter: "function(data, input) { return (#{filter_fun})(#{data_val}, #{filter_str}); }"]
@@ -203,7 +208,7 @@ defmodule PhoenixFormAwesomplete do
       is_nil(descr_fld) and is_nil(label_fld) -> "rec['#{fld_name}']"
       is_nil(descr_fld) -> "{ label:#{label_str}, value:rec['#{fld_name}'] }"
       !descr_search -> "{ label: #{label_str}+'<p>'+(rec['#{descr_fld}'] || ''), value: rec['#{fld_name}'] }"
-      true -> "{ label: #{label_str}+'<p>'+#{@util}.mark(rec['#{descr_fld}'] || '', input, #{starts_with}), value: rec['#{fld_name}']+'|'+(rec['#{descr_fld}'] || '').replace('|', ' ') }"
+      true -> "{ label: #{label_str}+'<p>'+#{@util}.mark(rec['#{descr_fld}'] || '', #{conv_input_str}, #{starts_with}), value: rec['#{fld_name}']+'|'+(rec['#{descr_fld}'] || '').replace('|', ' ') }"
     end
 
     data_fun_str = if is_nil(data_fun), do: "function(rec, input) { return #{data_fun_result}; }", else: "function(rec, input) { return (#{data_fun})(#{data_fun_result}, input); }"
