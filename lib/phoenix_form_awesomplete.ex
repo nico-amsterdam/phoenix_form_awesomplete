@@ -107,7 +107,6 @@ defmodule PhoenixFormAwesomplete do
     if is_nil(fld_name)  and descr_fld != nil, do: raise ArgumentError, "'descr' without 'value' parameter."
     if is_nil(fld_name)  and label_fld != nil, do: raise ArgumentError, "'label' without 'value' parameter."
     if is_nil(descr_fld) and descr_search, do: raise ArgumentError, "Cannot search description texts without knowing the description field. Please supply descr parameter."
-    if starts_with and descr_search, do: raise ArgumentError, "Cannot search description texts with a #{filter_fun} filter."
     
     # 
       # Convert limit to integer
