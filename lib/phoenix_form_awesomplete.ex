@@ -7,17 +7,17 @@ defmodule PhoenixFormAwesomplete do
   @util Application.get_env(:phoenix_form_awesomplete, :util) || "AwesompleteUtil"
   @lea  Application.get_env(:phoenix_form_awesomplete, :awesomplete) || "Awesomplete"
 
-  def script_tag(script) do
+  def script(script) do
     HTML.raw("<script>#{script}</script>")
   end
 
   def copy_to_id(source_form, source_field, data_field \\ nil, target_id) 
       when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) do
-    script_tag(copy_to_id_script(source_form, source_field, data_field, target_id))
+    script(copy_to_id_js(source_form, source_field, data_field, target_id))
   end
 
   # target_id can also be function, so you can control the output.
-  def copy_to_id_script(source_form, source_field, data_field \\ nil, target_id) 
+  def copy_to_id_js(source_form, source_field, data_field \\ nil, target_id) 
       when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) do
     source_id = Form.field_id(source_form, source_field)
     # In JS strings must be quoted, but functions not. 
@@ -31,7 +31,7 @@ defmodule PhoenixFormAwesomplete do
   def copy_to_field(source_form, source_field, data_field \\ nil, target_form, target_field) 
       when is_nil(data_field) or is_binary(data_field) do
     target_id = Form.field_id(target_form, target_field)
-    script_tag(copy_to_id_script(source_form, source_field, data_field, "##{target_id}"))
+    script(copy_to_id_js(source_form, source_field, data_field, "##{target_id}"))
   end
 
   defp opts_to_string(opts) do
@@ -48,30 +48,30 @@ defmodule PhoenixFormAwesomplete do
     # This method generates javascript code for using Awesomplete(Util) in a friendly way.
   #
   def awesomplete(form, field, opts \\ [], awesomplete_opts) do
-    script = awesomplete_script(form, field, awesomplete_opts)
-    HTML.html_escape([Form.text_input(form, field, opts), script_tag(script)])
-  end
-
-  #
-    # This method generates javascript code for using Awesomplete(Util) in a friendly way.
-  #
-  def awesomplete_script_tag(form, field, awesomplete_opts) do
-    script = awesomplete_script(form, field, awesomplete_opts)
-    script_tag(script)
+    script = awesomplete_js(form, field, awesomplete_opts)
+    HTML.html_escape([Form.text_input(form, field, opts), script(script)])
   end
 
   #
     # This method generates javascript code for using Awesomplete(Util) in a friendly way.
   #
   def awesomplete_script(form, field, awesomplete_opts) do
-    element_id = Form.field_id(form, field)
-    awesomplete_script(element_id, awesomplete_opts)
+    script = awesomplete_js(form, field, awesomplete_opts)
+    script(script)
   end
 
   #
     # This method generates javascript code for using Awesomplete(Util) in a friendly way.
   #
-  def awesomplete_script(element_id, awesomplete_opts) do
+  def awesomplete_js(form, field, awesomplete_opts) do
+    element_id = Form.field_id(form, field)
+    awesomplete_js(element_id, awesomplete_opts)
+  end
+
+  #
+    # This method generates javascript code for using Awesomplete(Util) in a friendly way.
+  #
+  def awesomplete_js(element_id, awesomplete_opts) do
     awesomplete_opts = Enum.to_list awesomplete_opts
 
     # 
