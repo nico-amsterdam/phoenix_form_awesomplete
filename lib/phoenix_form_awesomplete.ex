@@ -193,7 +193,7 @@ defmodule PhoenixFormAwesomplete do
       if is_nil(multiple_char) do
         "text"
       else
-        "this.input.value.match(/^.+#{multiple_char}\\s*|/)[0] + text + '" <> String.at(multiple_char, 0) <> " '"
+        "this.input.value.match(/^.+[#{multiple_char}]\\s*|/)[0] + text + '" <> String.at(multiple_char, 0) <> " '"
       end
 
     multiple_replace_opts = cond do
