@@ -2,21 +2,33 @@ defmodule PhoenixFormAwesomplete do
   alias Phoenix.HTML
   alias Phoenix.HTML.Form
 
-  # @util & @lea allows you to use aliases or replacement libraries. The default names are a bit long.
+  # @util & @awe allows you to use aliases or replacement libraries. The default names are a bit long.
   # For example use: `var aw = Awesomplete, au = AwesompleteUtil;`. This could shorten the average page size.
   @util Application.get_env(:phoenix_form_awesomplete, :util) || "AwesompleteUtil"
-  @lea  Application.get_env(:phoenix_form_awesomplete, :awesomplete) || "Awesomplete"
+  @awe  Application.get_env(:phoenix_form_awesomplete, :awesomplete) || "Awesomplete"
 
+  #
+    # Create script tag with the supplied script. No defer or async because this is used for inline script.
+  #
   def script(script) do
     HTML.raw("<script>#{script}</script>")
   end
 
+  #
+    # Create script tag with javascript that listens to awesomplete-prepop and awesomplete-match events,
+    # and copies the datafield to the DOM element with the given target id..
+    # target_id can also be a javascript function, so you can control the output.
+  #
   def copy_to_id(source_form, source_field, data_field \\ nil, target_id) 
       when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) do
     script(copy_to_id_js(source_form, source_field, data_field, target_id))
   end
 
-  # target_id can also be function, so you can control the output.
+  #
+    # Create javascript that listens to awesomplete-prepop and awesomplete-match events,
+    # and copies the datafield to the DOM element with the given target id..
+    # target_id can also be a javascript function, so you can control the output.
+  #
   def copy_to_id_js(source_form, source_field, data_field \\ nil, target_id) 
       when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) do
     source_id = Form.field_id(source_form, source_field)
@@ -28,17 +40,24 @@ defmodule PhoenixFormAwesomplete do
     "#{@util}.startCopy('##{source_id}', '#{data_field}', #{target});"
   end
 
+  #
+    # Create javascript that listens to awesomplete-prepop and awesomplete-match events,
+    # and copies the datafield to the target input control.
+    # target_id can also be a javascript function, so you can control the output.
+  #
   def copy_to_field(source_form, source_field, data_field \\ nil, target_form, target_field) 
       when is_nil(data_field) or is_binary(data_field) do
     target_id = Form.field_id(target_form, target_field)
     script(copy_to_id_js(source_form, source_field, data_field, "##{target_id}"))
   end
 
+  # Converts map with options to a comma separated string with key:value pairs..
   defp opts_to_string(opts) do
      opts 
      |> Enum.map_join(", ", fn{k,v} -> val = to_string(v); "#{k}: #{val}" end)
   end
 
+  # optionally convert string to integer
   defp to_integer(val) do
     if is_nil(val) or is_integer(val), do: val, else: String.to_integer(val)
   end
@@ -68,6 +87,68 @@ defmodule PhoenixFormAwesomplete do
     awesomplete_js(element_id, awesomplete_opts)
   end
 
+  # returns filter_opts with added item
+  defp addItem(filter_opts, item_fun, starts_with, multiple_char, filter_str) do
+    cond do
+      is_nil(item_fun) and is_nil(multiple_char) -> filter_opts
+      is_nil(item_fun) and starts_with ->  filter_opts ++ [item: "function(text, input) { return #{@util}.itemStartsWith(text, #{filter_str}); }"]
+      is_nil(item_fun) ->  filter_opts ++ [item: "function(text, input) { return #{@util}.itemContains(text, #{filter_str}); }"]
+      is_nil(multiple_char) -> filter_opts ++ [item: "#{item_fun}"]
+      true -> filter_opts ++ [item: "function(text, input) { return (#{item_fun})(text, #{filter_str}); }"]
+    end
+  end
+
+  # 
+    # Be permissive about all kind of parameter combinations, except for these:
+  # 
+  defp parameterChecks(fld_name, label_fld, descr_fld, descr_search) do
+    # We could take the default of 'value' for the 'value' parameter (a.k.a. fld_name,) but it's more clear to be explicit.
+    if is_nil(fld_name)  and descr_fld != nil, do: raise ArgumentError, "'descr' without 'value' parameter."
+    if is_nil(fld_name)  and label_fld != nil, do: raise ArgumentError, "'label' without 'value' parameter."
+    if is_nil(descr_fld) and descr_search, do: raise ArgumentError, "Cannot search description texts without knowing the description field. Please supply descr parameter."
+  end
+
+  # 
+    # Determine which characters are used to separate multiple items
+    # For example in multiple color selection: red,blue,yellow the multiple_char is the comma
+    # Assume space as separator if multiple=true,
+  # 
+  defp def_multiple_char(multiple) do
+    cond do
+      is_nil(multiple) or multiple == false -> nil
+      multiple == true -> " "
+      true -> multiple
+    end
+  end
+
+  # return list with convertInput function
+  defp def_conv_input_opts(multiple_char, conv_input_fun, conv_input_str) do
+    cond do
+      is_nil(multiple_char) and is_nil(conv_input_fun) -> [] 
+      is_nil(multiple_char) -> [convertInput: conv_input_fun] 
+      is_nil(conv_input_fun) -> [convertInput: "function(input) { return #{conv_input_str}.trim().toLowerCase(); }"]
+      true -> [convertInput: "function(input) { return (#{conv_input_fun})(#{conv_input_str}.trim().toLowerCase()); }"]
+    end
+  end
+
+  # define the replacement text, mainly used in the replace function
+  defp def_assign_replace_text(multiple_char) do
+    if is_nil(multiple_char) do
+      "text"
+    else
+      "this.input.value.match(/^.+[#{multiple_char}]\\s*|/)[0] + text + '" <> String.at(multiple_char, 0) <> " '"
+    end
+  end
+
+  # return list with replace function
+  defp def_multiple_replace_opts(multiple_char, replace_fun, assign_replace_text) do
+    cond do
+      is_nil(multiple_char) -> []
+      is_nil(replace_fun) -> [replace: "function(data) { var text=data.value; this.input.value = #{assign_replace_text}; }"]
+      true -> [replace: "function(data) { var text=data.value; (#{replace_fun}).(#{assign_replace_text}); }"]
+    end
+  end
+     
   #
     # This method generates javascript code for using Awesomplete(Util) in a friendly way.
   #
@@ -75,7 +156,7 @@ defmodule PhoenixFormAwesomplete do
     awesomplete_opts = Enum.to_list awesomplete_opts
 
     # 
-      # Some of the options (filter, replace, data) are popped to be added later again.
+      # Some of the options (data, filter, item, replace) are popped to be added later again.
       # Unrecognized options are passed on to Awesomplete.
     # 
     {assign,            awesomplete_opts} = Keyword.pop(awesomplete_opts, :assign, false)
@@ -98,16 +179,11 @@ defmodule PhoenixFormAwesomplete do
     {url,               awesomplete_opts} = Keyword.pop(awesomplete_opts, :url)
     {url_end,           awesomplete_opts} = Keyword.pop(awesomplete_opts, :urlEnd)
 
-    # generated js code uses @util & @lea but in the input we expect the standard Awesomplete & AwesompleteUtil names.
+    parameterChecks(fld_name, label_fld, descr_fld, descr_search) 
+
+    # generated js code uses @util & @awe but in the input we expect the standard Awesomplete & AwesompleteUtil names.
     starts_with = filter_fun == "Awesomplete.FILTER_STARTSWITH" or filter_fun == "AwesompleteUtil.filterStartsWith"
 
-    # 
-      # Be permissive about all kind of parameter combinations, but these we really can't handle:
-    # 
-    if is_nil(fld_name)  and descr_fld != nil, do: raise ArgumentError, "'descr' without 'value' parameter."
-    if is_nil(fld_name)  and label_fld != nil, do: raise ArgumentError, "'label' without 'value' parameter."
-    if is_nil(descr_fld) and descr_search, do: raise ArgumentError, "Cannot search description texts without knowing the description field. Please supply descr parameter."
-    
     # 
       # Convert limit to integer
     # 
@@ -115,16 +191,7 @@ defmodule PhoenixFormAwesomplete do
     
     maxItems = to_integer(Keyword.get(awesomplete_opts, :maxItems, 10)) 
 
-    # 
-      # Determine which characters are used to separate multiple items
-      # For example in multiple color selection: red,blue,yellow the multiple_char is the comma
-      # Assume space as separator if multiple=true,
-    # 
-    multiple_char = cond do
-      is_nil(multiple) or multiple == false -> nil
-      multiple == true -> " "
-      true -> multiple
-    end
+    multiple_char = def_multiple_char(multiple)
 
     # 
       # For multiple items, if the separator is typed, the last field is considered complete. 
@@ -154,13 +221,24 @@ defmodule PhoenixFormAwesomplete do
         "input.match(/[^#{multiple_char}]*#{filter_match_sep}$/)[0]"
       end
 
-    data_val = if is_nil(fld_name) or (is_nil(descr_fld) and is_nil(label_fld)), do: "data", else: "data.value"
+    # when there is no label, the label will be equal to value. data.to_string returns the label
+    data_val =
+      if is_nil(fld_name) or 
+                 (is_nil(descr_fld) and is_nil(label_fld)) do
+        "data" 
+      else
+        "data.value"
+      end
+
+    # in: descr_fld, label_fld, maxItems, filter_fun, descr_search, filter_str
     starts_with_filter_fun = cond do
-      is_nil(descr_fld) and is_nil(label_fld) and maxItems !== 0 and filter_fun == "Awesomplete.FILTER_STARTSWITH" -> "#{@lea}.FILTER_STARTSWITH"
-      descr_search -> "function(data, input) { return #{@util}.filterStartsWith(data, #{filter_str}) || #{@lea}.FILTER_STARTSWITH(data.value.substring(data.value.lastIndexOf('|')+1), #{filter_str}); }"
+      is_nil(descr_fld) and is_nil(label_fld) and maxItems !== 0 and filter_fun == "Awesomplete.FILTER_STARTSWITH" -> "#{@awe}.FILTER_STARTSWITH"
+      descr_search -> "function(data, input) { return #{@util}.filterStartsWith(data, #{filter_str}) || #{@awe}.FILTER_STARTSWITH(data.value.substring(data.value.lastIndexOf('|')+1), #{filter_str}); }"
       true -> "#{@util}.filterStartsWith"
     end
 
+    # in: multiple_char, filter_fun, data_val, descr_fld, label_fld, maxItems, filer_fun, item_fun, starts_with,
+    #     starts_with_filter_fun, descr_search
     filter_opts = cond do
       is_nil(multiple_char) and is_nil(filter_fun) and data_val == "data" -> []
       is_nil(multiple_char) and is_nil(descr_fld) and is_nil(label_fld) and maxItems !== 0 and (is_nil(filter_fun) or filter_fun == "Awesomplete.FILTER_CONTAINS") -> []
@@ -170,39 +248,29 @@ defmodule PhoenixFormAwesomplete do
       is_nil(multiple_char) and starts_with -> [filter: starts_with_filter_fun]
       is_nil(multiple_char) -> [filter: "function(data, input) { return (#{filter_fun})(data.value, input); }"]
       starts_with and descr_search -> [filter: starts_with_filter_fun]
-      starts_with -> [filter: "function(data, input) { return #{@lea}.FILTER_STARTSWITH(#{data_val}, #{filter_str}); }"]
-      is_nil(filter_fun) -> [filter: "function(data, input) { return #{@lea}.FILTER_CONTAINS(#{data_val}, #{filter_str}); }"]
+      starts_with -> [filter: "function(data, input) { return #{@awe}.FILTER_STARTSWITH(#{data_val}, #{filter_str}); }"]
+      is_nil(filter_fun) -> [filter: "function(data, input) { return #{@awe}.FILTER_CONTAINS(#{data_val}, #{filter_str}); }"]
       true -> [filter: "function(data, input) { return (#{filter_fun})(#{data_val}, #{filter_str}); }"]
     end 
+    
+    # add item: in filter_opts
+    filter_opts = addItem(filter_opts, item_fun, starts_with, multiple_char, filter_str)
 
-    filter_opts = cond do
-      is_nil(item_fun) and is_nil(multiple_char) -> filter_opts
-      is_nil(item_fun) and starts_with ->  filter_opts ++ [item: "function(text, input) { return #{@util}.itemStartsWith(text, #{filter_str}); }"]
-      is_nil(item_fun) ->  filter_opts ++ [item: "function(text, input) { return #{@util}.itemContains(text, #{filter_str}); }"]
-      true -> filter_opts ++ [item: "function(text, input) { return (#{item_fun})(text, #{filter_str}); }"]
-    end
-
-    conv_input_opts = cond do
-      is_nil(multiple_char) and is_nil(conv_input_fun) -> [] 
-      is_nil(multiple_char) -> [convertInput: conv_input_fun] 
-      is_nil(conv_input_fun) -> [convertInput: "function(input) { return #{conv_input_str}.trim().toLowerCase(); }"]
-      true -> [convertInput: "function(input) { return (#{conv_input_fun})(#{conv_input_str}.trim().toLowerCase()); }"]
-    end 
+    conv_input_opts = def_conv_input_opts(multiple_char, conv_input_fun, conv_input_str)
        
-    assign_replace_text = 
-      if is_nil(multiple_char) do
-        "text"
+    assign_replace_text = def_assign_replace_text(multiple_char)
+
+    multiple_replace_opts = def_multiple_replace_opts(multiple_char, replace_fun, assign_replace_text)
+
+    # label_fld, fld_name
+    label_str = 
+      if label_fld do
+        "(rec['#{label_fld}'] || '').replace('<p>', '<p >')"
       else
-        "this.input.value.match(/^.+[#{multiple_char}]\\s*|/)[0] + text + '" <> String.at(multiple_char, 0) <> " '"
+        "rec['#{fld_name}']"
       end
 
-    multiple_replace_opts = cond do
-      is_nil(multiple_char) -> []
-      is_nil(replace_fun) -> [replace: "function(data) { var text=data.value; this.input.value = #{assign_replace_text}; }"]
-      true -> [replace: "function(data) { var text=data.value; (#{replace_fun}).(#{assign_replace_text}); }"]
-    end
-
-    label_str = if label_fld, do: "(rec['#{label_fld}'] || '').replace('<p>', '<p >')", else: "rec['#{fld_name}']"
+    # fld_name, label_fld, descr_fld, conv_input_str, starts_with
     data_fun_result = cond do
       is_nil(descr_fld) and is_nil(label_fld) -> "rec['#{fld_name}']"
       is_nil(descr_fld) -> "{ label:#{label_str}, value:rec['#{fld_name}'] }"
