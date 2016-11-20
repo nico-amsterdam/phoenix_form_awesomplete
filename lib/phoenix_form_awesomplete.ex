@@ -113,7 +113,7 @@ defmodule PhoenixFormAwesomplete do
     # For example in multiple color selection: red,blue,yellow the multiple_char is the comma
     # Assume space as separator if multiple=true,
   # 
-  defp def_multiple_char(multiple) do
+  defp construct_multiple_char(multiple) do
     cond do
       is_nil(multiple) or multiple == false -> nil
       multiple == true -> " "
@@ -122,7 +122,7 @@ defmodule PhoenixFormAwesomplete do
   end
 
   # return list with convertInput function
-  defp def_conv_input_opts(multiple_char, conv_input_fun, conv_input_str) do
+  defp construct_conv_input_opts(multiple_char, conv_input_fun, conv_input_str) do
     cond do
       is_nil(multiple_char) and is_nil(conv_input_fun) -> [] 
       is_nil(multiple_char) -> [convertInput: conv_input_fun] 
@@ -132,7 +132,7 @@ defmodule PhoenixFormAwesomplete do
   end
 
   # define the replacement text, mainly used in the replace function
-  defp def_assign_replace_text(multiple_char) do
+  defp construct_assign_replace_text(multiple_char) do
     if is_nil(multiple_char) do
       "text"
     else
@@ -141,11 +141,45 @@ defmodule PhoenixFormAwesomplete do
   end
 
   # return list with replace function
-  defp def_multiple_replace_opts(multiple_char, replace_fun, assign_replace_text) do
+  defp construct_multiple_replace_opts(multiple_char, replace_fun, assign_replace_text) do
     cond do
       is_nil(multiple_char) -> []
       is_nil(replace_fun) -> [replace: "function(data) { var text=data.value; this.input.value = #{assign_replace_text}; }"]
       true -> [replace: "function(data) { var text=data.value; (#{replace_fun}).(#{assign_replace_text}); }"]
+    end
+  end
+
+  defp construct_data_fun_result(fld_name, label_fld, descr_fld, descr_search, conv_input_str, starts_with) do
+    label_str = 
+      if label_fld do
+        "(rec['#{label_fld}'] || '').replace('<p>', '<p >')"
+      else
+        "rec['#{fld_name}']"
+      end
+
+    cond do
+      is_nil(descr_fld) and is_nil(label_fld) -> "rec['#{fld_name}']"
+      is_nil(descr_fld) -> "{ label:#{label_str}, value:rec['#{fld_name}'] }"
+      !descr_search -> "{ label: #{label_str}+'<p>'+(rec['#{descr_fld}'] || ''), value: rec['#{fld_name}'] }"
+      true -> "{ label: #{label_str}+'<p>'+#{@util}.mark(rec['#{descr_fld}'] || '', #{conv_input_str}, #{starts_with}), value: rec['#{fld_name}']+'|'+(rec['#{descr_fld}'] || '').replace('|', ' ') }"
+    end
+  end
+
+  # return javascript of all options
+  defp construct_awe_script(element_id, util_opts_str, awe_opts_str, assign, combobox) do
+    assign_var  = if assign == true,  do: "awe_#{element_id}", else: "#{assign}" 
+    assign_text = if assign == false, do: "", else: "var #{assign_var}=" 
+
+    awe_script = "#{assign_text}#{@util}.startAwesomplete('##{element_id}', #{util_opts_str}, #{awe_opts_str})"
+
+    # id of the combo button. Assume awe_btn_<awesomplete element id> if combobox=true. Or take the combobox supplied value.
+    combo_btn_id  = if combobox == true, do: "awe_btn_#{element_id}", else: "#{combobox}" 
+
+    # awe_script, combobox, assign, combo_btn_id, assign_var
+    cond do
+       combobox == false ->    "#{awe_script};"
+       assign   == false ->    "#{@util}.startClick('##{combo_btn_id}', #{awe_script});"
+       true -> "#{awe_script};\n#{@util}.startClick('##{combo_btn_id}', #{assign_var});"
     end
   end
      
@@ -191,7 +225,7 @@ defmodule PhoenixFormAwesomplete do
     
     maxItems = to_integer(Keyword.get(awesomplete_opts, :maxItems, 10)) 
 
-    multiple_char = def_multiple_char(multiple)
+    multiple_char = construct_multiple_char(multiple)
 
     # 
       # For multiple items, if the separator is typed, the last field is considered complete. 
@@ -221,10 +255,9 @@ defmodule PhoenixFormAwesomplete do
         "input.match(/[^#{multiple_char}]*#{filter_match_sep}$/)[0]"
       end
 
-    # when there is no label, the label will be equal to value. data.to_string returns the label
+    # when there is no descr_fld or label_fld we let the data function just return one string instead of a value and label
     data_val =
-      if is_nil(fld_name) or 
-                 (is_nil(descr_fld) and is_nil(label_fld)) do
+      if is_nil(fld_name) or (is_nil(descr_fld) and is_nil(label_fld)) do
         "data" 
       else
         "data.value"
@@ -256,30 +289,22 @@ defmodule PhoenixFormAwesomplete do
     # add item: in filter_opts
     filter_opts = addItem(filter_opts, item_fun, starts_with, multiple_char, filter_str)
 
-    conv_input_opts = def_conv_input_opts(multiple_char, conv_input_fun, conv_input_str)
+    conv_input_opts = construct_conv_input_opts(multiple_char, conv_input_fun, conv_input_str)
        
-    assign_replace_text = def_assign_replace_text(multiple_char)
+    assign_replace_text = construct_assign_replace_text(multiple_char)
 
-    multiple_replace_opts = def_multiple_replace_opts(multiple_char, replace_fun, assign_replace_text)
+    multiple_replace_opts = construct_multiple_replace_opts(multiple_char, replace_fun, assign_replace_text)
 
-    # label_fld, fld_name
-    label_str = 
-      if label_fld do
-        "(rec['#{label_fld}'] || '').replace('<p>', '<p >')"
+    data_fun_result = construct_data_fun_result(fld_name, label_fld, descr_fld, descr_search, conv_input_str, starts_with)
+
+    data_fun_str = 
+      if is_nil(data_fun) do
+        "function(rec, input) { return #{data_fun_result}; }"
       else
-        "rec['#{fld_name}']"
+        "function(rec, input) { return (#{data_fun})(#{data_fun_result}, input); }"
       end
 
-    # fld_name, label_fld, descr_fld, conv_input_str, starts_with
-    data_fun_result = cond do
-      is_nil(descr_fld) and is_nil(label_fld) -> "rec['#{fld_name}']"
-      is_nil(descr_fld) -> "{ label:#{label_str}, value:rec['#{fld_name}'] }"
-      !descr_search -> "{ label: #{label_str}+'<p>'+(rec['#{descr_fld}'] || ''), value: rec['#{fld_name}'] }"
-      true -> "{ label: #{label_str}+'<p>'+#{@util}.mark(rec['#{descr_fld}'] || '', #{conv_input_str}, #{starts_with}), value: rec['#{fld_name}']+'|'+(rec['#{descr_fld}'] || '').replace('|', ' ') }"
-    end
-
-    data_fun_str = if is_nil(data_fun), do: "function(rec, input) { return #{data_fun_result}; }", else: "function(rec, input) { return (#{data_fun})(#{data_fun_result}, input); }"
-
+    # in: fld_name, data_fun, descr_search, data_fun_str, multiple_replace_opts, replace_fun, assign_replace_text
     awesomplete_opts = cond do
       is_nil(fld_name) and is_nil(data_fun) -> awesomplete_opts ++ multiple_replace_opts
       is_nil(fld_name) -> awesomplete_opts ++ [data: data_fun] ++ multiple_replace_opts
@@ -289,13 +314,15 @@ defmodule PhoenixFormAwesomplete do
     end
 
     awesomplete_opts = awesomplete_opts ++ filter_opts
-    awesomplete_opts = if is_nil(replace_fun) or descr_search or multiple_char != nil, do: awesomplete_opts, else: awesomplete_opts ++ [replace: replace_fun] 
+    awesomplete_opts = 
+      if is_nil(replace_fun) or descr_search or multiple_char != nil do
+        awesomplete_opts
+      else
+        awesomplete_opts ++ [replace: replace_fun] 
+      end
+
     awe_opts_str = "{" <> opts_to_string(awesomplete_opts) <> "}"
 
-    assign_var  = if assign == true,  do: "awe_#{element_id}", else: "#{assign}" 
-    assign_text = if assign == false, do: "", else: "var #{assign_var}=" 
-    # id of the combo button. Assume awe_btn_<awesomplete element id> if combobox=true. Or take the combobox supplied value.
-    combo_btn_id  = if combobox == true, do: "awe_btn_#{element_id}", else: "#{combobox}" 
     util_opts = if is_nil(url), do: [], else: [url: "'#{url}'"] 
     util_opts = if is_nil(url_end),  do: util_opts, else: util_opts ++ [urlEnd: "'#{url_end}'"] 
     util_opts = if is_nil(limit),    do: util_opts, else: util_opts ++ [limit: limit] 
@@ -306,14 +333,6 @@ defmodule PhoenixFormAwesomplete do
     util_opts = util_opts ++ conv_input_opts
     util_opts_str = "{" <> opts_to_string(util_opts) <> "}" 
 
-    awe_script = "#{assign_text}#{@util}.startAwesomplete('##{element_id}', #{util_opts_str}, #{awe_opts_str})"
-
-    script = cond do
-       combobox == false ->    "#{awe_script};"
-       assign   == false ->    "#{@util}.startClick('##{combo_btn_id}', #{awe_script});"
-       true -> "#{awe_script};\n#{@util}.startClick('##{combo_btn_id}', #{assign_var});"
-    end
-
-    script
+    construct_awe_script(element_id, util_opts_str, awe_opts_str, assign, combobox)
   end
 end
