@@ -149,6 +149,7 @@ defmodule PhoenixFormAwesomplete do
     end
   end
 
+  # return javascript code for the result part of the data function
   defp construct_data_fun_result(fld_name, label_fld, descr_fld, descr_search, conv_input_str, starts_with) do
     label_str = 
       if label_fld do
@@ -263,15 +264,12 @@ defmodule PhoenixFormAwesomplete do
         "data.value"
       end
 
-    # in: descr_fld, label_fld, maxItems, filter_fun, descr_search, filter_str
     starts_with_filter_fun = cond do
       is_nil(descr_fld) and is_nil(label_fld) and maxItems !== 0 and filter_fun == "Awesomplete.FILTER_STARTSWITH" -> "#{@awe}.FILTER_STARTSWITH"
       descr_search -> "function(data, input) { return #{@util}.filterStartsWith(data, #{filter_str}) || #{@awe}.FILTER_STARTSWITH(data.value.substring(data.value.lastIndexOf('|')+1), #{filter_str}); }"
       true -> "#{@util}.filterStartsWith"
     end
 
-    # in: multiple_char, filter_fun, data_val, descr_fld, label_fld, maxItems, filer_fun, item_fun, starts_with,
-    #     starts_with_filter_fun, descr_search
     filter_opts = cond do
       is_nil(multiple_char) and is_nil(filter_fun) and data_val == "data" -> []
       is_nil(multiple_char) and is_nil(descr_fld) and is_nil(label_fld) and maxItems !== 0 and (is_nil(filter_fun) or filter_fun == "Awesomplete.FILTER_CONTAINS") -> []
@@ -304,7 +302,6 @@ defmodule PhoenixFormAwesomplete do
         "function(rec, input) { return (#{data_fun})(#{data_fun_result}, input); }"
       end
 
-    # in: fld_name, data_fun, descr_search, data_fun_str, multiple_replace_opts, replace_fun, assign_replace_text
     awesomplete_opts = cond do
       is_nil(fld_name) and is_nil(data_fun) -> awesomplete_opts ++ multiple_replace_opts
       is_nil(fld_name) -> awesomplete_opts ++ [data: data_fun] ++ multiple_replace_opts
@@ -321,8 +318,6 @@ defmodule PhoenixFormAwesomplete do
         awesomplete_opts ++ [replace: replace_fun] 
       end
 
-    awe_opts_str = "{" <> opts_to_string(awesomplete_opts) <> "}"
-
     util_opts = if is_nil(url), do: [], else: [url: "'#{url}'"] 
     util_opts = if is_nil(url_end),  do: util_opts, else: util_opts ++ [urlEnd: "'#{url_end}'"] 
     util_opts = if is_nil(limit),    do: util_opts, else: util_opts ++ [limit: limit] 
@@ -331,7 +326,9 @@ defmodule PhoenixFormAwesomplete do
     util_opts = if loadall, do: util_opts ++ [loadall: true], else: util_opts 
     util_opts = if prepop,  do: util_opts ++ [prepop: true],  else: util_opts 
     util_opts = util_opts ++ conv_input_opts
+
     util_opts_str = "{" <> opts_to_string(util_opts) <> "}" 
+    awe_opts_str  = "{" <> opts_to_string(awesomplete_opts) <> "}"
 
     construct_awe_script(element_id, util_opts_str, awe_opts_str, assign, combobox)
   end
