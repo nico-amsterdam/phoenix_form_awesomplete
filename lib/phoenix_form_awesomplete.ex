@@ -171,7 +171,7 @@ defmodule PhoenixFormAwesomplete do
     assign_var  = if assign == true,  do: "awe_#{element_id}", else: "#{assign}" 
     assign_text = if assign == false, do: "", else: "var #{assign_var}=" 
 
-    awe_script = "#{assign_text}#{@util}.startAwesomplete('##{element_id}', #{util_opts_str}, #{awe_opts_str})"
+    awe_script = "#{assign_text}#{@util}.start('##{element_id}', #{util_opts_str}, #{awe_opts_str})"
 
     # id of the combo button. Assume awe_btn_<awesomplete element id> if combobox=true. Or take the combobox supplied value.
     combo_btn_id  = if combobox == true, do: "awe_btn_#{element_id}", else: "#{combobox}" 
