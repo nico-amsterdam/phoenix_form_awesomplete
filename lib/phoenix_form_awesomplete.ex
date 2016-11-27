@@ -88,10 +88,12 @@ defmodule PhoenixFormAwesomplete do
   end
 
   # returns filter_opts with added item
-  defp addItem(filter_opts, item_fun, starts_with, multiple_char, filter_str) do
+  defp addItem(filter_opts, item_fun, starts_with, multiple_char, filter_str, descr_search) do
     cond do
+      is_nil(item_fun) and is_nil(multiple_char) and descr_search -> filter_opts ++ [item: "#{@util}.itemMarkAll"]
       is_nil(item_fun) and is_nil(multiple_char) -> filter_opts
-      is_nil(item_fun) and starts_with ->  filter_opts ++ [item: "function(text, input) { return #{@util}.itemStartsWith(text, #{filter_str}); }"]
+      is_nil(item_fun) and starts_with -> filter_opts ++ [item: "function(text, input) { return #{@util}.itemStartsWith(text, #{filter_str}); }"]
+      is_nil(item_fun) and descr_search ->  filter_opts ++ [item: "function(text, input) { return #{@util}.itemMarkAll(text, #{filter_str}); }"]
       is_nil(item_fun) ->  filter_opts ++ [item: "function(text, input) { return #{@util}.itemContains(text, #{filter_str}); }"]
       is_nil(multiple_char) -> filter_opts ++ [item: "#{item_fun}"]
       true -> filter_opts ++ [item: "function(text, input) { return (#{item_fun})(text, #{filter_str}); }"]
@@ -162,7 +164,7 @@ defmodule PhoenixFormAwesomplete do
       is_nil(descr_fld) and is_nil(label_fld) -> "rec['#{fld_name}']"
       is_nil(descr_fld) -> "{ label:#{label_str}, value:rec['#{fld_name}'] }"
       !descr_search -> "{ label: #{label_str}+'<p>'+(rec['#{descr_fld}'] || ''), value: rec['#{fld_name}'] }"
-      true -> "{ label: #{label_str}+'<p>'+#{@util}.mark(rec['#{descr_fld}'] || '', #{conv_input_str}, #{starts_with}), value: rec['#{fld_name}']+'|'+(rec['#{descr_fld}'] || '').replace('|', ' ') }"
+      true          -> "{ label: #{label_str}+'<p>'+(rec['#{descr_fld}'] || ''), value: rec['#{fld_name}']+'|'+(rec['#{descr_fld}'] || '').replace('|', ' ') }"
     end
   end
 
@@ -285,7 +287,7 @@ defmodule PhoenixFormAwesomplete do
     end 
     
     # add item: in filter_opts
-    filter_opts = addItem(filter_opts, item_fun, starts_with, multiple_char, filter_str)
+    filter_opts = addItem(filter_opts, item_fun, starts_with, multiple_char, filter_str, descr_search)
 
     conv_input_opts = construct_conv_input_opts(multiple_char, conv_input_fun, conv_input_str)
        
