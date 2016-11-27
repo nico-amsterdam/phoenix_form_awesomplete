@@ -152,7 +152,7 @@ defmodule PhoenixFormAwesomplete do
   end
 
   # return javascript code for the result part of the data function
-  defp construct_data_fun_result(fld_name, label_fld, descr_fld, descr_search, conv_input_str, starts_with) do
+  defp construct_data_fun_result(fld_name, label_fld, descr_fld, descr_search) do
     label_str = 
       if label_fld do
         "(rec['#{label_fld}'] || '').replace('<p>', '<p >')"
@@ -295,7 +295,7 @@ defmodule PhoenixFormAwesomplete do
 
     multiple_replace_opts = construct_multiple_replace_opts(multiple_char, replace_fun, assign_replace_text)
 
-    data_fun_result = construct_data_fun_result(fld_name, label_fld, descr_fld, descr_search, conv_input_str, starts_with)
+    data_fun_result = construct_data_fun_result(fld_name, label_fld, descr_fld, descr_search)
 
     data_fun_str = 
       if is_nil(data_fun) do
