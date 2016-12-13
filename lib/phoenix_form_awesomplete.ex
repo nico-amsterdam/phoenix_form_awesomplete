@@ -2,33 +2,99 @@ defmodule PhoenixFormAwesomplete do
   alias Phoenix.HTML
   alias Phoenix.HTML.Form
 
-  # @util & @awe allows you to use aliases or replacement libraries. The default names are a bit long.
-  # For example use: `var aw = Awesomplete, au = AwesompleteUtil;`. This could shorten the average page size.
+  @moduledoc ~S"""
+
+PhoenixFormAwesomplete is a [Phoenix form helper](https://hexdocs.pm/phoenix_html/Phoenix.HTML.Form.html) 
+that utilizes Lea Verou's autocomplete / autosuggest / typeahead / 
+inputsearch [Awesomplete widget](https://leaverou.github.io/awesomplete/index.html).
+
+It comes with an AwesompleteUtil [javascript library](https://nico-amsterdam.github.io/awesomplete-util/index.html) 
+which adds the following features:
+
+- Dynamic remote data loading; based on what is typed-in it performs an ajax lookup.
+- Allow HTML markup in the shown items. Show value with description. Optionally search in the description text.
+- Show when there is an exact match.
+- Show when there isn't a match.
+- When there is an exact match show related data (supplied in the remote data) in other parts of the page.
+- Select the highlighted item with the tab-key. 
+
+  ## Example
+
+      iex> PhoenixFormAwesomplete.awesomplete(:user, :drinks,
+      ...> ["data-list": "beer, gin, soda, sprite, water, vodga, whine, whisky"], 
+      ...> %{ minChars: 1 } )
+      {:safe,
+       ["<input data-list=\"beer, gin, soda, sprite, water, vodga, whine, whisky\"" <>
+        " id=\"user_drinks\" name=\"user[drinks]\" type=\"text\">", 
+        "<script>AwesompleteUtil.start('#user_drinks', {}, {minChars: 1});</script>"]}
+
+  The first three parameters are passed on unchanged to the Phoenix form [text_input](https://hexdocs.pm/phoenix_html/Phoenix.HTML.Form.html#text_input/3) which generates the input tag.
+  `minChars` is an option for the Awesomplete object which is started with inline javascript.
+  Just adding the `multiple` option changes the generated javascript code completely, the PhoenixFormAwesomplete module
+  takes care of that. 
+  Instead of an server side generated data-list it is possible to specify an url of a JSON web service and 
+  let the client-code lookup the data list on-demand while typing. 
+  Look at the [live examples](https://nico-amsterdam.github.io/awesomplete-util/phoenix.html) with code.
+
+
+  It is possible to use aliases for the javascript library references in the generated code 
+  via the environment variables `util` and `awesomplete`.
+  The default names, `AwesompleteUtil` and `Awesomplete` respectively, are a bit long.
+  This can shorten the average page size.
+  For example use this javascript: 
+       var AU = AwesompleteUtil, AW = Awesomplete; 
+  and change the variables via the application config:
+       :phoenix_form_awesomplete, util:         "AU"
+       :phoenix_form_awesomplete, awesomplete:  "AW"
+  After changing the config/config.exs run: 
+       touch deps/phoenix_form_awesomplete/mix.exs
+       mix deps.compile phoenix_form_awesomplete
+  """
+
+  # @util & @awe refer to the default javascript libraries.
   @util Application.get_env(:phoenix_form_awesomplete, :util) || "AwesompleteUtil"
   @awe  Application.get_env(:phoenix_form_awesomplete, :awesomplete) || "Awesomplete"
 
-  #
-    # Create script tag with the supplied script. No defer or async because this is used for inline script.
-  #
+  @doc ~S"""
+  Create script tag with the supplied script. No defer or async because this is used for inline script.
+
+  ## Example
+
+      iex> PhoenixFormAwesomplete.script("alert(1);")
+      {:safe, "<script>alert(1);</script>"}
+  """
   def script(script) do
     HTML.raw("<script>#{script}</script>")
   end
 
-  #
-    # Create script tag with javascript that listens to awesomplete-prepop and awesomplete-match events,
-    # and copies the datafield to the DOM element with the given target id..
-    # target_id can also be a javascript function, so you can control the output.
-  #
+  @doc ~S"""
+  Create script tag with javascript that listens to `awesomplete-prepop` and `awesomplete-match` events,
+  and copies the `data_field` to the DOM element with the given target id.
+  The `target_id` can also be a javascript function. This function receives two parameters: event and dataField. The event detail property contains an array with the matching list item. The array is empty when there is no match.
+
+  ## Example
+
+      iex> PhoenixFormAwesomplete.copy_to_id(:user, :color, "label", "#awe-color-result") 
+      {:safe,
+       "<script>AwesompleteUtil.startCopy('#user_color', 'label', '#awe-color-result');</script>"}
+
+  """
   def copy_to_id(source_form, source_field, data_field \\ nil, target_id) 
       when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) do
     script(copy_to_id_js(source_form, source_field, data_field, target_id))
   end
 
-  #
-    # Create javascript that listens to awesomplete-prepop and awesomplete-match events,
-    # and copies the datafield to the DOM element with the given target id..
-    # target_id can also be a javascript function, so you can control the output.
-  #
+  @doc ~S"""
+  Create javascript that listens to `awesomplete-prepop` and `awesomplete-match` events,
+  and copies the `data_field` to the DOM element with the given target id.
+  The `target_id` can also be a javascript function.
+
+  ## Example
+
+      iex> PhoenixFormAwesomplete.copy_to_id_js(:user, :color, "label", "#awe-color-result") 
+      "AwesompleteUtil.startCopy('#user_color', 'label', '#awe-color-result');"
+
+  """
   def copy_to_id_js(source_form, source_field, data_field \\ nil, target_id) 
       when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) do
     source_id = Form.field_id(source_form, source_field)
@@ -40,11 +106,17 @@ defmodule PhoenixFormAwesomplete do
     "#{@util}.startCopy('##{source_id}', '#{data_field}', #{target});"
   end
 
-  #
-    # Create javascript that listens to awesomplete-prepop and awesomplete-match events,
-    # and copies the datafield to the target input control.
-    # target_id can also be a javascript function, so you can control the output.
-  #
+  @doc ~S"""
+  Create script tag with javascript that listens to `awesomplete-prepop` and `awesomplete-match` events,
+  and copies the `data_field` to the target field.
+
+  ## Example
+
+      iex> PhoenixFormAwesomplete.copy_to_field(:user, :color, "label", :door, :paint)  
+      {:safe,
+       "<script>AwesompleteUtil.startCopy('#user_color', 'label', '#door_paint');</script>"}
+
+  """
   def copy_to_field(source_form, source_field, data_field \\ nil, target_form, target_field) 
       when is_nil(data_field) or is_binary(data_field) do
     target_id = Form.field_id(target_form, target_field)
@@ -61,27 +133,85 @@ defmodule PhoenixFormAwesomplete do
   defp to_integer(val) do
     if is_nil(val) or is_integer(val), do: val, else: String.to_integer(val)
   end
-  
 
-  #
-    # This method generates javascript code for using Awesomplete(Util) in a friendly way.
-  #
+  @doc ~S"""
+  This method generates an input tag and inline javascript code that starts Awesomplete.
+
+  Awesomplete options:
+   * `ajax`            - Replace ajax function. It must have these parameters: (url, urlEnd, val, fn, xhr). fn is the callback function. Default: AwesompleteUtil.ajax. 
+   * `assign`          - Assign the Awesomplete object to a variable. true/false/name. If true the variable name will 'awe_' + id of input tag. Default: false
+   * `autoFirst`       - Automatically select the first element. Default: false. 
+   * `combobox`        - Id of the combobox button. true/false/id. If true the assumed button id is 'awe_btn_' + id of the input tag. Default: false
+   * `convertInput`    - Convert input function. Internally convert input for comparison with data list. By default it lowercase's and trims the input, so the comparison is case-insensitive.
+   * `convertResponse` - Convert JSON response from ajax calls. This function is called with the parsed JSON, and allows conversion of the data before further processing. Default: nil - no conversion. 
+   * `data`            - Data function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
+   * `descr`           - Name of the field in the data list (the JSON response) that contains the description text to show below the value in the suggestion list. Default: no description
+   * `descrSearch`     - Filter must also search the input value in the description field. Default: false
+   * `value`           - Name of the field in the data list (the JSON response) that contains the value.
+   * `filter`          - Filter function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). Mostly Awesomplete.FILTER_STARTSWITH or Awesomplete.FILTER_CONTAINS. If label is different as value, filter on value with AweompleteUtil.filterStartsWith or AwesompleteUtil.filterContains.
+   * `item`            - Item function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). Default is to highlight all occurrences of the input text. Use AwesompleteUtil.itemStartsWith if that matches with the used filter.
+   * `label`           - Name of the field in the data list (the JSON response) that contains the text that should be shown instead of the value. 
+   * `list`            - Data list as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility).
+   * `loadall`         - Data list contains all items. In ajax calls the passed on value will be empty. Default: false
+   * `limit`           - number. If a limit is specified, if the limit or more results are returned by the server the AwesompleteUtil assumes that there are more results, so it will re-query if more characters are typed to get more refined results. The limit:1 tells that not more than 1 result is expected, so the json service doesn't have to return an array. With limit:0 it will always re-query if more characters are typed. Default: no limit
+   * `maxItems`        - Maximum number of suggestions to display. Default: 10 
+   * `minChars`        - Minimum characters the user has to type before the autocomplete popup shows up. Default: 2 
+   * `multiple`        - true/false/characters. Separators to allow multiple values. If true, the separator will be the space character. Default: false
+   * `prepop`          - true/false. If true do lookup initial/autofilled value and send awesomplete-prepop event. Default: false 
+   * `replace`         - Replace function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
+   * `sort`            - Sort function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
+   * `url`             - url for ajax calls.
+   * `urlEnd`          - Addition at the end of the url of the ajax call, after the value. 
+
+  ## Example
+
+      iex> PhoenixFormAwesomplete.awesomplete(:user, :eyes, ["data-list": "blue, brown, green"],
+      ...>  %{ minChars: 1, multiple: ",;" } )
+      {:safe,
+       ["<input data-list=\"blue, brown, green\" id=\"user_eyes\" name=\"user[eyes]\" type=\"text\">",
+        "<script>AwesompleteUtil.start('#user_eyes', " <> 
+        "{convertInput: function(input) {" <>
+        " return input.replace(/[,;]\\s*$/, '').match(/[^,;]*$/)[0].trim().toLowerCase(); }}, " <>
+        "{minChars: 1, " <> 
+        "replace: function(data) {" <>
+        " var text=data.value;" <> 
+        " this.input.value = this.input.value.match(/^.+[,;]\\s*|/)[0] + text + ', '; }, " <>
+        "filter: function(data, input) {" <>
+        " return Awesomplete.FILTER_CONTAINS(data, input.match(/[^,;]*([,;]\\s*)?$/)[0]); }, " <>
+        "item: function(text, input) {" <>
+        " return AwesompleteUtil.itemContains(text, input.match(/[^,;]*([,;]\\s*)?$/)[0]); }});" <>
+        "</script>"]}
+
+  """
   def awesomplete(form, field, opts \\ [], awesomplete_opts) do
     script = awesomplete_js(form, field, awesomplete_opts)
     HTML.html_escape([Form.text_input(form, field, opts), script(script)])
   end
 
-  #
-    # This method generates javascript code for using Awesomplete(Util) in a friendly way.
-  #
+  @doc ~S"""
+  This method generates a script tag with javascript code for using Awesomplete(Util).
+
+  ## Example
+
+      iex> PhoenixFormAwesomplete.awesomplete_script(:user, :hobby, %{ minChars: 1 } )
+      {:safe,
+       "<script>AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});</script>"}
+
+  """
   def awesomplete_script(form, field, awesomplete_opts) do
     script = awesomplete_js(form, field, awesomplete_opts)
     script(script)
   end
 
-  #
-    # This method generates javascript code for using Awesomplete(Util) in a friendly way.
-  #
+  @doc ~S"""
+  This method generates javascript code for using Awesomplete(Util).
+
+  ## Example
+
+      iex> PhoenixFormAwesomplete.awesomplete_js(:user, :hobby, %{ minChars: 1 } )    
+      "AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});"
+
+  """
   def awesomplete_js(form, field, awesomplete_opts) do
     element_id = Form.field_id(form, field)
     awesomplete_js(element_id, awesomplete_opts)
@@ -186,9 +316,15 @@ defmodule PhoenixFormAwesomplete do
     end
   end
      
-  #
-    # This method generates javascript code for using Awesomplete(Util) in a friendly way.
-  #
+  @doc ~S"""
+  This method generates javascript code for using Awesomplete(Util).
+
+  ## Example
+
+      iex> PhoenixFormAwesomplete.awesomplete_js('user_hobby', %{ minChars: 1 } ) 
+      "AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});"
+
+  """
   def awesomplete_js(element_id, awesomplete_opts) do
     awesomplete_opts = Enum.to_list awesomplete_opts
 
@@ -196,16 +332,16 @@ defmodule PhoenixFormAwesomplete do
       # Some of the options (data, filter, item, replace) are popped to be added later again.
       # Unrecognized options are passed on to Awesomplete.
     # 
-    {assign,            awesomplete_opts} = Keyword.pop(awesomplete_opts, :assign, false)
     {ajax_fun,          awesomplete_opts} = Keyword.pop(awesomplete_opts, :ajax)
+    {assign,            awesomplete_opts} = Keyword.pop(awesomplete_opts, :assign, false)
     {combobox,          awesomplete_opts} = Keyword.pop(awesomplete_opts, :combobox, false)
     {conv_input_fun,    awesomplete_opts} = Keyword.pop(awesomplete_opts, :convertInput)
     {conv_response_fun, awesomplete_opts} = Keyword.pop(awesomplete_opts, :convertResponse)
     {data_fun,          awesomplete_opts} = Keyword.pop(awesomplete_opts, :data)
     {descr_fld,         awesomplete_opts} = Keyword.pop(awesomplete_opts, :descr)
     {descr_search,      awesomplete_opts} = Keyword.pop(awesomplete_opts, :descrSearch, false) 
-    {fld_name,          awesomplete_opts} = Keyword.pop(awesomplete_opts, :value)
     {filter_fun,        awesomplete_opts} = Keyword.pop(awesomplete_opts, :filter)
+    {fld_name,          awesomplete_opts} = Keyword.pop(awesomplete_opts, :value)
     {item_fun,          awesomplete_opts} = Keyword.pop(awesomplete_opts, :item)
     {label_fld,         awesomplete_opts} = Keyword.pop(awesomplete_opts, :label)
     {loadall,           awesomplete_opts} = Keyword.pop(awesomplete_opts, :loadall, false)
@@ -226,8 +362,6 @@ defmodule PhoenixFormAwesomplete do
     # 
     limit = to_integer(limit)
     
-    maxItems = to_integer(Keyword.get(awesomplete_opts, :maxItems, 10)) 
-
     multiple_char = construct_multiple_char(multiple)
 
     # 
@@ -267,14 +401,14 @@ defmodule PhoenixFormAwesomplete do
       end
 
     starts_with_filter_fun = cond do
-      is_nil(descr_fld) and is_nil(label_fld) and maxItems !== 0 and filter_fun == "Awesomplete.FILTER_STARTSWITH" -> "#{@awe}.FILTER_STARTSWITH"
+      is_nil(descr_fld) and is_nil(label_fld) and filter_fun == "Awesomplete.FILTER_STARTSWITH" -> "#{@awe}.FILTER_STARTSWITH"
       descr_search -> "function(data, input) { return #{@util}.filterStartsWith(data, #{filter_str}) || #{@awe}.FILTER_STARTSWITH(data.value.substring(data.value.lastIndexOf('|')+1), #{filter_str}); }"
       true -> "#{@util}.filterStartsWith"
     end
 
     filter_opts = cond do
       is_nil(multiple_char) and is_nil(filter_fun) and data_val == "data" -> []
-      is_nil(multiple_char) and is_nil(descr_fld) and is_nil(label_fld) and maxItems !== 0 and (is_nil(filter_fun) or filter_fun == "Awesomplete.FILTER_CONTAINS") -> []
+      is_nil(multiple_char) and is_nil(descr_fld) and is_nil(label_fld) and (is_nil(filter_fun) or filter_fun == "Awesomplete.FILTER_CONTAINS") -> []
       is_nil(multiple_char) and (is_nil(filter_fun) or filter_fun == "Awesomplete.FILTER_CONTAINS" or filter_fun == "AwesompleteUtil.filterContains") -> [filter: "#{@util}.filterContains"]
       is_nil(multiple_char) and data_val == "data" -> [filter: filter_fun]
       is_nil(multiple_char) and starts_with and is_nil(item_fun) -> [filter: starts_with_filter_fun , item: "#{@util}.itemStartsWith"]
