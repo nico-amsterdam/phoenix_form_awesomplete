@@ -5,6 +5,8 @@ defmodule PhoenixFormAwesomplete.Mixfile do
     [app: :phoenix_form_awesomplete,
      version: "0.1.0",
      elixir: "~> 1.3",
+     description: description,
+     package: package,
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps()]
@@ -28,7 +30,26 @@ defmodule PhoenixFormAwesomplete.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-     {:phoenix_html, "~> 2.4"}
+      {:phoenix_html, "~> 2.4"},
+      {:ex_doc,  "~> 0.12", only: :dev}
+    ]
+  end
+
+  defp description do
+    """
+Phoenix form helper that utilizes Lea Verou's autocomplete autosuggest
+typeahead inputsearch Awesomplete widget, featuring dynamic data loading
+using ajax JSON request.
+    """
+  end
+
+  defp package do
+    [
+     name: :phoenix_form_awesomplete,
+     maintainers: ["Nico Hoogervorst"],
+     licenses: ["MIT"],
+     links: %{"GitHub" => "https://github.com/nico-amsterdam/phoenix_form_awesomplete", 
+              "Documentation with live examples" => "https://nico-amsterdam.github.io/awesomplete-util/phoenix.html" }
     ]
   end
 end
