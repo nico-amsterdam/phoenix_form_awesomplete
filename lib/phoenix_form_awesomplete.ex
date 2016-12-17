@@ -138,22 +138,22 @@ which adds the following features:
   This method generates an input tag and inline javascript code that starts Awesomplete.
 
   Awesomplete options:
-   * `ajax`            - Replace ajax function. It must have these parameters: (url, urlEnd, val, fn, xhr). fn is the callback function. Default: AwesompleteUtil.ajax. 
-   * `assign`          - Assign the Awesomplete object to a variable. true/false/name. If true the variable name will 'awe_' + id of input tag. Default: false
+   * `ajax`            - Replace ajax function. Supplied function receives these parameters: (url, urlEnd, val, fn, xhr). fn is the callback function. Default: AwesompleteUtil.ajax. 
+   * `assign`          - Assign the Awesomplete object to a variable. true/false/name. If true the variable name will 'awe\_' + id of input tag. Default: false
    * `autoFirst`       - Automatically select the first element. Default: false. 
-   * `combobox`        - Id of the combobox button. true/false/id. If true the assumed button id is 'awe_btn_' + id of the input tag. Default: false
-   * `convertInput`    - Convert input function. Internally convert input for comparison with data list. By default it lowercase's and trims the input, so the comparison is case-insensitive.
+   * `combobox`        - Id of the combobox button. true/false/id. If true the assumed button id is 'awe\_btn\_' + id of the input tag. Default: false
+   * `convertInput`    - Convert input function. Internally convert input for comparison with the data list items. By default it trims the input and converts it to lowercase for a case-insensitive comparison.
    * `convertResponse` - Convert JSON response from ajax calls. This function is called with the parsed JSON, and allows conversion of the data before further processing. Default: nil - no conversion. 
    * `data`            - Data function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `descr`           - Name of the field in the data list (the JSON response) that contains the description text to show below the value in the suggestion list. Default: no description
    * `descrSearch`     - Filter must also search the input value in the description field. Default: false
    * `value`           - Name of the field in the data list (the JSON response) that contains the value.
-   * `filter`          - Filter function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). Mostly Awesomplete.FILTER_STARTSWITH or Awesomplete.FILTER_CONTAINS. If label is different as value, filter on value with AweompleteUtil.filterStartsWith or AwesompleteUtil.filterContains.
+   * `filter`          - Filter function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). Mostly Awesomplete.FILTER\_STARTSWITH or Awesomplete.FILTER\_CONTAINS. If label is different as value, filter on value with AweompleteUtil.filterStartsWith or AwesompleteUtil.filterContains.
    * `item`            - Item function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). Default is to highlight all occurrences of the input text. Use AwesompleteUtil.itemStartsWith if that matches with the used filter.
    * `label`           - Name of the field in the data list (the JSON response) that contains the text that should be shown instead of the value. 
    * `list`            - Data list as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility).
-   * `loadall`         - Data list contains all items. In ajax calls the passed on value will be empty. Default: false
-   * `limit`           - number. If a limit is specified, if the limit or more results are returned by the server the AwesompleteUtil assumes that there are more results, so it will re-query if more characters are typed to get more refined results. The limit:1 tells that not more than 1 result is expected, so the json service doesn't have to return an array. With limit:0 it will always re-query if more characters are typed. Default: no limit
+   * `loadall`         - Data list contains all items. The input value will not be used in ajax calls. Default: false
+   * `limit`           - number. If a limit is specified, and the number of items returned by the server is equal or more as this limit, the AwesompleteUtil code assumes that there are more results, so it will re-query if more characters are typed to get more refined results. The limit:1 tells that not more than 1 result is expected, so the json service doesn’t have to return an array. With limit:0 it will always re-query if more characters are typed. Default: no limit 
    * `maxItems`        - Maximum number of suggestions to display. Default: 10 
    * `minChars`        - Minimum characters the user has to type before the autocomplete popup shows up. Default: 2 
    * `multiple`        - true/false/characters. Separators to allow multiple values. If true, the separator will be the space character. Default: false
@@ -161,7 +161,7 @@ which adds the following features:
    * `replace`         - Replace function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `sort`            - Sort function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `url`             - url for ajax calls.
-   * `urlEnd`          - Addition at the end of the url of the ajax call, after the value. 
+   * `urlEnd`          - Addition at the end of the url of the ajax call, after the input value. 
 
   ## Example
 

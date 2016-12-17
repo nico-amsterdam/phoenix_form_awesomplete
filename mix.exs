@@ -39,7 +39,7 @@ defmodule PhoenixFormAwesomplete.Mixfile do
     """
 Phoenix form helper that utilizes Lea Verou's autocomplete autosuggest
 typeahead inputsearch Awesomplete widget, featuring dynamic data loading
-using ajax JSON request.
+using ajax JSON requests.
     """
   end
 

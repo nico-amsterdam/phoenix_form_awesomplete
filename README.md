@@ -9,7 +9,7 @@ It comes with an AwesompleteUtil [javascript library](https://nico-amsterdam.git
 - Show when there is an exact match.
 - Show when there isn't a match.
 - When there is an exact match show related data (supplied in the remote data) in other parts of the page.
-- Select the highlighted item with the tab-key.
+- Select the highlighted item when tab key is used.
 
 ## Examples
 
@@ -58,25 +58,25 @@ import PhoenixFormAwesomplete
 In web/templates/layout/app.html.eex, add:
 
 ```html
-<link rel="stylesheet" href="//nico-amsterdam.github.io/awesomplete-util/css/awesomplete.css">   
+<link rel="stylesheet" href="//nico-amsterdam.github.io/awesomplete-util/css/awesomplete.css">
 <script src="//nico-amsterdam.github.io/awesomplete-util/js/awesomplete.min.js"></script>
 <script src="//nico-amsterdam.github.io/awesomplete-util/js/awesomplete-util.min.js"></script>
-<style>                                                                                                                           
-  div.awesomplete {display: block}                                                                                                
+<style>
+  div.awesomplete {display: block}
 
-  div.awesomplete ul li p {display: block; font-size: small; margin-left: 1em}                         
+  div.awesomplete ul li p {display: block; font-size: small; margin-left: 1em}
 
-  div.awesomplete .awe-found {border: 2px solid green}                                                                            
+  div.awesomplete .awe-found {border: 2px solid green}
   
-  .hide-not-found div.awesomplete .awe-not-found {border-color: lightblue}                                                        
+  .hide-not-found div.awesomplete .awe-not-found {border-color: lightblue}
   
-  div.awesomplete .awe-not-found {border: 2px solid red}                                                                          
+  div.awesomplete .awe-not-found {border: 2px solid red}
 </style>
 ```
 
-The awesomplete.css and awesomplete.min.js files are copies from [Awesomplete](https://github.com/LeaVerou/awesomplete) tested in combination with awesomplete-util. I recommend to make your own copies of these files. If you put them on github.io they will be served by [Fastly CDN](https://www.fastly.com).
+The awesomplete.css and awesomplete.min.js files are copied from [Awesomplete](https://github.com/LeaVerou/awesomplete) and tested in combination with AwesompleteUtil. I recommend to make your own copies of these files. If you put them on github.io they will be served by [Fastly CDN](https://www.fastly.com). Do not forget to also copy the javascript sourcemaps ([awesomplete.min.js.map](https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete.min.js.map) and [awesomplete-util.min.js.map](https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete-util.min.js.map)).
 
-Customize the styling for your own needs.
+Customize the above styling for your own needs. The CSS class 'awe-found' is put on the input control when the input exactly matches the value of an list item. The CSS class 'awe-not-found' is put on the input control when the list closes because there are no more matching items.
 
 ### Use in your EEx template
 
@@ -99,4 +99,7 @@ Example:
 </div>
 ```
 
+## License
+
+[MIT](LICENSE)
 
