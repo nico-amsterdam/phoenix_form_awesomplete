@@ -38,8 +38,8 @@ defmodule PhoenixFormAwesomplete.Mixfile do
   defp description do
     """
 Phoenix form helper that utilizes Lea Verou's autocomplete autosuggest
-typeahead inputsearch Awesomplete widget, featuring dynamic data loading
-using ajax JSON requests.
+typeahead Awesomplete widget, featuring dynamic data loading using
+ajax JSON requests.
     """
   end
 
