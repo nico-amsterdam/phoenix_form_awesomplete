@@ -21,8 +21,6 @@ In your Phoenix project:
 
 ### Add dependency
 
-[available in Hex](https://hex.pm/docs/publish), the package can be installed as:
-
   1. Add `phoenix_form_awesomplete` to your list of dependencies in `mix.exs`:
 
     ```elixir
