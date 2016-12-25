@@ -20,13 +20,14 @@ which adds the following features:
 
   ## Example
 
-      iex> PhoenixFormAwesomplete.awesomplete(:user, :drinks,
+      iex> {:safe, [input, script]} = PhoenixFormAwesomplete.awesomplete(:user, :drinks,
       ...> ["data-list": "beer, gin, soda, sprite, water, vodga, whine, whisky"], 
       ...> %{ minChars: 1 } )
-      {:safe,
-       ["<input data-list=\"beer, gin, soda, sprite, water, vodga, whine, whisky\"" <>
-        " id=\"user_drinks\" name=\"user[drinks]\" type=\"text\">", 
-        "<script>AwesompleteUtil.start('#user_drinks', {}, {minChars: 1});</script>"]}
+      iex> to_string input
+      "<input data-list=\"beer, gin, soda, sprite, water, vodga, whine, whisky\"" <>
+      " id=\"user_drinks\" name=\"user[drinks]\" type=\"text\">"
+      iex> script
+      "<script>AwesompleteUtil.start('#user_drinks', {}, {minChars: 1});</script>"
 
   The first three parameters are passed on unchanged to the Phoenix form [text_input](https://hexdocs.pm/phoenix_html/Phoenix.HTML.Form.html#text_input/3) which generates the input tag.
   `minChars` is an option for the Awesomplete object which is started with inline javascript.
@@ -165,22 +166,24 @@ which adds the following features:
 
   ## Example
 
-      iex> PhoenixFormAwesomplete.awesomplete(:user, :eyes, ["data-list": "blue, brown, green"],
+      iex> {:safe, [inp, scr]} = PhoenixFormAwesomplete.awesomplete(:user, :eyes, 
+      ...> ["data-list": "blue, brown, green"],
       ...>  %{ minChars: 1, multiple: ",;" } )
-      {:safe,
-       ["<input data-list=\"blue, brown, green\" id=\"user_eyes\" name=\"user[eyes]\" type=\"text\">",
-        "<script>AwesompleteUtil.start('#user_eyes', " <> 
-        "{convertInput: function(input) {" <>
-        " return input.replace(/[,;]\\s*$/, '').match(/[^,;]*$/)[0].trim().toLowerCase(); }}, " <>
-        "{minChars: 1, " <> 
-        "replace: function(data) {" <>
-        " var text=data.value;" <> 
-        " this.input.value = this.input.value.match(/^.+[,;]\\s*|/)[0] + text + ', '; }, " <>
-        "filter: function(data, input) {" <>
-        " return Awesomplete.FILTER_CONTAINS(data, input.match(/[^,;]*([,;]\\s*)?$/)[0]); }, " <>
-        "item: function(text, input) {" <>
-        " return AwesompleteUtil.itemContains(text, input.match(/[^,;]*([,;]\\s*)?$/)[0]); }});" <>
-        "</script>"]}
+      iex> to_string inp
+      "<input data-list=\"blue, brown, green\" id=\"user_eyes\" name=\"user[eyes]\" type=\"text\">"
+      iex> scr
+      "<script>AwesompleteUtil.start('#user_eyes', " <> 
+      "{convertInput: function(input) {" <>
+      " return input.replace(/[,;]\\s*$/, '').match(/[^,;]*$/)[0].trim().toLowerCase(); }}, " <>
+      "{minChars: 1, " <> 
+      "replace: function(data) {" <>
+      " var text=data.value;" <> 
+      " this.input.value = this.input.value.match(/^.+[,;]\\s*|/)[0] + text + ', '; }, " <>
+      "filter: function(data, input) {" <>
+      " return Awesomplete.FILTER_CONTAINS(data, input.match(/[^,;]*([,;]\\s*)?$/)[0]); }, " <>
+      "item: function(text, input) {" <>
+      " return AwesompleteUtil.itemContains(text, input.match(/[^,;]*([,;]\\s*)?$/)[0]); }});" <>
+      "</script>"
 
   """
   def awesomplete(form, field, opts \\ [], awesomplete_opts) do

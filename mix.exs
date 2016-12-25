@@ -3,7 +3,7 @@ defmodule PhoenixFormAwesomplete.Mixfile do
 
   def project do
     [app: :phoenix_form_awesomplete,
-     version: "0.1.1",
+     version: "0.1.2",
      elixir: "~> 1.3",
      description: description,
      package: package,
@@ -30,7 +30,7 @@ defmodule PhoenixFormAwesomplete.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:phoenix_html, "~> 2.8"},
+      {:phoenix_html, "~> 2.9"},
       {:ex_doc,  "~> 0.14", only: :dev}
     ]
   end
