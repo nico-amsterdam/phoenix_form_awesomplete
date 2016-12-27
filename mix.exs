@@ -1,15 +1,29 @@
 defmodule PhoenixFormAwesomplete.Mixfile do
   use Mix.Project
 
+  @version "0.1.2"
+
   def project do
     [app: :phoenix_form_awesomplete,
-     version: "0.1.2",
+     version: @version,
      elixir: "~> 1.3",
-     description: description,
+
+     # Hex
      package: package,
-     build_embedded: Mix.env == :prod,
+     description: description,
+
+     # Docs
+     name: "PhoenixFormAwesomplete",
+     docs: [source_ref: "master", main: "PhoenixFormAwesomplete",
+            canonical: "http://hexdocs.pm/phoenix_form_awesomplete",
+            source_url: "https://github.com/nico-amsterdam/phoenix_form_awesomplete"
+           ],
+
+     build_embedded:  Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps()]
+
+     deps: deps()
+    ]
   end
 
   # Configuration for the OTP application
