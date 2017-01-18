@@ -1,7 +1,7 @@
 defmodule PhoenixFormAwesomplete.Mixfile do
   use Mix.Project
 
-  @version "0.1.3"
+  @version "0.1.4"
 
   def project do
     [app: :phoenix_form_awesomplete,
@@ -9,8 +9,8 @@ defmodule PhoenixFormAwesomplete.Mixfile do
      elixir: "~> 1.3",
 
      # Hex
-     package: package,
-     description: description,
+     package: package(),
+     description: description(),
 
      # Docs
      name: "PhoenixFormAwesomplete",
