@@ -45,7 +45,9 @@ Open web/web.ex, in the 'view' function below the other import statements add:
 import PhoenixFormAwesomplete
 ```
 
-In web/templates/layout/app.html.eex, add:
+In web/templates/layout/app.html.eex (phoenix <= 1.2),
+
+or web/<your context>_web/templates/layout/app.html.eex (phoenix >= 1.3) add:
 
 ```html
 <link rel="stylesheet" href="//nico-amsterdam.github.io/awesomplete-util/css/awesomplete.css">
