@@ -47,7 +47,7 @@ import PhoenixFormAwesomplete
 
 In web/templates/layout/app.html.eex (phoenix <= 1.2),
 
-or lib/\<your context\>\_web/templates/layout/app.html.eex (phoenix >= 1.3) add:
+or lib/\<your context\>\_web/templates/layout/app.html.eex (phoenix >= 1.3) add inside the head element:
 
 ```html
 <link rel="stylesheet" href="//nico-amsterdam.github.io/awesomplete-util/css/awesomplete.css">
