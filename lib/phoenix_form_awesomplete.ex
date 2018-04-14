@@ -5,19 +5,19 @@ defmodule PhoenixFormAwesomplete do
 
   @moduledoc ~S"""
 
-PhoenixFormAwesomplete is a [Phoenix form helper](https://hexdocs.pm/phoenix_html/Phoenix.HTML.Form.html) 
-that utilizes Lea Verou's autocomplete / autosuggest / typeahead / 
-inputsearch [Awesomplete widget](https://leaverou.github.io/awesomplete/index.html).
+  PhoenixFormAwesomplete is a [Phoenix form helper](https://hexdocs.pm/phoenix_html/Phoenix.HTML.Form.html) 
+  that utilizes Lea Verou's autocomplete / autosuggest / typeahead / 
+  inputsearch [Awesomplete widget](https://leaverou.github.io/awesomplete/index.html).
 
-It comes with an AwesompleteUtil [javascript library](https://nico-amsterdam.github.io/awesomplete-util/index.html) 
-which adds the following features:
+  It comes with an AwesompleteUtil [javascript library](https://nico-amsterdam.github.io/awesomplete-util/index.html) 
+  which adds the following features:
 
-- Dynamic remote data loading; based on what is typed-in it performs an ajax lookup.
-- Allow HTML markup in the shown items. Show value with description. Optionally search in the description text.
-- Show when there is an exact match.
-- Show when there isn't a match.
-- When there is an exact match show related data (supplied in the remote data) in other parts of the page.
-- Select the highlighted item with the tab-key. 
+  - Dynamic remote data loading; based on what is typed-in it performs an ajax lookup.
+  - Allow HTML markup in the shown items. Show value with description. Optionally search in the description text.
+  - Show when there is an exact match.
+  - Show when there isn't a match.
+  - When there is an exact match show related data (supplied in the remote data) in other parts of the page.
+  - Select the highlighted item with the tab-key. 
 
   ## Example
 

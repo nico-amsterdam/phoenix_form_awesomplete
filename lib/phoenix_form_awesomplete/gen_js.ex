@@ -5,7 +5,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
 
   @moduledoc ~S"""
 
-Generate the javascript code for PhoenixFormAwesomplete.
+  Generate the javascript code for PhoenixFormAwesomplete.
 
   ## Example
 
