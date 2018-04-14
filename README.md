@@ -39,13 +39,15 @@ mix compile
 ### Add in web
 
 
-Open web/web.ex, in the 'view' function below the other import statements add:
+Open web/web.ex (phoenix <= 1.2) or lib/\<your context\>\_web.ex (phoenix >= 1.3), in the 'view' function below the other import statements add:
 ```elixir
 # Awesomplete autocomplete widget
 import PhoenixFormAwesomplete
 ```
 
-In web/templates/layout/app.html.eex, add:
+In web/templates/layout/app.html.eex (phoenix <= 1.2),
+
+or lib/\<your context\>\_web/templates/layout/app.html.eex (phoenix >= 1.3) add inside the head element:
 
 ```html
 <link rel="stylesheet" href="//nico-amsterdam.github.io/awesomplete-util/css/awesomplete.css">
