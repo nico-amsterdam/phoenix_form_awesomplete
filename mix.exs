@@ -1,12 +1,12 @@
 defmodule PhoenixFormAwesomplete.Mixfile do
   use Mix.Project
 
-  @version "0.1.4"
+  @version "0.1.5"
 
   def project do
     [app: :phoenix_form_awesomplete,
      version: @version,
-     elixir: "~> 1.3",
+     elixir: "~> 1.4",
 
      # Hex
      package: package(),
@@ -44,8 +44,8 @@ defmodule PhoenixFormAwesomplete.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:phoenix_html, "~> 2.9"},
-      {:ex_doc,  "~> 0.14", only: :dev}
+      {:phoenix_html, "~> 2.10"},
+      {:ex_doc,  "~> 0.20", only: :dev}
     ]
   end
 

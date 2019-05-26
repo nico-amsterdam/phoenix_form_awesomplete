@@ -78,7 +78,7 @@ defmodule PhoenixFormAwesomplete do
   """
   def copy_to_id_js(source_form, source_field, data_field \\ nil, target_id) 
       when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) do
-    source_id = "#" <> Form.field_id(source_form, source_field)
+    source_id = "#" <> Form.input_id(source_form, source_field)
     GenJS.copy_to_id_js(source_id, data_field, target_id)
   end
 
@@ -112,7 +112,7 @@ defmodule PhoenixFormAwesomplete do
   """
   def copy_to_field(source_form, source_field, data_field \\ nil, target_form, target_field) 
       when is_nil(data_field) or is_binary(data_field) do
-    target_id = "#" <> Form.field_id(target_form, target_field)
+    target_id = "#" <> Form.input_id(target_form, target_field)
     script(copy_to_id_js(source_form, source_field, data_field, target_id))
   end
 
@@ -126,7 +126,7 @@ defmodule PhoenixFormAwesomplete do
 
   """
   def awesomplete_js(form, field, awesomplete_opts) do
-    element_id = Form.field_id(form, field)
+    element_id = Form.input_id(form, field)
     GenJS.awesomplete_js(element_id, awesomplete_opts)
   end
 
