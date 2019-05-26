@@ -42,7 +42,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
   # Converts map with options to a comma separated string with key:value pairs..
   defp opts_to_string(opts) do
      opts 
-     |> Enum.map_join(", ", fn{k,v} -> val = to_string(v); "#{k}: #{val}" end)
+     |> Enum.map_join(", ", fn{k, v} -> "#{k}: #{v}" end)
   end
 
   # optionally convert string to integer
