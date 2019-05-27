@@ -48,9 +48,8 @@ defmodule PhoenixFormAwesomplete do
   and change the variables via the application config:
        :phoenix_form_awesomplete, util:         "AU"
        :phoenix_form_awesomplete, awesomplete:  "AW"
-  After changing the config/config.exs run: 
-       touch deps/phoenix_form_awesomplete/mix.exs
-       mix deps.compile phoenix_form_awesomplete
+  After changing the config/config.exs run:
+       mix deps.compile --force phoenix_form_awesomplete
   """
 
   @doc ~S"""
