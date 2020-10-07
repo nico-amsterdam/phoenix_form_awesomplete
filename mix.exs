@@ -30,7 +30,9 @@ defmodule PhoenixFormAwesomplete.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [extra_applications: []]
+    [
+     extra_applications: [:logger]
+    ]
   end
 
   # Dependencies can be Hex packages:
@@ -45,7 +47,7 @@ defmodule PhoenixFormAwesomplete.Mixfile do
   defp deps do
     [
       {:phoenix_html, "~> 2.10"},
-      {:ex_doc,  "~> 0.20", only: :dev}
+      {:ex_doc, "~> 0.22.6", only: :dev}
     ]
   end
 
