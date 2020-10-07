@@ -1,7 +1,7 @@
 defmodule PhoenixFormAwesomplete.Mixfile do
   use Mix.Project
 
-  @version "0.1.5"
+  @version "0.1.6"
 
   def project do
     [app: :phoenix_form_awesomplete,
