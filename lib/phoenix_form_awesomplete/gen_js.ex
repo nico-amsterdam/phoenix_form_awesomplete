@@ -68,9 +68,9 @@ defmodule PhoenixFormAwesomplete.GenJS do
   # 
   defp parameterChecks(fld_name, label_fld, descr_fld, descr_search) do
     # We could take the default of 'value' for the 'value' parameter (a.k.a. fld_name,) but it's more clear to be explicit.
-    if is_nil(fld_name)  and descr_fld != nil, do: raise ArgumentError, "'descr' without 'value' parameter."
-    if is_nil(fld_name)  and label_fld != nil, do: raise ArgumentError, "'label' without 'value' parameter."
-    if is_nil(descr_fld) and descr_search, do: raise ArgumentError, "Cannot search description texts without knowing the description field. Please supply descr parameter."
+    if is_nil(fld_name)  and descr_fld != nil, do: raise(ArgumentError, "'descr' without 'value' parameter.")
+    if is_nil(fld_name)  and label_fld != nil, do: raise(ArgumentError, "'label' without 'value' parameter.")
+    if is_nil(descr_fld) and descr_search, do: raise(ArgumentError, "Cannot search description texts without knowing the description field. Please supply descr parameter.")
   end
 
   # 

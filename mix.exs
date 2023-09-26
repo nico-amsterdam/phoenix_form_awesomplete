@@ -1,7 +1,8 @@
 defmodule PhoenixFormAwesomplete.Mixfile do
   use Mix.Project
 
-  @version "0.1.6"
+  @version "0.1.7"
+  @source_url "https://github.com/nico-amsterdam/phoenix_form_awesomplete"
 
   def project do
     [app: :phoenix_form_awesomplete,
@@ -16,7 +17,7 @@ defmodule PhoenixFormAwesomplete.Mixfile do
      name: "PhoenixFormAwesomplete",
      docs: [source_ref: "master", main: "PhoenixFormAwesomplete",
             canonical: "http://hexdocs.pm/phoenix_form_awesomplete",
-            source_url: "https://github.com/nico-amsterdam/phoenix_form_awesomplete"
+            source_url: @source_url
            ],
 
      build_embedded:  Mix.env == :prod,
@@ -46,8 +47,8 @@ defmodule PhoenixFormAwesomplete.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:phoenix_html, "~> 2.10"},
-      {:ex_doc, "~> 0.22.6", only: :dev}
+      {:phoenix_html, "~> 2.10 or ~> 3.0"},
+      {:ex_doc, "~> 0.30.6", only: :dev}
     ]
   end
 
@@ -64,7 +65,7 @@ defmodule PhoenixFormAwesomplete.Mixfile do
      name: :phoenix_form_awesomplete,
      maintainers: ["Nico Hoogervorst"],
      licenses: ["MIT"],
-     links: %{"GitHub" => "https://github.com/nico-amsterdam/phoenix_form_awesomplete", 
+     links: %{"GitHub" => @source_url,
               "Documentation with live examples" => "https://nico-amsterdam.github.io/awesomplete-util/phoenix.html" }
     ]
   end
