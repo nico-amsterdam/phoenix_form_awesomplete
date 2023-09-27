@@ -21,13 +21,15 @@ In your Phoenix project:
 
 ### Add dependency
 
-  1. Add `phoenix_form_awesomplete`to the list of dependencies in`mix.exs:
+  1. Add `phoenix_form_awesomplete`to the list of dependencies in `mix.exs`:
 
-    ```elixir
-    def deps do
-      [{:phoenix_form_awesomplete, "~> 0.1"}]
-    end
-    ```
+```elixir
+def deps do
+  [
+   {:phoenix_form_awesomplete, "~> 0.1"}
+  ]
+end
+```
 
 ### Download & compile
 
@@ -39,15 +41,13 @@ mix compile
 ### Add in web
 
 
-Open web/web.ex (phoenix <= 1.2) or lib/\<your context\>\_web.ex (phoenix >= 1.3), in the 'view' function below the other import statements add:
+Open lib/\<your context\>\_web.ex in the `html_helpers` function below the other import statements add:
 ```elixir
 # Awesomplete autocomplete widget
 import PhoenixFormAwesomplete
 ```
 
-In web/templates/layout/app.html.eex (phoenix <= 1.2),
-
-or lib/\<your context\>\_web/templates/layout/app.html.eex (phoenix >= 1.3) add inside the head element:
+In lib/\<your context\>\_web/components/layouts/root.html.heex add inside the head element:
 
 ```html
 <link rel="stylesheet" href="//nico-amsterdam.github.io/awesomplete-util/css/awesomplete.css">
@@ -70,24 +70,22 @@ The awesomplete.css and awesomplete.min.js files are copied from [Awesomplete](h
 
 Customize the above styling for your own needs. The CSS class 'awe-found' is put on the input control when the input exactly matches the value of an list item. The CSS class 'awe-not-found' is put on the input control when the list closes because there are no more matching items.
 
-### Use in your EEx template
+### Use in your EEx or HEEx template
 
 Example:
 
 ```html
-<div class="form-group row">
-  <%= label(:user, :country, "Country", class: "control-label col-sm-2") %>
-  <div class="col-sm-10">
-      <%= awesomplete(:user, :country, 
-                      [class: "form-control"], 
-                      [ url: "https://restcountries.eu/rest/v1/all", 
-                        loadall: true, 
-                        prepop: true,
-                        minChars: 1, 
-                        maxItems: 8, 
-                        value: "name"
-                      ]) %>
-  </div>
+<div>
+  <label for="user_country" class="control-label">Country</label>
+  <%= awesomplete(:user, :country, 
+                  [class: "form-control"], 
+                  [ url: "https://restcountries.com/v2/all", 
+                    loadall: true, 
+                    prepop: true,
+                    minChars: 1, 
+                    maxItems: 8, 
+                    value: "name"
+                  ]) %>
 </div>
 ```
 
