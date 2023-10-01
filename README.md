@@ -26,7 +26,7 @@ In your Phoenix project:
 ```elixir
 def deps do
   [
-   {:phoenix_form_awesomplete, "~> 0.1"}
+   {:phoenix_form_awesomplete, "~> 0.2"}
   ]
 end
 ```

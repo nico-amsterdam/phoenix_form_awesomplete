@@ -60,8 +60,14 @@ defmodule PhoenixFormAwesomplete do
       iex> PhoenixFormAwesomplete.script("alert(1);")
       {:safe, "<script>alert(1);</script>"}
   """
-  def script(script) do
+  def script(script)
+      when is_binary(script) do
     HTML.raw("<script>#{script}</script>")
+  end
+
+  def script(script, csp_nonce)
+      when is_binary(csp_nonce) and is_binary(script) do
+    HTML.raw(~s(<script nonce="#{csp_nonce}">#{script}</script>))
   end
 
   @doc ~S"""
@@ -93,9 +99,9 @@ defmodule PhoenixFormAwesomplete do
        "<script>AwesompleteUtil.startCopy('#user_color', 'label', '#awe-color-result');</script>"}
 
   """
-  def copy_to_id(source_form, source_field, data_field \\ nil, target_id) 
+  def copy_to_id(source_form, source_field, data_field \\ nil, target_id, csp_nonce \\ nil) 
       when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) do
-    script(copy_to_id_js(source_form, source_field, data_field, target_id))
+    script(copy_to_id_js(source_form, source_field, data_field, target_id), csp_nonce)
   end
 
   @doc ~S"""
@@ -109,10 +115,10 @@ defmodule PhoenixFormAwesomplete do
        "<script>AwesompleteUtil.startCopy('#user_color', 'label', '#door_paint');</script>"}
 
   """
-  def copy_to_field(source_form, source_field, data_field \\ nil, target_form, target_field) 
+  def copy_to_field(source_form, source_field, data_field \\ nil, target_form, target_field, csp_nonce \\ nil) 
       when is_nil(data_field) or is_binary(data_field) do
     target_id = "#" <> Form.input_id(target_form, target_field)
-    script(copy_to_id_js(source_form, source_field, data_field, target_id))
+    script(copy_to_id_js(source_form, source_field, data_field, target_id), csp_nonce)
   end
 
   @doc ~S"""
@@ -181,8 +187,9 @@ defmodule PhoenixFormAwesomplete do
 
   """
   def awesomplete(form, field, opts \\ [], awesomplete_opts) do
-    script = awesomplete_js(form, field, awesomplete_opts)
-    HTML.html_escape([Form.text_input(form, field, opts), script(script)])
+    {csp_nonce, awesomplete_opts_remainder} = Map.pop(awesomplete_opts, :csp_nonce) 
+    script = awesomplete_js(form, field, awesomplete_opts_remainder)
+    HTML.html_escape([Form.text_input(form, field, opts), script(script, csp_nonce)])
   end
 
   @doc ~S"""
@@ -196,8 +203,9 @@ defmodule PhoenixFormAwesomplete do
 
   """
   def awesomplete_script(form, field, awesomplete_opts) do
-    script = awesomplete_js(form, field, awesomplete_opts)
-    script(script)
+    {csp_nonce, awesomplete_opts_remainder} = Map.pop(awesomplete_opts, :csp_nonce) 
+    script = awesomplete_js(form, field, awesomplete_opts_remainder)
+    script(script, csp_nonce)
   end
 
 end

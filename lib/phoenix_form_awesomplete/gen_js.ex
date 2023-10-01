@@ -159,7 +159,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
 
   """
   def awesomplete_js(element_id, awesomplete_opts) do
-    awesomplete_opts = Enum.to_list awesomplete_opts
+    awesomplete_opts = Enum.to_list(awesomplete_opts)
 
     # 
       # Some of the options (data, filter, item, replace) are popped to be added later again.
