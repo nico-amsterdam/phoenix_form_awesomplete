@@ -51,7 +51,7 @@ In lib/\<your context\>\_web/components/layouts/root.html.heex add inside the he
 
 ```html
 <link rel="stylesheet" href="//nico-amsterdam.github.io/awesomplete-util/css/awesomplete.css">
-<script src="//nico-amsterdam.github.io/awesomplete-util/js/awesomplete.min.js"></script>
+<script src="//nico-amsterdam.github.io/awesomplete-util/js/awesomplete-v2020.min.js"></script>
 <script src="//nico-amsterdam.github.io/awesomplete-util/js/awesomplete-util.min.js"></script>
 <style>
   div.awesomplete {display: block}
