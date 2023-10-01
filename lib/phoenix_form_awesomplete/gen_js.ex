@@ -15,8 +15,8 @@ defmodule PhoenixFormAwesomplete.GenJS do
   """
 
   # @util & @awe refer to the default javascript libraries.
-  @util Application.get_env(:phoenix_form_awesomplete, :util) || "AwesompleteUtil"
-  @awe  Application.get_env(:phoenix_form_awesomplete, :awesomplete) || "Awesomplete"
+  @util Application.compile_env(:phoenix_form_awesomplete, :util) || "AwesompleteUtil"
+  @awe  Application.compile_env(:phoenix_form_awesomplete, :awesomplete) || "Awesomplete"
 
   @doc ~S"""
   Create javascript that listens to `awesomplete-prepop` and `awesomplete-match` events,
