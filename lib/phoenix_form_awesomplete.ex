@@ -65,8 +65,16 @@ defmodule PhoenixFormAwesomplete do
     HTML.raw("<script>#{script}</script>")
   end
 
+  @doc ~S"""
+  Same as script/1 with a second argument for the Content-Security-Policy nonce.
+
+  ## Example
+
+      iex> PhoenixFormAwesomplete.script("alert(1);" , "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S")
+      {:safe, "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">alert(1);</script>"}
+  """
   def script(script, csp_nonce)
-      when is_binary(csp_nonce) and is_binary(script) do
+      when is_binary(script) and is_binary(csp_nonce) and csp_nonce != "" do
     HTML.raw(~s(<script nonce="#{csp_nonce}">#{script}</script>))
   end
 
@@ -99,8 +107,23 @@ defmodule PhoenixFormAwesomplete do
        "<script>AwesompleteUtil.startCopy('#user_color', 'label', '#awe-color-result');</script>"}
 
   """
-  def copy_to_id(source_form, source_field, data_field \\ nil, target_id, csp_nonce \\ nil) 
+  def copy_to_id(source_form, source_field, data_field \\ nil, target_id) 
       when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) do
+    script(copy_to_id_js(source_form, source_field, data_field, target_id))
+  end
+
+  @doc ~S"""
+  Same as copy_to_id/4 but with an additional first argument for the Content-Security-Policy nonce.
+
+  ## Example
+
+      iex> PhoenixFormAwesomplete.copy_to_id_script("KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S", :user, :color, "label", "#awe-color-result") 
+      {:safe,
+       "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.startCopy('#user_color', 'label', '#awe-color-result');</script>"}
+
+  """
+  def copy_to_id_script(csp_nonce, source_form, source_field, data_field \\ nil, target_id) 
+      when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) and is_binary(csp_nonce) and csp_nonce != "" do
     script(copy_to_id_js(source_form, source_field, data_field, target_id), csp_nonce)
   end
 
@@ -115,8 +138,24 @@ defmodule PhoenixFormAwesomplete do
        "<script>AwesompleteUtil.startCopy('#user_color', 'label', '#door_paint');</script>"}
 
   """
-  def copy_to_field(source_form, source_field, data_field \\ nil, target_form, target_field, csp_nonce \\ nil) 
+  def copy_to_field(source_form, source_field, data_field \\ nil, target_form, target_field) 
       when is_nil(data_field) or is_binary(data_field) do
+    target_id = "#" <> Form.input_id(target_form, target_field)
+    script(copy_to_id_js(source_form, source_field, data_field, target_id))
+  end
+
+  @doc ~S"""
+  Same as copy_to_field/5 but with an additional first argument for the Content-Security-Policy nonce.
+
+  ## Example
+
+      iex> PhoenixFormAwesomplete.copy_to_field_script("KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S", :user, :color, "label", :door, :paint)  
+      {:safe,
+       "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.startCopy('#user_color', 'label', '#door_paint');</script>"}
+
+  """
+  def copy_to_field_script(csp_nonce, source_form, source_field, data_field \\ nil, target_form, target_field) 
+      when (is_nil(data_field) or is_binary(data_field)) and is_binary(csp_nonce) and csp_nonce != "" do
     target_id = "#" <> Form.input_id(target_form, target_field)
     script(copy_to_id_js(source_form, source_field, data_field, target_id), csp_nonce)
   end
@@ -145,6 +184,7 @@ defmodule PhoenixFormAwesomplete do
    * `combobox`        - Id of the combobox button. true/false/id. If true the assumed button id is 'awe\_btn\_' + id of the input tag. Default: false
    * `convertInput`    - Convert input function. Internally convert input for comparison with the data list items. By default it trims the input and converts it to lowercase for a case-insensitive comparison.
    * `convertResponse` - Convert JSON response from ajax calls. This function is called with the parsed JSON, and allows conversion of the data before further processing. Default: nil - no conversion. 
+   * `csp_nonce`       - Content-Security-Policy nonce attribute for the script tag. Default: no nonce. If specified it must contain a non-empty value.
    * `data`            - Data function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `descr`           - Name of the field in the data list (the JSON response) that contains the description text to show below the value in the suggestion list. Default: no description
    * `descrSearch`     - Filter must also search the input value in the description field. Default: false
@@ -168,11 +208,11 @@ defmodule PhoenixFormAwesomplete do
 
       iex> {:safe, [inp, scr]} = PhoenixFormAwesomplete.awesomplete(:user, :eyes, 
       ...> ["data-list": "blue, brown, green"],
-      ...>  %{ minChars: 1, multiple: ",;" } )
+      ...>  %{ minChars: 1, multiple: ",;", csp_nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S" } )
       iex> to_string inp
       "<input data-list=\"blue, brown, green\" id=\"user_eyes\" name=\"user[eyes]\" type=\"text\">"
       iex> scr
-      "<script>AwesompleteUtil.start('#user_eyes', " <> 
+      "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.start('#user_eyes', " <> 
       "{convertInput: function(input) {" <>
       " return input.replace(/[,;]\\s*$/, '').match(/[^,;]*$/)[0].trim().toLowerCase(); }}, " <>
       "{minChars: 1, " <> 
@@ -186,10 +226,10 @@ defmodule PhoenixFormAwesomplete do
       "</script>"
 
   """
-  def awesomplete(form, field, opts \\ [], awesomplete_opts) do
-    {csp_nonce, awesomplete_opts_remainder} = Map.pop(awesomplete_opts, :csp_nonce) 
-    script = awesomplete_js(form, field, awesomplete_opts_remainder)
-    HTML.html_escape([Form.text_input(form, field, opts), script(script, csp_nonce)])
+  def awesomplete(form, field, opts \\ [], awesomplete_opts)
+      when is_nil(opts) or is_list(opts) do
+    script = awesomplete_script(form, field, awesomplete_opts)
+    HTML.html_escape([Form.text_input(form, field, opts), script])
   end
 
   @doc ~S"""
@@ -201,11 +241,25 @@ defmodule PhoenixFormAwesomplete do
       {:safe,
        "<script>AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});</script>"}
 
+      iex> PhoenixFormAwesomplete.awesomplete_script(:user, :hobby, %{ minChars: 1, csp_nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S" } )
+      {:safe,
+       "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});</script>"}
+
   """
-  def awesomplete_script(form, field, awesomplete_opts) do
-    {csp_nonce, awesomplete_opts_remainder} = Map.pop(awesomplete_opts, :csp_nonce) 
-    script = awesomplete_js(form, field, awesomplete_opts_remainder)
-    script(script, csp_nonce)
+  def awesomplete_script(form, field, %{csp_nonce: csp_nonce_value} = awesomplete_opts) do
+    script(awesomplete_js(form, field, Map.delete(awesomplete_opts, :csp_nonce)), csp_nonce_value)
   end
 
+  def awesomplete_script(form, field, awesomplete_opts)
+      when is_list(awesomplete_opts) do
+    case Keyword.has_key?(awesomplete_opts, :csp_nonce) do
+       true  -> {csp_nonce_value, awesomplete_opts_remainder} = Keyword.pop!(awesomplete_opts, :csp_nonce) 
+                script(awesomplete_js(form, field, awesomplete_opts_remainder), csp_nonce_value)
+       false -> script(awesomplete_js(form, field, awesomplete_opts))
+    end
+  end
+
+  def awesomplete_script(form, field, awesomplete_opts) do
+    script(awesomplete_js(form, field, awesomplete_opts))
+  end
 end

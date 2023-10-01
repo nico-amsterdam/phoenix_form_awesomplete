@@ -79,13 +79,13 @@ Example:
   <label for="user_country" class="control-label">Country</label>
   <%= awesomplete(:user, :country, 
                   [class: "form-control"], 
-                  [ url: "https://restcountries.com/v2/all", 
+                 %{ url: "https://restcountries.com/v2/all", 
                     loadall: true, 
                     prepop: true,
                     minChars: 1, 
                     maxItems: 8, 
                     value: "name"
-                  ]) %>
+                 }) %>
 </div>
 ```
 
