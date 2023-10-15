@@ -81,7 +81,25 @@ defmodule PhoenixFormAwesomplete do
   @doc ~S"""
   Create javascript that listens to `awesomplete-prepop` and `awesomplete-match` events,
   and copies the `data_field` to the DOM element with the given target id.
+  The `target id` is passed to the DOM document querySelector, and is typically 
+  set as a hash character with an element id.
   The `target_id` can also be a javascript function.
+
+  ## Example
+
+      iex> f = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
+      iex> PhoenixFormAwesomplete.copy_value_to_id_js(f, "label", "#awe-color-result") 
+      "AwesompleteUtil.startCopy('#palet_color', 'label', '#awe-color-result');"
+
+  """
+  def copy_value_to_id_js(%{id: awe_id} = _f, data_field \\ nil, target_id) 
+      when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) do
+    GenJS.copy_to_id_js("#" <> awe_id, data_field, target_id)
+  end
+
+  @doc ~S"""
+  As copy_value_to_id_js/3 but with form and field parameters as used in Phoenix.HTML.Form functions
+  instead of the Phoenix.HTML.FormField.
 
   ## Example
 
@@ -98,7 +116,24 @@ defmodule PhoenixFormAwesomplete do
   @doc ~S"""
   Create script tag with javascript that listens to `awesomplete-prepop` and `awesomplete-match` events,
   and copies the `data_field` to the DOM element with the given target id.
-  The `target_id` can also be a javascript function. This function receives two parameters: event and dataField. The event detail property contains an array with the matching list item. The array is empty when there is no match.
+  The `target_id` can also be a javascript function. This function receives two parameters: event and dataField. 
+  The event detail property contains an array with the matching list item. The array is empty when there is no match.
+
+  ## Example
+      iex> f = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
+      iex> PhoenixFormAwesomplete.copy_value_to_id(f, "label", "#awe-color-result") 
+      {:safe,
+       "<script>AwesompleteUtil.startCopy('#palet_color', 'label', '#awe-color-result');</script>"}
+
+  """
+  def copy_value_to_id(%{id: awe_id} = _f, data_field \\ nil, target_id) 
+      when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) do
+    script(GenJS.copy_to_id_js("#" <> awe_id, data_field, target_id))
+  end
+
+  @doc ~S"""
+  As copy_value_to_id/3 but with form and field parameters as used in Phoenix.HTML.Form functions
+  instead of the Phoenix.HTML.FormField.
 
   ## Example
 
@@ -113,16 +148,35 @@ defmodule PhoenixFormAwesomplete do
   end
 
   @doc ~S"""
-  Same as copy_to_id/4 but with an additional first argument for the Content-Security-Policy nonce.
+  Same as copy_value_to_id/4 but with an additional last argument for the Content-Security-Policy nonce.
 
   ## Example
 
-      iex> PhoenixFormAwesomplete.copy_to_id_script("KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S", :user, :color, "label", "#awe-color-result") 
+      iex> f = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
+      iex> PhoenixFormAwesomplete.copy_value_to_id_script(f, "label", "#awe-color-result", "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S")
+      {:safe,
+       "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.startCopy('#palet_color', 'label', '#awe-color-result');</script>"}
+
+  """
+  def copy_value_to_id_script(%{id: awe_id} = _f, data_field \\ nil, target_id, csp_nonce) 
+      when (is_nil(data_field) or is_binary(data_field))
+       and is_binary(awe_id)    and awe_id != "" 
+       and is_binary(target_id) and target_id != ""
+       and is_binary(csp_nonce) and csp_nonce != "" do
+    script(GenJS.copy_to_id_js("#" <> awe_id, data_field, target_id), csp_nonce)
+  end
+
+  @doc ~S"""
+  Same as copy_to_id/4 but with an additional last argument for the Content-Security-Policy nonce.
+
+  ## Example
+
+      iex> PhoenixFormAwesomplete.copy_to_id_script(:user, :color, "label", "#awe-color-result", "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S")
       {:safe,
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.startCopy('#user_color', 'label', '#awe-color-result');</script>"}
 
   """
-  def copy_to_id_script(csp_nonce, source_form, source_field, data_field \\ nil, target_id) 
+  def copy_to_id_script(source_form, source_field, data_field \\ nil, target_id, csp_nonce) 
       when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) and is_binary(csp_nonce) and csp_nonce != "" do
     script(copy_to_id_js(source_form, source_field, data_field, target_id), csp_nonce)
   end
@@ -130,6 +184,26 @@ defmodule PhoenixFormAwesomplete do
   @doc ~S"""
   Create script tag with javascript that listens to `awesomplete-prepop` and `awesomplete-match` events,
   and copies the `data_field` to the target field.
+
+  ## Example
+
+      iex> f_awe = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
+      iex> f_target = %Phoenix.HTML.FormField{form: "palet", field: "paint", id: "palet_paint", name: "palet[paint]", errors: [], value: nil} 
+      iex> PhoenixFormAwesomplete.copy_value_to_field(f_awe, "label", f_target)  
+      {:safe,
+       "<script>AwesompleteUtil.startCopy('#palet_color', 'label', '#palet_paint');</script>"}
+
+  """
+  def copy_value_to_field(%{id: awe_id} = _f, data_field \\ nil, %{id: target_id} = _f_target) 
+      when (is_nil(data_field) or is_binary(data_field)) 
+       and is_binary(awe_id)    and awe_id != "" 
+       and is_binary(target_id) and target_id != ""  do
+    script(GenJS.copy_to_id_js("#" <> awe_id, data_field, "#" <> target_id))
+  end
+
+  @doc ~S"""
+  As copy_value_to_field/3 but with form and field parameters as used in Phoenix.HTML.Form functions
+  instead of the Phoenix.HTML.FormField's.
 
   ## Example
 
@@ -145,17 +219,38 @@ defmodule PhoenixFormAwesomplete do
   end
 
   @doc ~S"""
-  Same as copy_to_field/5 but with an additional first argument for the Content-Security-Policy nonce.
+  Same as copy_value_to_field/3 but with an additional last argument for the Content-Security-Policy nonce.
 
   ## Example
 
-      iex> PhoenixFormAwesomplete.copy_to_field_script("KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S", :user, :color, "label", :door, :paint)  
+      iex> f_awe = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
+      iex> f_target = %Phoenix.HTML.FormField{form: "palet", field: "paint", id: "palet_paint", name: "palet[paint]", errors: [], value: nil} 
+      iex> PhoenixFormAwesomplete.copy_value_to_field_script(f_awe, "label", f_target, "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S")
+      {:safe,
+       "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.startCopy('#palet_color', 'label', '#palet_paint');</script>"}
+
+  """
+  def copy_value_to_field_script(%{id: awe_id} = _f, data_field \\ nil, %{id: target_id} = _f_target, csp_nonce) 
+      when (is_nil(data_field) or is_binary(data_field)) 
+       and is_binary(awe_id)    and awe_id != "" 
+       and is_binary(target_id) and target_id != ""
+       and is_binary(csp_nonce) and csp_nonce != "" do
+    script(GenJS.copy_to_id_js("#" <> awe_id, data_field, "#" <> target_id), csp_nonce)
+  end
+
+  @doc ~S"""
+  Same as copy_to_field/5 but with an additional last argument for the Content-Security-Policy nonce.
+
+  ## Example
+
+      iex> PhoenixFormAwesomplete.copy_to_field_script(:user, :color, "label", :door, :paint, "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S")
       {:safe,
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.startCopy('#user_color', 'label', '#door_paint');</script>"}
 
   """
-  def copy_to_field_script(csp_nonce, source_form, source_field, data_field \\ nil, target_form, target_field) 
-      when (is_nil(data_field) or is_binary(data_field)) and is_binary(csp_nonce) and csp_nonce != "" do
+  def copy_to_field_script(source_form, source_field, data_field \\ nil, target_form, target_field, csp_nonce) 
+      when (is_nil(data_field) or is_binary(data_field)) 
+       and is_binary(csp_nonce) and csp_nonce != "" do
     target_id = "#" <> Form.input_id(target_form, target_field)
     script(copy_to_id_js(source_form, source_field, data_field, target_id), csp_nonce)
   end
@@ -165,17 +260,31 @@ defmodule PhoenixFormAwesomplete do
 
   ## Example
 
-      iex> PhoenixFormAwesomplete.awesomplete_js(:user, :hobby, %{ minChars: 1 } )    
+      iex> f = %Phoenix.HTML.FormField{form: "user", field: "hobby", id: "user_hobby", name: "user[hobby]", errors: [], value: nil} 
+      iex> PhoenixFormAwesomplete.awesomplete_js(f , %{ minChars: 1 } )    
+      "AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});"
+
+  """
+  def awesomplete_js(%{id: awe_id} = _f, awesomplete_opts) do
+    GenJS.awesomplete_js(awe_id, awesomplete_opts)
+  end
+
+  @doc ~S"""
+  This method generates javascript code for using Awesomplete(Util).
+
+  ## Example
+
+      iex> PhoenixFormAwesomplete.awesomplete_js(:user, :hobby, %{ minChars: 1 } )
       "AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});"
 
   """
   def awesomplete_js(form, field, awesomplete_opts) do
-    element_id = Form.input_id(form, field)
-    GenJS.awesomplete_js(element_id, awesomplete_opts)
+    awe_id = Form.input_id(form, field)
+    GenJS.awesomplete_js(awe_id, awesomplete_opts)
   end
 
   @doc ~S"""
-  This method generates an input tag and inline javascript code that starts Awesomplete.
+  This method generates an input tag and inline javascript code that starts Awesomplete. Use this in (L)EEx templates. For HEEx templates it recommended to use <.input in combination with awesomplete_script/2.
 
   Awesomplete options:
    * `ajax`            - Replace ajax function. Supplied function receives these parameters: (url, urlEnd, val, fn, xhr). fn is the callback function. Default: AwesompleteUtil.ajax. 
@@ -226,14 +335,50 @@ defmodule PhoenixFormAwesomplete do
       "</script>"
 
   """
-  def awesomplete(form, field, opts \\ [], awesomplete_opts)
+  def awesomplete(form, field, opts \\ [], awesomplete_opts)  
       when is_nil(opts) or is_list(opts) do
+    # In HEEx it is possible to call this function with f.form, f.field, but it is better to use <.input and combine that with awesomplete_script/2
     script = awesomplete_script(form, field, awesomplete_opts)
     HTML.html_escape([Form.text_input(form, field, opts), script])
   end
 
   @doc ~S"""
   This method generates a script tag with javascript code for using Awesomplete(Util).
+
+  ## Example
+
+      iex> f = %Phoenix.HTML.FormField{form: "user", field: "hobby", id: "user_hobby", name: "user[hobby]", errors: [], value: nil} 
+      iex> PhoenixFormAwesomplete.awesomplete_script(f, %{ minChars: 1 } )
+      {:safe,
+       "<script>AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});</script>"}
+
+      iex> PhoenixFormAwesomplete.awesomplete_script(:user, :hobby, %{ minChars: 1, csp_nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S" } )
+      {:safe,
+       "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});</script>"}
+
+  """
+  def awesomplete_script(%{id: awe_id} = _f, %{csp_nonce: csp_nonce_value} = awesomplete_opts) do
+    script(GenJS.awesomplete_js(awe_id, Map.delete(awesomplete_opts, :csp_nonce)), csp_nonce_value)
+  end
+
+  def awesomplete_script(%{id: awe_id} = _f, awesomplete_opts)
+      when is_list(awesomplete_opts) do
+    case Keyword.has_key?(awesomplete_opts, :csp_nonce) do
+       true  -> {csp_nonce_value, awesomplete_opts_remainder} = Keyword.pop!(awesomplete_opts, :csp_nonce) 
+                script(GenJS.awesomplete_js(awe_id, awesomplete_opts_remainder), csp_nonce_value)
+       false -> script(GenJS.awesomplete_js(awe_id, awesomplete_opts))
+    end
+  end
+
+  def awesomplete_script(%{id: awe_id} = _f, awesomplete_opts) do
+    script(GenJS.awesomplete_js(awe_id, awesomplete_opts))
+  end
+
+  @doc ~S"""
+  This method generates a script tag with javascript code for using Awesomplete(Util).
+  As awesomplete_script/2 but with form and field parameters as used in Phoenix.HTML.Form functions
+  instead of the Phoenix.HTML.FormField.
+
 
   ## Example
 
