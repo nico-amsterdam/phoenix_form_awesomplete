@@ -87,12 +87,12 @@ defmodule PhoenixFormAwesomplete do
 
   ## Example
 
-      iex> f = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
-      iex> PhoenixFormAwesomplete.copy_value_to_id_js(f, "label", "#awe-color-result") 
+      iex> ff = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
+      iex> PhoenixFormAwesomplete.copy_value_to_id_js(ff, "label", "#awe-color-result") 
       "AwesompleteUtil.startCopy('#palet_color', 'label', '#awe-color-result');"
 
   """
-  def copy_value_to_id_js(%{id: awe_id} = _f, data_field \\ nil, target_id) 
+  def copy_value_to_id_js(%{id: awe_id} = _ff, data_field \\ nil, target_id) 
       when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) do
     GenJS.copy_to_id_js("#" <> awe_id, data_field, target_id)
   end
@@ -120,13 +120,13 @@ defmodule PhoenixFormAwesomplete do
   The event detail property contains an array with the matching list item. The array is empty when there is no match.
 
   ## Example
-      iex> f = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
-      iex> PhoenixFormAwesomplete.copy_value_to_id(f, "label", "#awe-color-result") 
+      iex> ff = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
+      iex> PhoenixFormAwesomplete.copy_value_to_id(ff, "label", "#awe-color-result") 
       {:safe,
        "<script>AwesompleteUtil.startCopy('#palet_color', 'label', '#awe-color-result');</script>"}
 
   """
-  def copy_value_to_id(%{id: awe_id} = _f, data_field \\ nil, target_id) 
+  def copy_value_to_id(%{id: awe_id} = _ff, data_field \\ nil, target_id) 
       when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) do
     script(GenJS.copy_to_id_js("#" <> awe_id, data_field, target_id))
   end
@@ -152,13 +152,13 @@ defmodule PhoenixFormAwesomplete do
 
   ## Example
 
-      iex> f = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
-      iex> PhoenixFormAwesomplete.copy_value_to_id_script(f, "label", "#awe-color-result", "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S")
+      iex> ff = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
+      iex> PhoenixFormAwesomplete.copy_value_to_id_script(ff, "label", "#awe-color-result", "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S")
       {:safe,
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.startCopy('#palet_color', 'label', '#awe-color-result');</script>"}
 
   """
-  def copy_value_to_id_script(%{id: awe_id} = _f, data_field \\ nil, target_id, csp_nonce) 
+  def copy_value_to_id_script(%{id: awe_id} = _ff, data_field \\ nil, target_id, csp_nonce) 
       when (is_nil(data_field) or is_binary(data_field))
        and is_binary(awe_id)    and awe_id != "" 
        and is_binary(target_id) and target_id != ""
@@ -187,14 +187,14 @@ defmodule PhoenixFormAwesomplete do
 
   ## Example
 
-      iex> f_awe = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
-      iex> f_target = %Phoenix.HTML.FormField{form: "palet", field: "paint", id: "palet_paint", name: "palet[paint]", errors: [], value: nil} 
-      iex> PhoenixFormAwesomplete.copy_value_to_field(f_awe, "label", f_target)  
+      iex> ff_awe = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
+      iex> ff_target = %Phoenix.HTML.FormField{form: "palet", field: "paint", id: "palet_paint", name: "palet[paint]", errors: [], value: nil} 
+      iex> PhoenixFormAwesomplete.copy_value_to_field(ff_awe, "label", ff_target)  
       {:safe,
        "<script>AwesompleteUtil.startCopy('#palet_color', 'label', '#palet_paint');</script>"}
 
   """
-  def copy_value_to_field(%{id: awe_id} = _f, data_field \\ nil, %{id: target_id} = _f_target) 
+  def copy_value_to_field(%{id: awe_id} = _ff, data_field \\ nil, %{id: target_id} = _target_ff) 
       when (is_nil(data_field) or is_binary(data_field)) 
        and is_binary(awe_id)    and awe_id != "" 
        and is_binary(target_id) and target_id != ""  do
@@ -223,14 +223,14 @@ defmodule PhoenixFormAwesomplete do
 
   ## Example
 
-      iex> f_awe = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
-      iex> f_target = %Phoenix.HTML.FormField{form: "palet", field: "paint", id: "palet_paint", name: "palet[paint]", errors: [], value: nil} 
-      iex> PhoenixFormAwesomplete.copy_value_to_field_script(f_awe, "label", f_target, "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S")
+      iex> ff_awe = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
+      iex> ff_target = %Phoenix.HTML.FormField{form: "palet", field: "paint", id: "palet_paint", name: "palet[paint]", errors: [], value: nil} 
+      iex> PhoenixFormAwesomplete.copy_value_to_field_script(ff_awe, "label", ff_target, "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S")
       {:safe,
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.startCopy('#palet_color', 'label', '#palet_paint');</script>"}
 
   """
-  def copy_value_to_field_script(%{id: awe_id} = _f, data_field \\ nil, %{id: target_id} = _f_target, csp_nonce) 
+  def copy_value_to_field_script(%{id: awe_id} = _ff, data_field \\ nil, %{id: target_id} = _target_ff, csp_nonce) 
       when (is_nil(data_field) or is_binary(data_field)) 
        and is_binary(awe_id)    and awe_id != "" 
        and is_binary(target_id) and target_id != ""
@@ -260,12 +260,12 @@ defmodule PhoenixFormAwesomplete do
 
   ## Example
 
-      iex> f = %Phoenix.HTML.FormField{form: "user", field: "hobby", id: "user_hobby", name: "user[hobby]", errors: [], value: nil} 
-      iex> PhoenixFormAwesomplete.awesomplete_js(f , %{ minChars: 1 } )    
+      iex> ff = %Phoenix.HTML.FormField{form: "user", field: "hobby", id: "user_hobby", name: "user[hobby]", errors: [], value: nil} 
+      iex> PhoenixFormAwesomplete.awesomplete_js(ff , %{ minChars: 1 } )    
       "AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});"
 
   """
-  def awesomplete_js(%{id: awe_id} = _f, awesomplete_opts) do
+  def awesomplete_js(%{id: awe_id} = _ff, awesomplete_opts) do
     GenJS.awesomplete_js(awe_id, awesomplete_opts)
   end
 
@@ -347,8 +347,8 @@ defmodule PhoenixFormAwesomplete do
 
   ## Example
 
-      iex> f = %Phoenix.HTML.FormField{form: "user", field: "hobby", id: "user_hobby", name: "user[hobby]", errors: [], value: nil} 
-      iex> PhoenixFormAwesomplete.awesomplete_script(f, %{ minChars: 1 } )
+      iex> ff = %Phoenix.HTML.FormField{form: "user", field: "hobby", id: "user_hobby", name: "user[hobby]", errors: [], value: nil} 
+      iex> PhoenixFormAwesomplete.awesomplete_script(ff, %{ minChars: 1 } )
       {:safe,
        "<script>AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});</script>"}
 
@@ -357,11 +357,11 @@ defmodule PhoenixFormAwesomplete do
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});</script>"}
 
   """
-  def awesomplete_script(%{id: awe_id} = _f, %{csp_nonce: csp_nonce_value} = awesomplete_opts) do
+  def awesomplete_script(%{id: awe_id} = _ff, %{csp_nonce: csp_nonce_value} = awesomplete_opts) do
     script(GenJS.awesomplete_js(awe_id, Map.delete(awesomplete_opts, :csp_nonce)), csp_nonce_value)
   end
 
-  def awesomplete_script(%{id: awe_id} = _f, awesomplete_opts)
+  def awesomplete_script(%{id: awe_id} = _ff, awesomplete_opts)
       when is_list(awesomplete_opts) do
     case Keyword.has_key?(awesomplete_opts, :csp_nonce) do
        true  -> {csp_nonce_value, awesomplete_opts_remainder} = Keyword.pop!(awesomplete_opts, :csp_nonce) 
@@ -370,7 +370,7 @@ defmodule PhoenixFormAwesomplete do
     end
   end
 
-  def awesomplete_script(%{id: awe_id} = _f, awesomplete_opts) do
+  def awesomplete_script(%{id: awe_id} = _ff, awesomplete_opts) do
     script(GenJS.awesomplete_js(awe_id, awesomplete_opts))
   end
 

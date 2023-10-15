@@ -7,7 +7,7 @@ defmodule PhoenixFormAwesomplete.Mixfile do
   def project do
     [app: :phoenix_form_awesomplete,
      version: @version,
-     elixir: "~> 1.4",
+     elixir: "~> 1.11",
 
      # Hex
      package: package(),
@@ -47,7 +47,7 @@ defmodule PhoenixFormAwesomplete.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:phoenix_html, "~> 2.10 or ~> 3.0"},
+      {:phoenix_html, "~> 2.10 or ~> 3.0"},   # mix test of this project requires >= 3.3.0
       {:ex_doc, "~> 0.30.6", only: :dev}
     ]
   end
