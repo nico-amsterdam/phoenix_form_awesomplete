@@ -59,6 +59,7 @@ defmodule PhoenixFormAwesomplete do
 
       iex> PhoenixFormAwesomplete.script("alert(1);")
       {:safe, "<script>alert(1);</script>"}
+
   """
   def script(script)
       when is_binary(script) do
@@ -66,16 +67,28 @@ defmodule PhoenixFormAwesomplete do
   end
 
   @doc ~S"""
-  Same as script/1 with a second argument for the Content-Security-Policy nonce.
+  Same as script/1 with a second argument for the script attributes.
 
   ## Example
 
-      iex> PhoenixFormAwesomplete.script("alert(1);" , "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S")
+      iex> PhoenixFormAwesomplete.script("alert(1);" , [nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S"])
       {:safe, "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">alert(1);</script>"}
+
   """
-  def script(script, csp_nonce)
-      when is_binary(script) and is_binary(csp_nonce) and csp_nonce != "" do
-    HTML.raw(~s(<script nonce="#{csp_nonce}">#{script}</script>))
+  def script(script, script_attributes)
+      when is_binary(script)
+       and is_list(script_attributes) do
+    # It is easy to make mistakes when passing the nonce. Fail early.
+    if Keyword.has_key?(script_attributes, :nonce) do
+      if length(Keyword.get_values(script_attributes, :nonce)) > 1, do: raise(ArgumentError, "Script with multiple nonce attributes")
+      :ok = case Keyword.get(script_attributes, :nonce) do
+         nil -> raise(ArgumentError, "Script nonce attribute is nil") 
+         "" -> raise(ArgumentError, "Script nonce attribute is empty") 
+         _ -> :ok
+      end
+    end
+    attributes = Enum.map_join(script_attributes, " ", fn{k, v} -> "#{k}=\"#{v}\"" end)
+    HTML.raw(~s(<script #{attributes}>#{script}</script>))
   end
 
   @doc ~S"""
@@ -148,37 +161,39 @@ defmodule PhoenixFormAwesomplete do
   end
 
   @doc ~S"""
-  Same as copy_value_to_id/4 but with an additional last argument for the Content-Security-Policy nonce.
+  Same as copy_value_to_id/4 but with an additional last argument for script attributes.
 
   ## Example
 
       iex> ff = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
-      iex> PhoenixFormAwesomplete.copy_value_to_id_script(ff, "label", "#awe-color-result", "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S")
+      iex> PhoenixFormAwesomplete.copy_value_to_id_script(ff, "label", "#awe-color-result", [nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S"])
       {:safe,
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.startCopy('#palet_color', 'label', '#awe-color-result');</script>"}
 
   """
-  def copy_value_to_id_script(%{id: awe_id} = _ff, data_field \\ nil, target_id, csp_nonce) 
+  def copy_value_to_id_script(%{id: awe_id} = _ff, data_field \\ nil, target_id, script_attributes) 
       when (is_nil(data_field) or is_binary(data_field))
        and is_binary(awe_id)    and awe_id != "" 
        and is_binary(target_id) and target_id != ""
-       and is_binary(csp_nonce) and csp_nonce != "" do
-    script(GenJS.copy_to_id_js("#" <> awe_id, data_field, target_id), csp_nonce)
+       and is_list(script_attributes) do
+    script(GenJS.copy_to_id_js("#" <> awe_id, data_field, target_id), script_attributes)
   end
 
   @doc ~S"""
-  Same as copy_to_id/4 but with an additional last argument for the Content-Security-Policy nonce.
+  Same as copy_to_id/4 but with an additional last argument for the script attributes.
 
   ## Example
 
-      iex> PhoenixFormAwesomplete.copy_to_id_script(:user, :color, "label", "#awe-color-result", "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S")
+      iex> PhoenixFormAwesomplete.copy_to_id_script(:user, :color, "label", "#awe-color-result", [nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S"])
       {:safe,
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.startCopy('#user_color', 'label', '#awe-color-result');</script>"}
 
   """
-  def copy_to_id_script(source_form, source_field, data_field \\ nil, target_id, csp_nonce) 
-      when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) and is_binary(csp_nonce) and csp_nonce != "" do
-    script(copy_to_id_js(source_form, source_field, data_field, target_id), csp_nonce)
+  def copy_to_id_script(source_form, source_field, data_field \\ nil, target_id, script_attributes) 
+      when (is_nil(data_field) or is_binary(data_field))
+       and is_binary(target_id)
+       and is_list(script_attributes) do
+    script(copy_to_id_js(source_form, source_field, data_field, target_id), script_attributes)
   end
 
   @doc ~S"""
@@ -219,40 +234,40 @@ defmodule PhoenixFormAwesomplete do
   end
 
   @doc ~S"""
-  Same as copy_value_to_field/3 but with an additional last argument for the Content-Security-Policy nonce.
+  Same as copy_value_to_field/3 but with an additional last argument for the script attributes.
 
   ## Example
 
       iex> ff_awe = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
       iex> ff_target = %Phoenix.HTML.FormField{form: "palet", field: "paint", id: "palet_paint", name: "palet[paint]", errors: [], value: nil} 
-      iex> PhoenixFormAwesomplete.copy_value_to_field_script(ff_awe, "label", ff_target, "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S")
+      iex> PhoenixFormAwesomplete.copy_value_to_field_script(ff_awe, "label", ff_target, [nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S"])
       {:safe,
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.startCopy('#palet_color', 'label', '#palet_paint');</script>"}
 
   """
-  def copy_value_to_field_script(%{id: awe_id} = _ff, data_field \\ nil, %{id: target_id} = _target_ff, csp_nonce) 
+  def copy_value_to_field_script(%{id: awe_id} = _ff, data_field \\ nil, %{id: target_id} = _target_ff, script_attributes) 
       when (is_nil(data_field) or is_binary(data_field)) 
        and is_binary(awe_id)    and awe_id != "" 
        and is_binary(target_id) and target_id != ""
-       and is_binary(csp_nonce) and csp_nonce != "" do
-    script(GenJS.copy_to_id_js("#" <> awe_id, data_field, "#" <> target_id), csp_nonce)
+       and is_list(script_attributes) do
+    script(GenJS.copy_to_id_js("#" <> awe_id, data_field, "#" <> target_id), script_attributes)
   end
 
   @doc ~S"""
-  Same as copy_to_field/5 but with an additional last argument for the Content-Security-Policy nonce.
+  Same as copy_to_field/5 but with an additional last argument for the script attributes.
 
   ## Example
 
-      iex> PhoenixFormAwesomplete.copy_to_field_script(:user, :color, "label", :door, :paint, "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S")
+      iex> PhoenixFormAwesomplete.copy_to_field_script(:user, :color, "label", :door, :paint, [nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S"])
       {:safe,
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.startCopy('#user_color', 'label', '#door_paint');</script>"}
 
   """
-  def copy_to_field_script(source_form, source_field, data_field \\ nil, target_form, target_field, csp_nonce) 
+  def copy_to_field_script(source_form, source_field, data_field \\ nil, target_form, target_field, script_attributes) 
       when (is_nil(data_field) or is_binary(data_field)) 
-       and is_binary(csp_nonce) and csp_nonce != "" do
+       and is_list(script_attributes) do
     target_id = "#" <> Form.input_id(target_form, target_field)
-    script(copy_to_id_js(source_form, source_field, data_field, target_id), csp_nonce)
+    script(copy_to_id_js(source_form, source_field, data_field, target_id), script_attributes)
   end
 
   @doc ~S"""
@@ -358,14 +373,14 @@ defmodule PhoenixFormAwesomplete do
 
   """
   def awesomplete_script(%{id: awe_id} = _ff, %{csp_nonce: csp_nonce_value} = awesomplete_opts) do
-    script(GenJS.awesomplete_js(awe_id, Map.delete(awesomplete_opts, :csp_nonce)), csp_nonce_value)
+    script(GenJS.awesomplete_js(awe_id, Map.delete(awesomplete_opts, :csp_nonce)), [nonce: csp_nonce_value])
   end
 
   def awesomplete_script(%{id: awe_id} = _ff, awesomplete_opts)
       when is_list(awesomplete_opts) do
     case Keyword.has_key?(awesomplete_opts, :csp_nonce) do
        true  -> {csp_nonce_value, awesomplete_opts_remainder} = Keyword.pop!(awesomplete_opts, :csp_nonce) 
-                script(GenJS.awesomplete_js(awe_id, awesomplete_opts_remainder), csp_nonce_value)
+                script(GenJS.awesomplete_js(awe_id, awesomplete_opts_remainder), [nonce: csp_nonce_value])
        false -> script(GenJS.awesomplete_js(awe_id, awesomplete_opts))
     end
   end
@@ -392,14 +407,14 @@ defmodule PhoenixFormAwesomplete do
 
   """
   def awesomplete_script(form, field, %{csp_nonce: csp_nonce_value} = awesomplete_opts) do
-    script(awesomplete_js(form, field, Map.delete(awesomplete_opts, :csp_nonce)), csp_nonce_value)
+    script(awesomplete_js(form, field, Map.delete(awesomplete_opts, :csp_nonce)), [nonce: csp_nonce_value])
   end
 
   def awesomplete_script(form, field, awesomplete_opts)
       when is_list(awesomplete_opts) do
     case Keyword.has_key?(awesomplete_opts, :csp_nonce) do
        true  -> {csp_nonce_value, awesomplete_opts_remainder} = Keyword.pop!(awesomplete_opts, :csp_nonce) 
-                script(awesomplete_js(form, field, awesomplete_opts_remainder), csp_nonce_value)
+                script(awesomplete_js(form, field, awesomplete_opts_remainder), [nonce: csp_nonce_value])
        false -> script(awesomplete_js(form, field, awesomplete_opts))
     end
   end
