@@ -65,6 +65,11 @@ defmodule PhoenixFormAwesomplete do
       when is_binary(script) do
     HTML.raw("<script>#{script}</script>")
   end
+  
+  defp script_to_html(script, script_attributes) do
+    attributes = Enum.map_join(script_attributes, " ", fn{k, v} -> "#{k}=\"#{v}\"" end)
+    HTML.raw(~s(<script #{attributes}>#{script}</script>))
+  end
 
   @doc ~S"""
   Same as script/1 with a second argument for the script attributes.
@@ -73,6 +78,9 @@ defmodule PhoenixFormAwesomplete do
 
       iex> PhoenixFormAwesomplete.script("alert(1);" , [nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S"])
       {:safe, "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">alert(1);</script>"}
+
+      iex> PhoenixFormAwesomplete.script("alert(2);" , %{nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S"})
+      {:safe, "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">alert(2);</script>"}
 
   """
   def script(script, script_attributes)
@@ -87,8 +95,22 @@ defmodule PhoenixFormAwesomplete do
          _ -> :ok
       end
     end
-    attributes = Enum.map_join(script_attributes, " ", fn{k, v} -> "#{k}=\"#{v}\"" end)
-    HTML.raw(~s(<script #{attributes}>#{script}</script>))
+    script_to_html(script, script_attributes)
+  end
+
+  def script(script, %{nonce: csp_nonce_value} = script_attributes)
+      when is_binary(script) do
+    :ok = case csp_nonce_value do
+         nil -> raise(ArgumentError, "Script nonce attribute is nil") 
+         "" -> raise(ArgumentError, "Script nonce attribute is empty") 
+         _ -> :ok
+    end
+    script_to_html(script, script_attributes)
+  end
+
+  def script(script, %{} = script_attributes)
+      when is_binary(script) do
+    script_to_html(script, script_attributes)
   end
 
   @doc ~S"""
@@ -174,8 +196,7 @@ defmodule PhoenixFormAwesomplete do
   def copy_value_to_id_script(%{id: awe_id} = _ff, data_field \\ nil, target_id, script_attributes) 
       when (is_nil(data_field) or is_binary(data_field))
        and is_binary(awe_id)    and awe_id != "" 
-       and is_binary(target_id) and target_id != ""
-       and is_list(script_attributes) do
+       and is_binary(target_id) and target_id != "" do
     script(GenJS.copy_to_id_js("#" <> awe_id, data_field, target_id), script_attributes)
   end
 
@@ -191,8 +212,7 @@ defmodule PhoenixFormAwesomplete do
   """
   def copy_to_id_script(source_form, source_field, data_field \\ nil, target_id, script_attributes) 
       when (is_nil(data_field) or is_binary(data_field))
-       and is_binary(target_id)
-       and is_list(script_attributes) do
+       and is_binary(target_id) do
     script(copy_to_id_js(source_form, source_field, data_field, target_id), script_attributes)
   end
 
@@ -248,8 +268,7 @@ defmodule PhoenixFormAwesomplete do
   def copy_value_to_field_script(%{id: awe_id} = _ff, data_field \\ nil, %{id: target_id} = _target_ff, script_attributes) 
       when (is_nil(data_field) or is_binary(data_field)) 
        and is_binary(awe_id)    and awe_id != "" 
-       and is_binary(target_id) and target_id != ""
-       and is_list(script_attributes) do
+       and is_binary(target_id) and target_id != "" do
     script(GenJS.copy_to_id_js("#" <> awe_id, data_field, "#" <> target_id), script_attributes)
   end
 
@@ -264,8 +283,7 @@ defmodule PhoenixFormAwesomplete do
 
   """
   def copy_to_field_script(source_form, source_field, data_field \\ nil, target_form, target_field, script_attributes) 
-      when (is_nil(data_field) or is_binary(data_field)) 
-       and is_list(script_attributes) do
+      when (is_nil(data_field) or is_binary(data_field)) do
     target_id = "#" <> Form.input_id(target_form, target_field)
     script(copy_to_id_js(source_form, source_field, data_field, target_id), script_attributes)
   end
@@ -373,14 +391,14 @@ defmodule PhoenixFormAwesomplete do
 
   """
   def awesomplete_script(%{id: awe_id} = _ff, %{nonce: csp_nonce_value} = awesomplete_opts) do
-    script(GenJS.awesomplete_js(awe_id, Map.delete(awesomplete_opts, :nonce)), [nonce: csp_nonce_value])
+    script(GenJS.awesomplete_js(awe_id, Map.delete(awesomplete_opts, :nonce)), %{nonce: csp_nonce_value})
   end
 
   def awesomplete_script(%{id: awe_id} = _ff, awesomplete_opts)
       when is_list(awesomplete_opts) do
     case Keyword.has_key?(awesomplete_opts, :nonce) do
        true  -> {csp_nonce_value, awesomplete_opts_remainder} = Keyword.pop!(awesomplete_opts, :nonce) 
-                script(GenJS.awesomplete_js(awe_id, awesomplete_opts_remainder), [nonce: csp_nonce_value])
+                script(GenJS.awesomplete_js(awe_id, awesomplete_opts_remainder), %{nonce: csp_nonce_value})
        false -> script(GenJS.awesomplete_js(awe_id, awesomplete_opts))
     end
   end
@@ -407,14 +425,14 @@ defmodule PhoenixFormAwesomplete do
 
   """
   def awesomplete_script(form, field, %{nonce: csp_nonce_value} = awesomplete_opts) do
-    script(awesomplete_js(form, field, Map.delete(awesomplete_opts, :nonce)), [nonce: csp_nonce_value])
+    script(awesomplete_js(form, field, Map.delete(awesomplete_opts, :nonce)), %{nonce: csp_nonce_value})
   end
 
   def awesomplete_script(form, field, awesomplete_opts)
       when is_list(awesomplete_opts) do
     case Keyword.has_key?(awesomplete_opts, :nonce) do
        true  -> {csp_nonce_value, awesomplete_opts_remainder} = Keyword.pop!(awesomplete_opts, :nonce) 
-                script(awesomplete_js(form, field, awesomplete_opts_remainder), [nonce: csp_nonce_value])
+                script(awesomplete_js(form, field, awesomplete_opts_remainder), %{nonce: csp_nonce_value})
        false -> script(awesomplete_js(form, field, awesomplete_opts))
     end
   end
