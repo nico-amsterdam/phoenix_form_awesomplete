@@ -308,7 +308,7 @@ defmodule PhoenixFormAwesomplete do
    * `combobox`        - Id of the combobox button. true/false/id. If true the assumed button id is 'awe\_btn\_' + id of the input tag. Default: false
    * `convertInput`    - Convert input function. Internally convert input for comparison with the data list items. By default it trims the input and converts it to lowercase for a case-insensitive comparison.
    * `convertResponse` - Convert JSON response from ajax calls. This function is called with the parsed JSON, and allows conversion of the data before further processing. Default: nil - no conversion. 
-   * `csp_nonce`       - Content-Security-Policy nonce attribute for the script tag. Default: no nonce. If specified it must contain a non-empty value.
+   * `nonce`           - Content-Security-Policy nonce attribute for the script tag. Default: no nonce. If specified it must contain a non-empty value.
    * `data`            - Data function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `descr`           - Name of the field in the data list (the JSON response) that contains the description text to show below the value in the suggestion list. Default: no description
    * `descrSearch`     - Filter must also search the input value in the description field. Default: false
@@ -332,7 +332,7 @@ defmodule PhoenixFormAwesomplete do
 
       iex> {:safe, [inp, scr]} = PhoenixFormAwesomplete.awesomplete(:user, :eyes, 
       ...> ["data-list": "blue, brown, green"],
-      ...>  %{ minChars: 1, multiple: ",;", csp_nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S" } )
+      ...>  %{ minChars: 1, multiple: ",;", nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S" } )
       iex> to_string inp
       "<input data-list=\"blue, brown, green\" id=\"user_eyes\" name=\"user[eyes]\" type=\"text\">"
       iex> scr
@@ -367,19 +367,19 @@ defmodule PhoenixFormAwesomplete do
       {:safe,
        "<script>AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});</script>"}
 
-      iex> PhoenixFormAwesomplete.awesomplete_script(:user, :hobby, %{ minChars: 1, csp_nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S" } )
+      iex> PhoenixFormAwesomplete.awesomplete_script(:user, :hobby, %{ minChars: 1, nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S" } )
       {:safe,
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});</script>"}
 
   """
-  def awesomplete_script(%{id: awe_id} = _ff, %{csp_nonce: csp_nonce_value} = awesomplete_opts) do
-    script(GenJS.awesomplete_js(awe_id, Map.delete(awesomplete_opts, :csp_nonce)), [nonce: csp_nonce_value])
+  def awesomplete_script(%{id: awe_id} = _ff, %{nonce: csp_nonce_value} = awesomplete_opts) do
+    script(GenJS.awesomplete_js(awe_id, Map.delete(awesomplete_opts, :nonce)), [nonce: csp_nonce_value])
   end
 
   def awesomplete_script(%{id: awe_id} = _ff, awesomplete_opts)
       when is_list(awesomplete_opts) do
-    case Keyword.has_key?(awesomplete_opts, :csp_nonce) do
-       true  -> {csp_nonce_value, awesomplete_opts_remainder} = Keyword.pop!(awesomplete_opts, :csp_nonce) 
+    case Keyword.has_key?(awesomplete_opts, :nonce) do
+       true  -> {csp_nonce_value, awesomplete_opts_remainder} = Keyword.pop!(awesomplete_opts, :nonce) 
                 script(GenJS.awesomplete_js(awe_id, awesomplete_opts_remainder), [nonce: csp_nonce_value])
        false -> script(GenJS.awesomplete_js(awe_id, awesomplete_opts))
     end
@@ -401,19 +401,19 @@ defmodule PhoenixFormAwesomplete do
       {:safe,
        "<script>AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});</script>"}
 
-      iex> PhoenixFormAwesomplete.awesomplete_script(:user, :hobby, %{ minChars: 1, csp_nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S" } )
+      iex> PhoenixFormAwesomplete.awesomplete_script(:user, :hobby, %{ minChars: 1, nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S" } )
       {:safe,
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});</script>"}
 
   """
-  def awesomplete_script(form, field, %{csp_nonce: csp_nonce_value} = awesomplete_opts) do
-    script(awesomplete_js(form, field, Map.delete(awesomplete_opts, :csp_nonce)), [nonce: csp_nonce_value])
+  def awesomplete_script(form, field, %{nonce: csp_nonce_value} = awesomplete_opts) do
+    script(awesomplete_js(form, field, Map.delete(awesomplete_opts, :nonce)), [nonce: csp_nonce_value])
   end
 
   def awesomplete_script(form, field, awesomplete_opts)
       when is_list(awesomplete_opts) do
-    case Keyword.has_key?(awesomplete_opts, :csp_nonce) do
-       true  -> {csp_nonce_value, awesomplete_opts_remainder} = Keyword.pop!(awesomplete_opts, :csp_nonce) 
+    case Keyword.has_key?(awesomplete_opts, :nonce) do
+       true  -> {csp_nonce_value, awesomplete_opts_remainder} = Keyword.pop!(awesomplete_opts, :nonce) 
                 script(awesomplete_js(form, field, awesomplete_opts_remainder), [nonce: csp_nonce_value])
        false -> script(awesomplete_js(form, field, awesomplete_opts))
     end
