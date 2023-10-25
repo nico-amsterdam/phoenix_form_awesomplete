@@ -326,7 +326,6 @@ defmodule PhoenixFormAwesomplete do
    * `combobox`        - Id of the combobox button. true/false/id. If true the assumed button id is 'awe\_btn\_' + id of the input tag. Default: false
    * `convertInput`    - Convert input function. Internally convert input for comparison with the data list items. By default it trims the input and converts it to lowercase for a case-insensitive comparison.
    * `convertResponse` - Convert JSON response from ajax calls. This function is called with the parsed JSON, and allows conversion of the data before further processing. Default: nil - no conversion. 
-   * `nonce`           - Content-Security-Policy nonce attribute for the script tag. Default: no nonce. If specified it must contain a non-empty value.
    * `data`            - Data function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `descr`           - Name of the field in the data list (the JSON response) that contains the description text to show below the value in the suggestion list. Default: no description
    * `descrSearch`     - Filter must also search the input value in the description field. Default: false
@@ -340,6 +339,7 @@ defmodule PhoenixFormAwesomplete do
    * `maxItems`        - Maximum number of suggestions to display. Default: 10 
    * `minChars`        - Minimum characters the user has to type before the autocomplete popup shows up. Default: 2 
    * `multiple`        - true/false/characters. Separators to allow multiple values. If true, the separator will be the space character. Default: false
+   * `nonce`           - Content-Security-Policy nonce attribute for the script tag. Default: no nonce. If specified it must contain a non-empty value.
    * `prepop`          - true/false. If true do lookup initial/autofilled value and send awesomplete-prepop event. Default: false 
    * `replace`         - Replace function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `sort`            - Sort function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
