@@ -329,7 +329,6 @@ defmodule PhoenixFormAwesomplete do
    * `data`            - Data function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `descr`           - Name of the field in the data list (the JSON response) that contains the description text to show below the value in the suggestion list. Default: no description
    * `descrSearch`     - Filter must also search the input value in the description field. Default: false
-   * `value`           - Name of the field in the data list (the JSON response) that contains the value.
    * `filter`          - Filter function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). Mostly Awesomplete.FILTER\_STARTSWITH or Awesomplete.FILTER\_CONTAINS. If label is different as value, filter on value with AweompleteUtil.filterStartsWith or AwesompleteUtil.filterContains.
    * `item`            - Item function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). Default is to highlight all occurrences of the input text. Use AwesompleteUtil.itemStartsWith if that matches with the used filter.
    * `label`           - Name of the field in the data list (the JSON response) that contains the text that should be shown instead of the value. 
@@ -345,6 +344,7 @@ defmodule PhoenixFormAwesomplete do
    * `sort`            - Sort function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `url`             - url for ajax calls.
    * `urlEnd`          - Addition at the end of the url of the ajax call, after the input value. 
+   * `value`           - Name of the field in the data list (the JSON response) that contains the value.
 
   ## Example
 
