@@ -135,6 +135,7 @@ defmodule PhoenixFormAwesomplete do
   @doc ~S"""
   As copy_value_to_id_js/3 but with form and field parameters as used in Phoenix.HTML.Form functions
   instead of the Phoenix.HTML.FormField.
+  The source_form and target_form parameters are either a Phoenix.HTML.Form struct or an atom.
 
   ## Example
 
@@ -151,8 +152,9 @@ defmodule PhoenixFormAwesomplete do
   @doc ~S"""
   Create script tag with javascript that listens to `awesomplete-prepop` and `awesomplete-match` events,
   and copies the `data_field` to the DOM element with the given target id.
-  The `target_id` can also be a javascript function. This function receives two parameters: event and dataField. 
-  The event detail property contains an array with the matching list item. The array is empty when there is no match.
+  The `target id` is passed to the DOM document querySelector, and is typically 
+  set as a hash character with an element id.
+  The `target_id` can also be a javascript function.
 
   ## Example
       iex> ff = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
@@ -169,6 +171,7 @@ defmodule PhoenixFormAwesomplete do
   @doc ~S"""
   As copy_value_to_id/3 but with form and field parameters as used in Phoenix.HTML.Form functions
   instead of the Phoenix.HTML.FormField.
+  The source_form parameter is either a Phoenix.HTML.Form struct or an atom.
 
   ## Example
 
@@ -217,28 +220,29 @@ defmodule PhoenixFormAwesomplete do
   end
 
   @doc ~S"""
-  Create script tag with javascript that listens to `awesomplete-prepop` and `awesomplete-match` events,
-  and copies the `data_field` to the target field.
+  Create script tag with javascript that listens to `awesomplete-prepop` and `awesomplete-match` events on the source form field,
+  and copies the `data_field` to the target form field.
 
   ## Example
 
-      iex> ff_awe = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
+      iex> ff_source = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
       iex> ff_target = %Phoenix.HTML.FormField{form: "palet", field: "paint", id: "palet_paint", name: "palet[paint]", errors: [], value: nil} 
-      iex> PhoenixFormAwesomplete.copy_value_to_field(ff_awe, "label", ff_target)  
+      iex> PhoenixFormAwesomplete.copy_value_to_field(ff_source, "label", ff_target)  
       {:safe,
        "<script>AwesompleteUtil.startCopy('#palet_color', 'label', '#palet_paint');</script>"}
 
   """
-  def copy_value_to_field(%{id: awe_id} = _ff, data_field \\ nil, %{id: target_id} = _target_ff) 
+  def copy_value_to_field(%{id: source_id} = _source_ff, data_field \\ nil, %{id: target_id} = _target_ff) 
       when (is_nil(data_field) or is_binary(data_field)) 
-       and is_binary(awe_id)    and awe_id != "" 
+       and is_binary(source_id) and source_id != "" 
        and is_binary(target_id) and target_id != ""  do
-    script(GenJS.copy_to_id_js("#" <> awe_id, data_field, "#" <> target_id))
+    script(GenJS.copy_to_id_js("#" <> source_id, data_field, "#" <> target_id))
   end
 
   @doc ~S"""
   As copy_value_to_field/3 but with form and field parameters as used in Phoenix.HTML.Form functions
-  instead of the Phoenix.HTML.FormField's.
+  instead of the Phoenix.HTML.FormField's. 
+  The source_form and target_form parameters are either a Phoenix.HTML.Form struct or an atom.
 
   ## Example
 
@@ -258,18 +262,18 @@ defmodule PhoenixFormAwesomplete do
 
   ## Example
 
-      iex> ff_awe = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
+      iex> ff_source = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
       iex> ff_target = %Phoenix.HTML.FormField{form: "palet", field: "paint", id: "palet_paint", name: "palet[paint]", errors: [], value: nil} 
-      iex> PhoenixFormAwesomplete.copy_value_to_field_script(ff_awe, "label", ff_target, [nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S"])
+      iex> PhoenixFormAwesomplete.copy_value_to_field_script(ff_source, "label", ff_target, [nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S"])
       {:safe,
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.startCopy('#palet_color', 'label', '#palet_paint');</script>"}
 
   """
-  def copy_value_to_field_script(%{id: awe_id} = _ff, data_field \\ nil, %{id: target_id} = _target_ff, script_attributes) 
+  def copy_value_to_field_script(%{id: source_id} = _source_ff, data_field \\ nil, %{id: target_id} = _target_ff, script_attributes) 
       when (is_nil(data_field) or is_binary(data_field)) 
-       and is_binary(awe_id)    and awe_id != "" 
+       and is_binary(source_id) and source_id != "" 
        and is_binary(target_id) and target_id != "" do
-    script(GenJS.copy_to_id_js("#" <> awe_id, data_field, "#" <> target_id), script_attributes)
+    script(GenJS.copy_to_id_js("#" <> source_id, data_field, "#" <> target_id), script_attributes)
   end
 
   @doc ~S"""
@@ -411,7 +415,7 @@ defmodule PhoenixFormAwesomplete do
   This method generates a script tag with javascript code for using Awesomplete(Util).
   As awesomplete_script/2 but with form and field parameters as used in Phoenix.HTML.Form functions
   instead of the Phoenix.HTML.FormField.
-
+  The form parameter is either a Phoenix.HTML.Form struct or an atom.
 
   ## Example
 
