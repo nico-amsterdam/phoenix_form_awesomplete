@@ -133,18 +133,18 @@ defmodule PhoenixFormAwesomplete.GenJS do
 
   # return javascript of all options
   defp construct_awe_script(element_id, util_opts_str, awe_opts_str, assign, combobox) do
-    assign_var  = if assign == true,  do: "awe_#{element_id}", else: "#{assign}" 
-    assign_text = if assign == false, do: "", else: "var #{assign_var}=" 
+    assign_var  = if assign == true  or assign == "true",  do: "awe_#{element_id}", else: "#{assign}" 
+    assign_text = if assign == false or assign == "false", do: "", else: "var #{assign_var}=" 
 
     awe_script = "#{assign_text}#{@util}.start('##{element_id}', #{util_opts_str}, #{awe_opts_str})"
 
     # id of the combo button. Assume awe_btn_<awesomplete element id> if combobox=true. Or take the combobox supplied value.
-    combo_btn_id  = if combobox == true, do: "awe_btn_#{element_id}", else: "#{combobox}" 
+    combo_btn_id  = if combobox == true or combobox == "true", do: "awe_btn_#{element_id}", else: "#{combobox}" 
 
     # awe_script, combobox, assign, combo_btn_id, assign_var
     cond do
-       combobox == false ->    "#{awe_script};"
-       assign   == false ->    "#{@util}.startClick('##{combo_btn_id}', #{awe_script});"
+       combobox == false or combobox == "false" -> "#{awe_script};"
+       assign   == false or assign == "false"   -> "#{@util}.startClick('##{combo_btn_id}', #{awe_script});"
        true -> "#{awe_script};\n#{@util}.startClick('##{combo_btn_id}', #{assign_var});"
     end
   end
@@ -204,7 +204,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
       # However, for the combobox, closing the list and waiting for the first characters is not desirable,
       # because the combo button is there to be able to show all items.
     # 
-    filter_match_sep = if combobox, do: "", else: "([#{multiple_char}]\\s*)?"
+    filter_match_sep = if combobox != "false" and combobox, do: "", else: "([#{multiple_char}]\\s*)?"
 
     # 
       # Select the text that should be considered as the current input.
