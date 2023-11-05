@@ -19,7 +19,233 @@ defmodule PhoenixFormAwesomplete do
   - When there is an exact match show related data (supplied in the remote data) in other parts of the page.
   - Select the highlighted item with the tab-key. 
 
-  ## Example
+  [Online demo](https://nico-amsterdam.github.io/awesomplete-util/phoenix.html)
+
+  ## Use cases
+
+  An autocomplete component is a free text input that provides suggestions while typing. It is not necessary to choose one of the suggestions, but of course a form validator can reject disallowed input.
+
+  The HTML combobox is very suitable for this. It is a combination of a <select> with a <input type="text"> element, and it has a <datalist> with <option> and <optgroup> elements. When the standard combobox doesn't meet the requirements, a solution involving javascript can be used.
+  When using LiveView the datalist of the HTML combobox can be made dynamic, with different suggestions based on the typed input. Like [this dictionary search demo](https://github.com/chrismccord/phoenix_live_view_example/blob/master/lib/demo_web/live/search_live.ex). And there are some fancy LiveView components available like the [Live Select](https://hex.pm/packages/live_select) with a stylish multiselect. These solutions are dynamic and don't necessary require a web service. However, you have to handle the input state on the server (again like [this](https://github.com/chrismccord/phoenix_live_view_example/blob/master/lib/demo_web/live/search_live.ex#L22)) and it only works in LiveView components.
+
+  This Awesomplete component can be applied for these cases:
+  - Outside and inside LiveView. It is even possible to make a HEEx fragment with autocomplete that works in both. See next chapter.
+  - It is specially suitable for suggestions supplied by Http web services that produce JSON.
+  - It can give suggestions for a list with multiple values.
+  - It doesn't force the user to pick on of the suggestions; other values can be entered.
+  - It can highlight the input field if there is a match or no match.
+  - The list with suggestions can be customized, for example to show an extra description.
+  - The client stops interacting with the backend and filters on it's own when enough characters have been typed and the suggestionlist has become smaller than the search result limit.
+  - It can fill dependend readonly fields/tags. The typical example would be a productcode with a product description shown in order lines. For the existing order lines the database can join the product description to be shown on the screen, but for new entries and when changing the productcode it has te be dynamicly looked up. This can be done while typing. After leaving the input field, the product description stays visible on the screen.
+
+  ## Phoenix function components
+
+  In HEEx templates and ~H sigils, function components offer a method of reuse.  
+  And they make the HEEx markup arguable more readable.
+
+  ### Outside LiveView, a.k.a. "dead" views
+
+  When currently using Awesomplete, the templates can easily be rewritten to use
+  function components. The input tag is seperated from the script tag of Awesomplete,
+  which makes it easier to customize the style of the input field.
+
+  Example:
+
+  ```elixir
+  <.simple_form :let={f} for={@changeset} action={@action}>
+    <.input field={f[:country]} type="text" label="Country" />
+    <.autocomplete    forField={f[:country]}
+                      url="https://restcountries.com/v2/all"
+                      loadall="true"
+                      prepop="true"
+                      minChars="1" 
+                      maxItems="8" 
+                      value="name"
+                      nonce={@script_src_nonce}
+                      />
+  </.simple_form>
+  ```
+
+  The nonce in the example above, is to allow inline script to be executed
+  in combination with a Content-Security-Policy that doesn't 
+  allow unsafe evals or unsafe inline scripts.
+
+  ### Both inside and outside LiveView
+
+  For security reasons, LiveView doesn't execute the javascript in dynamicly loaded script tags. Adding new javascript after the page is loaded via HTTP-request is what every malicious Cross Site Scripting (XSS) code tries to do. Via the Content-Security-Policy http header, it is possible to prevent dynamicly loaded script to be executed.
+  In LiveView the javascript code is loaded as a static asset, and 
+   [client hooks via phx-hook](https://hexdocs.pm/phoenix_live_view/js-interop.html#client-hooks-via-phx-hook) can be used to execute javascript code for
+   dynamicly added DOM elements.
+  Instead of generating javascript code for every autocomplete field, a javascript hook
+  is used which gets it's parameters at runtime. This javascript hook can handle the straightforward cases, but could need some tweaking for the corner cases. If these corner cases are complex and only applicable for a small subset of pages/components, you might consider to split off new client hooks.
+
+  The beauty of the client hooks is that this can be used both inside and outside LiveView as they both use the mounted callback. This makes it possible define a reusable component with autocomplete fields, which can be incorporated inside and outside LiveView.
+
+  Example:
+
+  ```elixir
+  <.simple_form
+    for={@form}
+    id="list-form"
+    phx-target={@myself}
+    phx-change="validate"
+    phx-submit="save"
+  >
+    <div phx-update="ignore" id={"#{@form[:country].id}-domspace"}>
+
+      <.input field={@form[:country]} type="text" placeholder="Country" autocomplete="off" />
+
+      <.autocomplete    forField={@form[:country]}
+                        url="https://restcountries.com/v2/all"
+                        loadall="true"
+                        prepop="true"
+                        minChars="1" 
+                        maxItems="8" 
+                        value="name"                          
+                        />
+
+    </div>
+  </.simple_form>
+  ```
+ 
+  ## Security
+
+  ### Content-Security-Policy
+
+  As mentioned before, use a safe Content-Security-Policy (CSP):
+  - do not allow unsafe eval
+  - do not allow unsafe inline script
+  - In the connect_src whitelist only the url's of trusted sites. Make sure that the url's of Awesomplete cannot be tampered with.
+
+  ### Trusted web services
+
+  Use only trusted web services. As an extra safety measure it possible to sanatize or escape HTML in the JSON responses via a convertResponse function. As external web services 
+  are used directly, than this service will not only see the searched text but also the
+  client IP address. 
+
+  
+  ## Installation
+
+  ### Installation for use outside LiveView only 
+
+  - Add `phoenix_form_awesomplete`to the list of dependencies in `mix.exs`:
+    ```elixir
+    def deps do
+      [
+      {:phoenix_form_awesomplete, "~> 0.2"}
+      ]
+    end
+    ```
+  - run
+    ```sh
+    mix deps.get
+    ```
+  - Add lib/<your_project>_web/components/[awesomplete_script_components.ex](https://github.com/nico-amsterdam/phoenix-csp-outside-liveview/blob/main/hello_world/lib/hello_world_web/components/awesomplete_script_components.ex).
+    Rename the module to match your project. 
+  - Add these function components in lib/<your_project>_web/components/core_components.ex:
+    ```elixir
+    @awesomplete <YourProject>Web.AwesompleteScriptComponents
+
+    defdelegate autocomplete(assigns), to: @awesomplete
+    defdelegate copy_value_to_id(assigns), to: @awesomplete
+    defdelegate copy_value_to_field(assigns), to: @awesomplete
+    ``` 
+  - copy [awesomplete.css](https://github.com/LeaVerou/awesomplete/blob/gh-pages/awesomplete.css) to assets/css 
+  - copy [awesomplete-util.min.js](https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete-util.min.js) to assets/vendor
+  - copy [awesomplete-v2020.min.js](https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete-v2020.min.js) to assets/vendor
+  - create assets/js/awesomplete.js:
+    ```elixir
+    import Awesomplete from '../vendor/awesomplete-v2020.min.js'
+    import AwesompleteUtil from '../vendor/awesomplete-util.min.js'
+
+    // expose Awesomplete
+    window.Awesomplete = Awesomplete
+    window.AwesompleteUtil = AwesompleteUtil
+    ```
+  - in config/config.exs add awesomplete.css and awesomplete.js in the esbuild config:
+    ```elixir
+    ~w(js/app.js js/awesomplete.js css/awesomplete.css --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
+    ```
+  - add in assets/css/app.css
+    ```elixir
+    @import "awesomplete.css";
+    ```
+  - add styles in assets/css/app.css
+    ```css
+    /*
+    * Awesomplete
+    */
+    div.awesomplete {display: block}
+    div.awesomplete ul li p {display: block; font-size: small; margin-left: 1em}
+    div.awesomplete .awe-found {border: 2px solid green}
+    .hide-not-found div.awesomplete .awe-not-found {border-color: lightblue}
+    div.awesomplete .awe-not-found {border: 2px solid red}
+    ```
+  - In lib/<your_project>_web/components/layouts/root.html.heex add this to the head:
+    ```elixir
+    <script phx-track-static src={~p"/assets/js/awesomplete.js"}></script>
+    <link rel="stylesheet" href={~p"/assets/css/awesomplete.css"}>
+    ```
+  - run
+    ```sh
+    mix phx.server
+    ```
+
+
+
+  ### Installation for using both inside and outside LiveView  
+
+  - Add the [Hooks Autocomplete and AutocompleteCopyValueToId](https://github.com/nico-amsterdam/todo_trek/blob/main/assets/js/app.js#L78) in assets/js/app.js
+  - Add lib/<your_project>_web/components/[awesomplete_components.ex](https://github.com/nico-amsterdam/todo_trek/blob/main/lib/todo_trek_web/components/awesomplete_components.ex) 
+    
+    Rename the module to match your project. 
+  - Add these function components in lib/<your_project>_web/components/core_components.ex:
+    ```elixir
+    @awesomplete <YourProject>Web.AwesompleteComponents
+
+    defdelegate autocomplete(assigns), to: @awesomplete
+    defdelegate copy_value_to_id(assigns), to: @awesomplete
+    defdelegate copy_value_to_field(assigns), to: @awesomplete
+    ```
+  - copy [awesomplete-util.min.js](https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete-util.min.js) to assets/vendor
+  - copy [awesomplete-v2020.min.js](https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete-v2020.min.js) to assets/vendor
+  - in assets/js/app.js add:
+    ```elixir
+    import Awesomplete from '../vendor/awesomplete-v2020.min.js'
+    import AwesompleteUtil from '../vendor/awesomplete-util.min.js'
+    ```
+  - copy [awesomplete.css](https://github.com/LeaVerou/awesomplete/blob/gh-pages/awesomplete.css) to assets/css 
+  - in config/config.exs add awesomplete.css in the esbuild config:
+    ```elixir
+    ~w(js/app.js css/awesomplete.css --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
+    ```
+  - add in assets/css/app.css
+    ```elixir
+    @import "awesomplete.css";
+    ```
+  - add styles in assets/css/app.css
+    ```css
+    /*
+    * Awesomplete
+    */
+    div.awesomplete {display: block}
+    div.awesomplete ul li p {display: block; font-size: small; margin-left: 1em}
+    div.awesomplete .awe-found {border: 2px solid green}
+    .hide-not-found div.awesomplete .awe-not-found {border-color: lightblue}
+    div.awesomplete .awe-not-found {border: 2px solid red}
+    ```
+  - lib/<your_project>_web/components/layouts/root.html.heex add this to the head:
+    ```elixir
+    <link rel="stylesheet" href={~p"/assets/css/awesomplete.css"}>
+    ```
+  - run
+    ```sh
+    mix phx.server
+    ```
+
+  ## PhoenixFormAwesomplete raw example
+
+  ### IEx
 
       iex> {:safe, [input, script]} = PhoenixFormAwesomplete.awesomplete(:user, :drinks,
       ...> ["data-list": "beer, gin, soda, sprite, water, vodga, whine, whisky"], 

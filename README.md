@@ -17,9 +17,15 @@ It comes with an AwesompleteUtil [javascript library](https://nico-amsterdam.git
 
 ## Installation
 
+[Installation instructions for Phoenix 1.7](
+https://hexdocs.pm/phoenix_form_awesomplete/PhoenixFormAwesomplete.html#module-installation)
+ integrated with esbuild assets management and using function components for HEEx templates and ~H sigils.
+
+### Previous installation instructions
+
 In your Phoenix project:
 
-### Add dependency
+#### Add dependency
 
   1. Add `phoenix_form_awesomplete`to the list of dependencies in `mix.exs`:
 
@@ -31,14 +37,14 @@ def deps do
 end
 ```
 
-### Download & compile
+#### Download & compile
 
 ```sh
 mix deps.get
 mix compile
 ```
 
-### Add in web
+#### Add in web
 
 
 Open lib/\<your context\>\_web.ex in the `html_helpers` function below the other import statements add:
@@ -55,13 +61,9 @@ In lib/\<your context\>\_web/components/layouts/root.html.heex add inside the he
 <script src="//nico-amsterdam.github.io/awesomplete-util/js/awesomplete-util.min.js"></script>
 <style>
   div.awesomplete {display: block}
-
   div.awesomplete ul li p {display: block; font-size: small; margin-left: 1em}
-
   div.awesomplete .awe-found {border: 2px solid green}
-  
   .hide-not-found div.awesomplete .awe-not-found {border-color: lightblue}
-  
   div.awesomplete .awe-not-found {border: 2px solid red}
 </style>
 ```
@@ -70,7 +72,7 @@ The awesomplete.css and awesomplete.min.js files are copied from [Awesomplete](h
 
 Customize the above styling for your own needs. The CSS class 'awe-found' is put on the input control when the input exactly matches the value of an list item. The CSS class 'awe-not-found' is put on the input control when the list closes because there are no more matching items.
 
-### Use in your EEx or HEEx template
+#### Use in your EEx or HEEx template
 
 Example:
 
@@ -84,7 +86,8 @@ Example:
                     prepop: true,
                     minChars: 1, 
                     maxItems: 8, 
-                    value: "name"
+                    value: "name",
+                    nonce: @script_src_nonce
                  }) %>
 </div>
 ```
