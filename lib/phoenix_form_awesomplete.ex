@@ -53,7 +53,7 @@ defmodule PhoenixFormAwesomplete do
 
   ```elixir
   <.simple_form :let={f} for={@changeset} action={@action}>
-    <.input field={f[:country]} type="text" label="Country" />
+    <.input field={f[:country]} type="text" label="Country" autocomplete="off" />
     <.autocomplete    forField={f[:country]}
                       url="https://restcountries.com/v2/all"
                       loadall="true"
@@ -141,6 +141,7 @@ defmodule PhoenixFormAwesomplete do
     mix deps.get
     ```
   - Add lib/<your_project>_web/components/[awesomplete_script_components.ex](https://github.com/nico-amsterdam/phoenix-csp-outside-liveview/blob/main/hello_world/lib/hello_world_web/components/awesomplete_script_components.ex).
+
     Rename the module to match your project. 
   - Add these function components in lib/<your_project>_web/components/core_components.ex:
     ```elixir
