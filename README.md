@@ -1,6 +1,8 @@
 # PhoenixFormAwesomplete
 
-[![Hex version](https://img.shields.io/hexpm/v/phoenix_form_awesomplete.svg "Hex version")](https://hex.pm/packages/phoenix_form_awesomplete)
+[![Hex version](https://img.shields.io/hexpm/v/phoenix_form_awesomplete.svg?color=blue "Hex version")](https://hex.pm/packages/phoenix_form_awesomplete)
+![Hex downloads](https://img.shields.io/hexpm/dt/phoenix_form_awesomplete.svg?color=blue "Hex downloads")
+
 
 PhoenixFormAwesomplete is a [Phoenix form helper](https://hexdocs.pm/phoenix_html/Phoenix.HTML.Form.html) that utilizes Lea Verou's autocomplete / autosuggest / typeahead / inputsearch [Awesomplete widget](https://leaverou.github.io/awesomplete/index.html).
 
