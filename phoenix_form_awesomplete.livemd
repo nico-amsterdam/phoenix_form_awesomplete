@@ -4,11 +4,14 @@
 
 ```elixir
 Mix.install([
-  {:phoenix_form_awesomplete, "~> 0.2.0"}
+  {:phoenix_form_awesomplete, "~> 0.2.0"},
+  {:phoenix_html, "~> 3.3"},
+  {:kino, "~> 0.11.2"}
 ])
 ```
 
-## Section
+
+## About
 
 PhoenixFormAwesomplete is a [Phoenix form helper](https://hexdocs.pm/phoenix_html/Phoenix.HTML.Form.html) 
 that utilizes Lea Verou's autocomplete / autosuggest / typeahead / 
@@ -25,6 +28,68 @@ which adds the following features:
 * Select the highlighted item with the tab-key.
 
 [Online demo](https://nico-amsterdam.github.io/awesomplete-util/phoenix.html)
+
+
+## Playground
+
+Evaluate the Elixir code below and try the input field which will appear after the code block.
+Experiment with other awesomplete_js options by changing the code and reevaluate.
+
+```elixir
+defmodule KinoDocs.Awesomplete do
+  use Kino.JS
+
+  def new() do
+    Kino.JS.new(
+      __MODULE__,
+      """
+      <form id="domspace" phx-update="ignore" style="margin: 0 20px 300px 20px">
+        <input name="mytest" type="text" style="width:400px" autocomplete="off"
+                 id="mytest"
+                 onfocus="attachAwesomplete(this)" />
+        <button type="reset">Clear</button>
+      </form>
+      """
+    )
+  end
+
+  asset "main.js" do
+    """
+    // Add self.Awesomplete
+    import 'https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete-v2020.min.js'
+    // Add self.AwesompleteUtil
+    import 'https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete-util.min.js'
+    export function init(ctx, html) {
+      ctx.importCSS("https://nico-amsterdam.github.io/awesomplete-util/css/awesomplete.css")
+      ctx.root.innerHTML = html
+      // Attach Awesomplete event handlers:
+      self.attachAwesomplete = (e) => {
+        if (!e.classList.contains('touched')) {
+          e.classList.add('touched')
+    """ <>
+      PhoenixFormAwesomplete.awesomplete_js(
+        %{id: "mytest"},
+        %{
+          url: "https://restcountries.com/v2/all",
+          loadall: true,
+          prepop: true,
+          minChars: 2,
+          value: "name"
+        }
+      ) <>
+      """
+          }
+          e.focus()
+        }
+      }
+      """
+  end
+end
+
+KinoDocs.Awesomplete.new()
+```
+
+
 
 ## Use cases
 

@@ -19,6 +19,8 @@ It comes with an AwesompleteUtil [javascript library](https://nico-amsterdam.git
 
 [live examples](https://nico-amsterdam.github.io/awesomplete-util/phoenix.html) with code.
 
+[![Run in Livebook](https://livebook.dev/badge/v1/blue.svg)](https://livebook.dev/run?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnico-amsterdam%2Fphoenix_form_awesomplete%2Fmaster%2Fphoenix_form_awesomplete.livemd)
+
 ## Installation
 
 [Installation instructions for Phoenix 1.7](
