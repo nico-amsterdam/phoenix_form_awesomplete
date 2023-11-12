@@ -10,7 +10,6 @@ Mix.install([
 ])
 ```
 
-
 ## About
 
 PhoenixFormAwesomplete is a [Phoenix form helper](https://hexdocs.pm/phoenix_html/Phoenix.HTML.Form.html) 
@@ -29,7 +28,6 @@ which adds the following features:
 
 [Online demo](https://nico-amsterdam.github.io/awesomplete-util/phoenix.html)
 
-
 ## Playground
 
 Evaluate the Elixir code below and try the input field which will appear after the code block.
@@ -44,9 +42,11 @@ defmodule KinoDocs.Awesomplete do
       __MODULE__,
       """
       <form id="domspace" phx-update="ignore" style="margin: 0 20px 300px 20px">
-        <input name="mytest" type="text" style="width:400px" autocomplete="off"
+        <label for="mytest">Country</label>
+        <input name="mytest" type="text" style="width:100%" autocomplete="off"
                  id="mytest"
                  onfocus="attachAwesomplete(this)" />
+        <p>
         <button type="reset">Clear</button>
       </form>
       """
@@ -61,6 +61,7 @@ defmodule KinoDocs.Awesomplete do
     import 'https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete-util.min.js'
     export function init(ctx, html) {
       ctx.importCSS("https://nico-amsterdam.github.io/awesomplete-util/css/awesomplete.css")
+      ctx.importCSS("main.css")
       ctx.root.innerHTML = html
       // Attach Awesomplete event handlers:
       self.attachAwesomplete = (e) => {
@@ -84,12 +85,20 @@ defmodule KinoDocs.Awesomplete do
       }
       """
   end
+
+  asset "main.css" do
+    """
+    div.awesomplete {display: block}
+    div.awesomplete ul li p {display: block; font-size: small; margin-left: 1em}
+    div.awesomplete .awe-found {border: 2px solid green}
+    .hide-not-found div.awesomplete .awe-not-found {border-color: lightblue}
+    div.awesomplete .awe-not-found {border: 2px solid red}
+    """
+  end
 end
 
 KinoDocs.Awesomplete.new()
 ```
-
-
 
 ## Use cases
 
