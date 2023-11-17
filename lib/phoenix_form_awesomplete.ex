@@ -181,6 +181,7 @@ defmodule PhoenixFormAwesomplete do
     div.awesomplete .awe-found {border: 2px solid green}
     .hide-not-found div.awesomplete .awe-not-found {border-color: lightblue}
     div.awesomplete .awe-not-found {border: 2px solid red}
+    .awe-btn .caron { pointer-events: none }
     ```
   - In lib/<your_project>_web/components/layouts/root.html.heex add this to the head:
     ```elixir
@@ -234,6 +235,7 @@ defmodule PhoenixFormAwesomplete do
     div.awesomplete .awe-found {border: 2px solid green}
     .hide-not-found div.awesomplete .awe-not-found {border-color: lightblue}
     div.awesomplete .awe-not-found {border: 2px solid red}
+    .awe-btn .caron { pointer-events: none }
     ```
   - lib/<your_project>_web/components/layouts/root.html.heex add this to the head:
     ```elixir
