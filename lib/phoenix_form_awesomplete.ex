@@ -74,7 +74,7 @@ defmodule PhoenixFormAwesomplete do
 
   For security reasons, LiveView doesn't execute the javascript in dynamicly loaded script tags. Adding new javascript after the page is loaded via the HTTP-request is what every malicious Cross Site Scripting (XSS) code tries to do. Via the Content-Security-Policy HTTP-header, it is possible to prevent dynamicly loaded script to be executed.
   In LiveView the javascript code is loaded as a static asset, and 
-   [client hooks via phx-hook](https://hexdocs.pm/phoenix_live_view/js-interop.html#client-hooks-via-phx-hook) can be used to execute javascript code for
+   [client hooks via the phx-hook](https://hexdocs.pm/phoenix_live_view/js-interop.html#client-hooks-via-phx-hook) can be used to execute javascript code for
    dynamicly added DOM elements.
   Instead of generating javascript code for every autocomplete field, a javascript hook
   is used which gets it's parameters at runtime. This javascript hook can handle the straightforward cases, but could need some tweaking for the corner cases. If these corner cases are complex and only applicable for a small subset of pages/components, you might consider to split off new client hooks.
