@@ -560,6 +560,8 @@ defmodule PhoenixFormAwesomplete do
    * `convertInput`    - Convert input function. Internally convert input for comparison with the data list items. By default it trims the input and converts it to lowercase for a case-insensitive comparison.
    * `convertResponse` - Convert JSON response from ajax calls. This function is called with the parsed JSON, and allows conversion of the data before further processing. Default: nil - no conversion. 
    * `data`            - Data function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
+   * `debounce`        - Time in milliseconds to wait for additional user input before doing the ajax call to retrieve suggestions. It limits the rate at which the json service is called per user session.
+   dd, making e this to reduce the frequency of ajax calls.
    * `descr`           - Name of the field in the data list (the JSON response) that contains the description text to show below the value in the suggestion list. Default: no description
    * `descrSearch`     - Filter must also search the input value in the description field. Default: false
    * `filter`          - Filter function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). Mostly Awesomplete.FILTER\_STARTSWITH or Awesomplete.FILTER\_CONTAINS. If label is different as value, filter on value with AweompleteUtil.filterStartsWith or AwesompleteUtil.filterContains.

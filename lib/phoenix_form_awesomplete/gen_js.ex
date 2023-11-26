@@ -171,6 +171,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
     {conv_input_fun,    awesomplete_opts} = Keyword.pop(awesomplete_opts, :convertInput)
     {conv_response_fun, awesomplete_opts} = Keyword.pop(awesomplete_opts, :convertResponse)
     {data_fun,          awesomplete_opts} = Keyword.pop(awesomplete_opts, :data)
+    {debounce,          awesomplete_opts} = Keyword.pop(awesomplete_opts, :debounce)
     {descr_fld,         awesomplete_opts} = Keyword.pop(awesomplete_opts, :descr)
     {descr_search,      awesomplete_opts} = Keyword.pop(awesomplete_opts, :descrSearch, false) 
     {filter_fun,        awesomplete_opts} = Keyword.pop(awesomplete_opts, :filter)
@@ -191,9 +192,10 @@ defmodule PhoenixFormAwesomplete.GenJS do
     starts_with = filter_fun == "Awesomplete.FILTER_STARTSWITH" or filter_fun == "AwesompleteUtil.filterStartsWith"
 
     # 
-      # Convert limit to integer
+      # Convert limit and debounce to integer
     # 
-    limit = to_integer(limit)
+    limit    = to_integer(limit)
+    debounce = to_integer(debounce)
     
     multiple_char = construct_multiple_char(multiple)
 
@@ -290,6 +292,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
     util_opts = if is_nil(url), do: [], else: [url: "'#{url}'"] 
     util_opts = if is_nil(url_end),  do: util_opts, else: util_opts ++ [urlEnd: "'#{url_end}'"] 
     util_opts = if is_nil(limit),    do: util_opts, else: util_opts ++ [limit: limit] 
+    util_opts = if is_nil(debounce), do: util_opts, else: util_opts ++ [debounce: debounce] 
     util_opts = if is_nil(ajax_fun), do: util_opts, else: util_opts ++ [ajax: ajax_fun] 
     util_opts = if is_nil(conv_response_fun), do: util_opts,  else: util_opts ++ [convertResponse: conv_response_fun] 
     util_opts = if loadall, do: util_opts ++ [loadall: true], else: util_opts 
