@@ -30,7 +30,7 @@ defmodule PhoenixFormAwesomplete do
 
   This Awesomplete component can be applied for these cases:
   - Outside and inside LiveView. It is even possible to make a HEEx fragment with autocomplete that works in both. See next chapter.
-  - It is specially suitable for suggestions supplied by Http web services that produce JSON.
+  - It is specially suitable for suggestions supplied by HTTP web services that produce JSON.
   - It can give suggestions for a list with multiple values.
   - It doesn't force the user to pick on of the suggestions; other values can be entered.
   - It can highlight the input field if there is a match or no match.
@@ -72,7 +72,7 @@ defmodule PhoenixFormAwesomplete do
 
   ### Both inside and outside LiveView
 
-  For security reasons, LiveView doesn't execute the javascript in dynamicly loaded script tags. Adding new javascript after the page is loaded via HTTP-request is what every malicious Cross Site Scripting (XSS) code tries to do. Via the Content-Security-Policy http header, it is possible to prevent dynamicly loaded script to be executed.
+  For security reasons, LiveView doesn't execute the javascript in dynamicly loaded script tags. Adding new javascript after the page is loaded via the HTTP-request is what every malicious Cross Site Scripting (XSS) code tries to do. Via the Content-Security-Policy HTTP-header, it is possible to prevent dynamicly loaded script to be executed.
   In LiveView the javascript code is loaded as a static asset, and 
    [client hooks via phx-hook](https://hexdocs.pm/phoenix_live_view/js-interop.html#client-hooks-via-phx-hook) can be used to execute javascript code for
    dynamicly added DOM elements.
