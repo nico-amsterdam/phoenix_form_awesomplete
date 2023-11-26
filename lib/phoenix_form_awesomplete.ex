@@ -25,11 +25,11 @@ defmodule PhoenixFormAwesomplete do
 
   An autocomplete component is a free text input that provides suggestions while typing. It is not necessary to choose one of the suggestions, but of course a form validator can reject disallowed input.
 
-  The HTML combobox is very suitable for this. It is a combination of a <select> with a <input type="text"> element, and it has a <datalist> with <option> and <optgroup> elements. When the standard combobox doesn't meet the requirements, a solution involving javascript can be used.
+  The HTML combobox is very suitable for this. The combobox looks like a <select> but it doesn't limit the input. It consists of a <input type="text"> element combined with a <datalist> with <option> and <optgroup> elements. When the standard combobox doesn't meet the requirements, a solution involving javascript can be used.
   When using LiveView the datalist of the HTML combobox can be made dynamic, with different suggestions based on the typed input. Like [this dictionary search demo](https://github.com/chrismccord/phoenix_live_view_example/blob/master/lib/demo_web/live/search_live.ex). And there are some fancy LiveView components available like the [Live Select](https://hex.pm/packages/live_select) with a stylish multiselect. These solutions are dynamic and don't necessary require a web service. However, you have to handle the input state on the server (again like [this](https://github.com/chrismccord/phoenix_live_view_example/blob/master/lib/demo_web/live/search_live.ex#L22)) and it only works in LiveView components.
 
   This Awesomplete component can be applied for these cases:
-  - Outside and inside LiveView. It is even possible to make a HEEx fragment with autocomplete that works in both. See next chapter.
+  - Outside and inside LiveView. It is even possible to make a HEEx fragment with autocomplete that works in both. See the next chapter.
   - It is specially suitable for suggestions supplied by HTTP web services that produce JSON.
   - It can give suggestions for a list with multiple values.
   - It doesn't force the user to pick on of the suggestions; other values can be entered.
