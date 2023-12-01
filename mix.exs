@@ -48,7 +48,7 @@ defmodule PhoenixFormAwesomplete.Mixfile do
   defp deps do
     [
       {:phoenix_html, "~> 2.10 or ~> 3.0"},   # mix test of this project requires >= 3.3.0
-      {:ex_doc, "~> 0.30.6", only: :dev}
+      {:ex_doc, "~> 0.30.9", only: :dev}
     ]
   end
 
