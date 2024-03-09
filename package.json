@@ -1,0 +1,12 @@
+{
+  "name": "phoenix_form_awesomplete",
+  "version": "1.0.0",
+  "main": "./priv/static/phoenix_form_awesomplete.js",
+  "repository": {},
+  "files": [
+    "README.md",
+    "LICENSE",
+    "package.json",
+    "priv/static/phoenix_form_awesomplete.js"
+  ]
+}

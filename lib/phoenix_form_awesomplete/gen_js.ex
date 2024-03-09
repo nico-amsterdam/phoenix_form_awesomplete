@@ -45,18 +45,22 @@ defmodule PhoenixFormAwesomplete.GenJS do
      |> Enum.map_join(", ", fn{k, v} -> "#{k}: #{v}" end)
   end
 
-  # optionally convert string to integer
-  defp to_integer(val) do
-    if is_nil(val) or is_integer(val), do: val, else: String.to_integer(val)
-  end
+  # convert string to integer
+  defp to_integer!(val) when is_nil(val) or is_integer(val), do: val
+  defp to_integer!(val) when is_binary(val), do: String.to_integer(val)
+
+  # convert string to boolean
+  defp to_bool!(true), do: true
+  defp to_bool!("true"), do: true
+  defp to_bool!(_), do: false
 
   # returns filter_opts with added item
   defp addItem(filter_opts, item_fun, starts_with, multiple_char, filter_str, descr_search) do
     cond do
       is_nil(item_fun) and is_nil(multiple_char) and descr_search -> filter_opts ++ [item: "#{@util}.itemMarkAll"]
       is_nil(item_fun) and is_nil(multiple_char) -> filter_opts
-      is_nil(item_fun) and starts_with -> filter_opts ++ [item: "function(text, input) { return #{@util}.itemStartsWith(text, #{filter_str}); }"]
       is_nil(item_fun) and descr_search ->  filter_opts ++ [item: "function(text, input) { return #{@util}.itemMarkAll(text, #{filter_str}); }"]
+      is_nil(item_fun) and starts_with -> filter_opts ++ [item: "function(text, input) { return #{@util}.itemStartsWith(text, #{filter_str}); }"]
       is_nil(item_fun) ->  filter_opts ++ [item: "function(text, input) { return #{@util}.itemContains(text, #{filter_str}); }"]
       is_nil(multiple_char) -> filter_opts ++ [item: "#{item_fun}"]
       true -> filter_opts ++ [item: "function(text, input) { return (#{item_fun})(text, #{filter_str}); }"]
@@ -110,7 +114,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
     cond do
       is_nil(multiple_char) -> []
       is_nil(replace_fun) -> [replace: "function(data) { var text=data.value; this.input.value = #{assign_replace_text}; }"]
-      true -> [replace: "function(data) { var text=data.value; (#{replace_fun}).(#{assign_replace_text}); }"]
+      true -> [replace: "function(data) { var text=data.value; (#{replace_fun}).call(this, #{assign_replace_text}); }"]
     end
   end
 
@@ -186,6 +190,13 @@ defmodule PhoenixFormAwesomplete.GenJS do
     {url,               awesomplete_opts} = Keyword.pop(awesomplete_opts, :url)
     {url_end,           awesomplete_opts} = Keyword.pop(awesomplete_opts, :urlEnd)
 
+    # 
+      # Convert descr_search to boolean
+    # 
+    descr_search = to_bool!(descr_search)
+    loadall = to_bool!(loadall)
+    prepop = to_bool!(prepop)
+
     parameterChecks(fld_name, label_fld, descr_fld, descr_search) 
 
     # generated js code uses @util & @awe but in the input we expect the standard Awesomplete & AwesompleteUtil names.
@@ -194,9 +205,9 @@ defmodule PhoenixFormAwesomplete.GenJS do
     # 
       # Convert limit and debounce to integer
     # 
-    limit    = to_integer(limit)
-    debounce = to_integer(debounce)
-    
+    limit    = to_integer!(limit)
+    debounce = to_integer!(debounce)
+
     multiple_char = construct_multiple_char(multiple)
 
     # 
@@ -278,7 +289,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
       is_nil(fld_name) -> awesomplete_opts ++ [data: data_fun] ++ multiple_replace_opts
       !descr_search ->       awesomplete_opts ++ [data: data_fun_str] ++ multiple_replace_opts
       is_nil(replace_fun) -> awesomplete_opts ++ [data: data_fun_str, replace: "function(data) { var text = data.value.substring(0, data.value.lastIndexOf('|')); this.input.value = #{assign_replace_text}; }"]
-      true -> awesomplete_opts ++ [data: data_fun_str, replace: "function(data) { var text = data.value.substring(0, data.value.lastIndexOf('|')); (#{replace_fun}).(#{assign_replace_text}); }"]
+      true -> awesomplete_opts ++ [data: data_fun_str, replace: "function(data) { var text = data.value.substring(0, data.value.lastIndexOf('|')); (#{replace_fun}).call(this, #{assign_replace_text}); }"]
     end
 
     awesomplete_opts = awesomplete_opts ++ filter_opts
