@@ -378,9 +378,9 @@ var require_awesomplete_util_min = __commonJS({
 // js/index.js
 var js_exports = {};
 __export(js_exports, {
-  AttachAwesomplete: () => attach_awesomplete_default,
   Awesomplete: () => import_awesomplete_v2020_min.default,
-  AwesompleteUtil: () => import_awesomplete_util_min.default
+  AwesompleteUtil: () => import_awesomplete_util_min.default,
+  attachAwesomplete: () => attach_awesomplete_default
 });
 module.exports = __toCommonJS(js_exports);
 var import_awesomplete_v2020_min = __toESM(require_awesomplete_v2020_min());

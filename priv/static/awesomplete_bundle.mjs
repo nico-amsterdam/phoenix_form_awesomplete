@@ -490,8 +490,8 @@ var attach_awesomplete_default = attachAwesomplete;
 var export_Awesomplete = import_awesomplete_v2020_min.default;
 var export_AwesompleteUtil = import_awesomplete_util_min.default;
 export {
-  attach_awesomplete_default as AttachAwesomplete,
   export_Awesomplete as Awesomplete,
-  export_AwesompleteUtil as AwesompleteUtil
+  export_AwesompleteUtil as AwesompleteUtil,
+  attach_awesomplete_default as attachAwesomplete
 };
 //# sourceMappingURL=awesomplete_bundle.mjs.map
