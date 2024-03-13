@@ -4,14 +4,14 @@
   "main": "./priv/static/awesomplete_bundle.cjs",
   "module": "./priv/static/awesomplete_bundle.mjs",
   "exports": {
-    "import": "./priv/static/phoenix.mjs",
-    "require": "./priv/static/phoenix.cjs.js"
+    "import": "./priv/static/awesomplete_bundle.mjs",
+    "require": "./priv/static/awesomplete_bundle.cjs"
   },
   "repository": {},
   "files": [
     "README.md",
     "LICENSE",
     "package.json",
-    "priv/static/phoenix_form_awesomplete.js"
+    "priv/static/*"
   ]
 }
