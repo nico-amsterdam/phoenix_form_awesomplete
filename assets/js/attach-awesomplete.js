@@ -1,5 +1,5 @@
 
-const 
+const
 // simple expression language evaluator
  // for example search in this for 'a.b.c'
 // returns value of searchIn['a']['b']['c']
@@ -18,7 +18,7 @@ const
     if ('function' !== typeof shouldBeFunction) throw new Error(name + ' is not a function')
     return shouldBeFunction
   }
-, attachAutocomplete = (node, bindings) => {
+, attachAwesomplete = (node, bindings) => {
     const a = node.getAttribute.bind(node), fieldID = a('forField')
     , url = a('url'), loadall = a('loadall'), prepop = a('prepop'), minChars = a('minChars')
     , maxItems = a('maxItems'), value = a('value'), combobox = a('combobox')
@@ -99,7 +99,7 @@ const
             try {
                 listConv = JSON.parse(listConv)
             } catch (_e) {
-                // convert javascript map to JSON. Works for 80%. 
+                // convert javascript map to JSON. Works for 80%.
                 // Quote all map keys
                 // replace single quoted values with double quoted values
                 // remove newlines
@@ -116,8 +116,9 @@ const
     )
     if (combobox && combobox !== 'false') AwesompleteUtil.startClick(comboSelectID, awe)
     }
-  
 
-module.exports = {
-    attachAutocomplete: attachAutocomplete
-}
+
+// module.exports = {
+//    attachAwesomplete: attachAwesomplete
+// }
+export default attachAwesomplete

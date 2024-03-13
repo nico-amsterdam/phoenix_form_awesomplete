@@ -29,3 +29,26 @@ import Config
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env}.exs"
+
+    config :esbuild, 
+      version: "0.17.11",
+      module: [
+        args: ~w(js/index.js --format=esm --sourcemap --bundle --target=es2016 --outfile=../priv/static/assets/awesomplete_bundle.mjs),
+        cd: Path.expand("../assets", __DIR__),
+        env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+      ],
+      main: [
+        args: ~w(js/index.js --format=cjs --sourcemap --bundle --target=es2016 --outfile=../priv/static/assets/awesomplete_bundle.cjs),
+        cd: Path.expand("../assets", __DIR__),
+        env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+      ],
+      cdn: [
+        args: ~w(js/index.js --format=iife --sourcemap --global-name=AwesompleteBundle --bundle --target=es2016 --outfile=../priv/static/assets/awesomplete_bundle.js),
+        cd: Path.expand("../assets", __DIR__),
+        env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+      ],
+      cdn_min: [
+        args: ~w(js/index.js --format=iife --sourcemap --global-name=AwesompleteBundle --bundle --target=es2016 --minify --outfile=../priv/static/assets/awesomplete_bundle.min.js),
+        cd: Path.expand("../assets", __DIR__),
+        env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+      ]
