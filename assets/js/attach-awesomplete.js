@@ -36,7 +36,7 @@ const
   , dataValueFun = (data) => {
     return data.value;
   }
-  , lookupFilterFun = (filter) => {
+  , lookupFilterFun = (filter, customCtx) => {
     let filterFun = null, filterAtStart = false;
 
     switch (filter) {
@@ -74,7 +74,7 @@ const
     }
     return { filterFun, filterAtStart }
   }
-  , lookupItemFun = (item) => {
+  , lookupItemFun = (item, customCtx) => {
     let itemFun = null
     switch (item) {
       case undefined:
@@ -107,8 +107,8 @@ const
     }
     return itemFun
   }
-  , makeItemFun = (item, filterFun, filterAtStart, multipleChar, combobox, valueAttr, labelAttr, descrAttr, descrSearch) => {
-    let itemFun = lookupItemFun(item)
+  , makeItemFun = (item, filterFun, filterAtStart, multipleChar, combobox, valueAttr, labelAttr, descrAttr, descrSearch, customCtx) => {
+    let itemFun = lookupItemFun(item, customCtx)
 
     if (!multipleChar) {
 
@@ -237,7 +237,7 @@ const
     let customDataFun = customCtx[data]
     return function (rec, input) { return (customDataFun)(data_fun(rec, input), input); }
   }
-  , makeConvertInput = (convertInput, multipleChar) => {
+  , makeConvertInput = (convertInput, multipleChar, customCtx) => {
     let convertInputFun = null;
     if (convertInput) {
       if ('function' !== typeof customCtx[convertInput]) throw new Error('Unknown convertInput function ' + convertInput)
@@ -257,9 +257,8 @@ const
     }
     return convertMultipleInputFun;
   }
-  , attachAwesomplete = (node, bindings) => {
-    const a = function a(key) { return settings[key] }
-    const fieldID = a('forField');
+  , attachAwesomplete = (node, customCtx /* bindings */) => {
+    const a = node.getAttribute.bind(node), fieldID = a('forField');
     if (fieldID === undefined) throw new Error('Missing forField attribute.')
     const url = a('url'), loadall = a('loadall'), prepop = a('prepop'), minChars = a('minChars')
       , maxItems = a('maxItems'), valueAttr = a('value'), combobox = a('combobox')
@@ -293,13 +292,14 @@ const
       multipleChar = (multiple === 'true' || multiple === true ? ' ' : multiple);
     }
 
-    let { filterFun, filterAtStart } = lookupFilterFun(filter)
-    awesompleteOpts['filter'] = makeFilterFun(filterFun, filterAtStart, multipleChar, combobox, valueAttr, labelAttr, descrAttr)
+    let { filterFun, filterAtStart } = lookupFilterFun(filter, customCtx)
+    const madeFilterFun = makeFilterFun(filterFun, filterAtStart, multipleChar, combobox, valueAttr, labelAttr, descrAttr)
+    if (madeFilterFun) awesompleteOpts['filter'] = madeFilterFun;
 
-    const itemFun = makeItemFun(item, filterFun, filterAtStart, multipleChar, combobox, valueAttr, labelAttr, descrAttr, descrSearch)
+    const itemFun = makeItemFun(item, filterFun, filterAtStart, multipleChar, combobox, valueAttr, labelAttr, descrAttr, descrSearch, customCtx)
     if (itemFun) awesompleteOpts['item'] = itemFun;
 
-    const convertInputFun = makeConvertInput(convertInput, multipleChar)
+    const convertInputFun = makeConvertInput(convertInput, multipleChar, customCtx)
     if (convertInputFun) {
       opts['convertInput'] = convertInputFun
     }

@@ -425,7 +425,7 @@ var descrSearchFun = (data) => {
 var dataValueFun = (data) => {
   return data.value;
 };
-var lookupFilterFun = (filter) => {
+var lookupFilterFun = (filter, customCtx) => {
   let filterFun = null, filterAtStart = false;
   switch (filter) {
     case void 0:
@@ -464,7 +464,7 @@ var lookupFilterFun = (filter) => {
   }
   return { filterFun, filterAtStart };
 };
-var lookupItemFun = (item) => {
+var lookupItemFun = (item, customCtx) => {
   let itemFun = null;
   switch (item) {
     case void 0:
@@ -499,8 +499,8 @@ var lookupItemFun = (item) => {
   }
   return itemFun;
 };
-var makeItemFun = (item, filterFun, filterAtStart, multipleChar, combobox, valueAttr, labelAttr, descrAttr, descrSearch2) => {
-  let itemFun = lookupItemFun(item);
+var makeItemFun = (item, filterFun, filterAtStart, multipleChar, combobox, valueAttr, labelAttr, descrAttr, descrSearch2, customCtx) => {
+  let itemFun = lookupItemFun(item, customCtx);
   if (!multipleChar) {
     if (itemFun)
       return itemFun;
@@ -571,7 +571,7 @@ var makeFilterFun = (filterFun, filterAtStart, multipleChar, combobox, valueAttr
     return lastPartSearchFun;
   }
 };
-var makeDataFun = (customCtx2, data, valueAttr, labelAttr, descrAttr, descrSearch2) => {
+var makeDataFun = (customCtx, data, valueAttr, labelAttr, descrAttr, descrSearch2) => {
   let data_fun = null;
   const labelOrValue = labelAttr || valueAttr;
   if (descrAttr && descrSearch2) {
@@ -602,14 +602,14 @@ var makeDataFun = (customCtx2, data, valueAttr, labelAttr, descrAttr, descrSearc
   }
   if (!data)
     return data_fun;
-  if ("function" !== typeof customCtx2[data])
+  if ("function" !== typeof customCtx[data])
     throw new Error("Unknown data function " + data);
-  let customDataFun = customCtx2[data];
+  let customDataFun = customCtx[data];
   return function(rec, input) {
     return customDataFun(data_fun(rec, input), input);
   };
 };
-var makeConvertInput = (convertInput, multipleChar) => {
+var makeConvertInput = (convertInput, multipleChar, customCtx) => {
   let convertInputFun = null;
   if (convertInput) {
     if ("function" !== typeof customCtx[convertInput])
@@ -631,11 +631,8 @@ var makeConvertInput = (convertInput, multipleChar) => {
   }
   return convertMultipleInputFun;
 };
-var attachAwesomplete = (node, bindings) => {
-  const a = function a2(key) {
-    return settings[key];
-  };
-  const fieldID = a("forField");
+var attachAwesomplete = (node, customCtx) => {
+  const a = node.getAttribute.bind(node), fieldID = a("forField");
   if (fieldID === void 0)
     throw new Error("Missing forField attribute.");
   const url = a("url"), loadall = a("loadall"), prepop = a("prepop"), minChars = a("minChars"), maxItems = a("maxItems"), valueAttr = a("value"), combobox = a("combobox"), comboSelectID = "#" + (combobox !== "true" && combobox !== true ? combobox : "awe_btn_" + fieldID), descrAttr = a("descr"), descrSearchStr = a("descrSearch"), labelAttr = a("label"), filter = a("filter"), debounce = a("debounce"), urlEnd = a("urlEnd"), limit = a("limit"), ajax = a("ajax"), autoFirst = a("autoFirst"), convertInput = a("convertInput"), convertResponse = a("convertResponse"), data = a("data"), item = a("item"), assign = a("assign"), multiple = a("multiple"), replace = a("replace"), descrSearch2 = descrSearchStr === "true" || descrSearchStr === true, list = a("list"), sort = a("sort"), container = a("container"), listLabel = a("listLabel");
@@ -668,12 +665,14 @@ var attachAwesomplete = (node, bindings) => {
   if (multiple && multiple !== "false") {
     multipleChar = multiple === "true" || multiple === true ? " " : multiple;
   }
-  let { filterFun, filterAtStart } = lookupFilterFun(filter);
-  awesompleteOpts["filter"] = makeFilterFun(filterFun, filterAtStart, multipleChar, combobox, valueAttr, labelAttr, descrAttr);
-  const itemFun = makeItemFun(item, filterFun, filterAtStart, multipleChar, combobox, valueAttr, labelAttr, descrAttr, descrSearch2);
+  let { filterFun, filterAtStart } = lookupFilterFun(filter, customCtx);
+  const madeFilterFun = makeFilterFun(filterFun, filterAtStart, multipleChar, combobox, valueAttr, labelAttr, descrAttr);
+  if (madeFilterFun)
+    awesompleteOpts["filter"] = madeFilterFun;
+  const itemFun = makeItemFun(item, filterFun, filterAtStart, multipleChar, combobox, valueAttr, labelAttr, descrAttr, descrSearch2, customCtx);
   if (itemFun)
     awesompleteOpts["item"] = itemFun;
-  const convertInputFun = makeConvertInput(convertInput, multipleChar);
+  const convertInputFun = makeConvertInput(convertInput, multipleChar, customCtx);
   if (convertInputFun) {
     opts["convertInput"] = convertInputFun;
   }
