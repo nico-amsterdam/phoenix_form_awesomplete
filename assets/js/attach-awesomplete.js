@@ -13,7 +13,7 @@ const
     }
     return function(data) {
       var selectedValue = descrSearch ? data.value.substring(0, data.value.lastIndexOf('|')) : data.value,
-          replaceText = re ? re.match(this.input.value)[0] + selectedValue + separator : selectedValue
+          replaceText = re ? this.input.value.match(re)[0] + selectedValue + separator : selectedValue
       if (replaceFun) {
         (replaceFun).call(this, replaceText)
       } else {
@@ -35,7 +35,7 @@ const
     }
     if (!re) return itemFun;
     return function(text, inp) {
-      return (itemFun)(text, re.match(inp)[0]);
+      return (itemFun)(text, inp.match(re)[0]);
     }
   }, // end makeItemFun
 
@@ -52,7 +52,7 @@ const
         // description search i.c.w. start-with filter needs special threatment
         // to search at the beginning in both value and description.
         return function(dat, inp) {
-          var inputPart = re ? re.match(inp)[0] : inp;
+          var inputPart = re ? inp.match(re)[0] : inp;
           return AwesompleteUtil.filterStartsWith(dat, inputPart)
             || Awesomplete.FILTER_STARTSWITH(dat.value.substring(dat.value.lastIndexOf('|') + 1), inputPart);
         }
@@ -67,7 +67,7 @@ const
     }
     return function(dat, inp) {
       // For simplicity, call enclosed filter with just the text string, not a Suggestion object.
-      return (applyThisFilter)(!labelOrDescrAttr ? dat : dat.value, re ? re.match(inp)[0] : inp);
+      return (applyThisFilter)(!labelOrDescrAttr ? dat : dat.value, re ? inp.match(re)[0] : inp);
     }
   }, // end makeFilterFun
 

@@ -948,7 +948,7 @@ var makeReplaceFun = (replaceFun, multipleChar, descrSearch2) => {
     separator = multipleChar[0] + " ";
   }
   return function(data) {
-    var selectedValue = descrSearch2 ? data.value.substring(0, data.value.lastIndexOf("|")) : data.value, replaceText = re ? re.match(this.input.value)[0] + selectedValue + separator : selectedValue;
+    var selectedValue = descrSearch2 ? data.value.substring(0, data.value.lastIndexOf("|")) : data.value, replaceText = re ? this.input.value.match(re)[0] + selectedValue + separator : selectedValue;
     if (replaceFun) {
       replaceFun.call(this, replaceText);
     } else {
@@ -969,7 +969,7 @@ var makeItemFun = (itemFun, filterAtStart, re, descrSearch2) => {
   if (!re)
     return itemFun;
   return function(text, inp) {
-    return itemFun(text, re.match(inp)[0]);
+    return itemFun(text, inp.match(re)[0]);
   };
 };
 var makeFilterFun = (filterFun, filterAtStart, re, valueAttr, labelOrDescrAttr) => {
@@ -979,7 +979,7 @@ var makeFilterFun = (filterFun, filterAtStart, re, valueAttr, labelOrDescrAttr) 
   if (filterAtStart) {
     if (descrSearch) {
       return function(dat, inp) {
-        var inputPart = re ? re.match(inp)[0] : inp;
+        var inputPart = re ? inp.match(re)[0] : inp;
         return AwesompleteUtil.filterStartsWith(dat, inputPart) || Awesomplete.FILTER_STARTSWITH(dat.value.substring(dat.value.lastIndexOf("|") + 1), inputPart);
       };
     }
@@ -992,7 +992,7 @@ var makeFilterFun = (filterFun, filterAtStart, re, valueAttr, labelOrDescrAttr) 
     applyThisFilter = Awesomplete.FILTER_CONTAINS;
   }
   return function(dat, inp) {
-    return applyThisFilter(!labelOrDescrAttr ? dat : dat.value, re ? re.match(inp)[0] : inp);
+    return applyThisFilter(!labelOrDescrAttr ? dat : dat.value, re ? inp.match(re)[0] : inp);
   };
 };
 var makeDataFun = (dataFun, valueAttr, labelAttr, descrAttr, descrSearch2) => {
