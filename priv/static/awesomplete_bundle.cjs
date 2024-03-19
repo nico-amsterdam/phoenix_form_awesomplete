@@ -1028,7 +1028,7 @@ var makeConvertInputFun = (convertInputFun, multipleChar) => {
 };
 var attachAwesomplete = (node, defaultValues, customCtx) => {
   const b = node.getAttribute.bind(node), a = function(attr) {
-    return a(attr) || defaultValues[attr];
+    return b(attr) || defaultValues[attr];
   }, fieldID = a("forField");
   if (fieldID === void 0)
     throw new Error("Missing forField attribute.");
