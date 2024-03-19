@@ -12,7 +12,7 @@ const
       separator = multipleChar[0] + ' '
     }
     return function(data) {
-      var selectedValue = descrSearch ? data.value.substring(0, data.value.lastIndexOf('|')) : data.value, 
+      var selectedValue = descrSearch ? data.value.substring(0, data.value.lastIndexOf('|')) : data.value,
           replaceText = re ? re.match(this.input.value)[0] + selectedValue + separator : selectedValue
       if (replaceFun) {
         (replaceFun).call(this, replaceText)
@@ -41,7 +41,7 @@ const
 
   makeFilterFun = (filterFun, filterAtStart, re, valueAttr, labelOrDescrAttr) => {
     // Label/descr without value attr is not allowed.
-    // When there is a labelAttr or a descrAttr, a data function 
+    // When there is a labelAttr or a descrAttr, a data function
     // which returns value + label will be used. This label might contain HTML, so search in value.
     // Filters are called with a Suggestion, which always has a value and label property,
     // The suggestion toString is used for string conversion. The toString returns: label || value.
@@ -59,8 +59,8 @@ const
       }
       if (!re) return AwesompleteUtil.filterStartsWith // do not search in label, search in value
       applyThisFilter = Awesomplete.FILTER_STARTSWITH
-    } else if (!filterFun 
-               || filterFun === AwesompleteUtil.filterContains 
+    } else if (!filterFun
+               || filterFun === AwesompleteUtil.filterContains
                || filterFun === Awesomplete.FILTER_CONTAINS) {
       if (!re) return AwesompleteUtil.filterContains // do not search in label, search in value
       applyThisFilter = Awesomplete.FILTER_CONTAINS
@@ -80,7 +80,7 @@ const
           return {
             label: (rec[labelAttr || valueAttr] || '').replace('<p>', '<p >')
                  + (descrAttr ? '<p>' + (rec[descrAttr] || '') : ''),
-            value: (rec[valueAttr] || '') + 
+            value: (rec[valueAttr] || '') +
                    (descrSearch ? '|' + (rec[descrAttr] || '').replace('|', ' ') : '')
           };
         }
@@ -101,14 +101,14 @@ const
     const rem = new RegExp("[" + multipleChar + "]*\\s$"),
       rel = new RegExp("[^" + multipleChar + "]*$");
 
-    return function(inp) { 
+    return function(inp) {
       var convInp = inp.replace(rem, '').match(rel)[0].trim().toLowerCase();
-      return convertInputFun ? (convertInputFun)(convInp) : convInp; 
+      return convertInputFun ? (convertInputFun)(convInp) : convInp;
     }
   }, // end makeConvertInputFun
 
   attachAwesomplete = (node, defaultValues, customCtx) => {
-    const b = node.getAttribute.bind(node), a = function(attr) { return a(attr) || defaultValues[attr] }, fieldID = a('forField');
+    const b = node.getAttribute.bind(node), a = function(attr) { return b(attr) || defaultValues[attr] }, fieldID = a('forField');
     if (fieldID === undefined) throw new Error('Missing forField attribute.')
     const url = a('url'), loadall = a('loadall'), prepop = a('prepop'), minChars = a('minChars')
       , maxItems = a('maxItems'), valueAttr = a('value'), combobox = a('combobox')
@@ -149,13 +149,13 @@ const
     if (convertResponse) {
       opts['convertResponse'] = getCustomFunction(customCtx, convertResponse, 'convertResponse')
     }
-    
+
     const madeFilterFun = makeFilterFun(filterFun, filterAtStart, re, valueAttr, labelAttr || descrAttr)
     if (madeFilterFun) awesompleteOpts['filter'] = madeFilterFun;
 
     const madeItemFun = makeItemFun(itemFun, filterAtStart, re, descrSearch)
     if (madeItemFun) awesompleteOpts['item'] = madeItemFun;
- 
+
     const madeConvertInputFun = makeConvertInputFun(convertInputFun, multipleChar)
     if (madeConvertInputFun) opts['convertInput'] = madeConvertInputFun
 
