@@ -130,7 +130,7 @@ const
       , convertInputFun = getCustomFunction(customCtx, convertInput, 'convertInput')
       , filterAtStart = (filterFun === Awesomplete.FILTER_STARTSWITH || filterFun === AwesompleteUtil.filterStartsWith)
 
-    let opts = {}, awesompleteOpts = {}, multipleChar = null, separator = null;
+    let opts = {}, awesompleteOpts = {}, multipleChar = null, separator = null, re = null;
     if (url) opts['url'] = url
     if (urlEnd) opts['urlEnd'] = 'function' === typeof customCtx[urlEnd] ? customCtx[urlEnd] : urlEnd
     if (loadall) opts['loadall'] = (loadall === 'true' || loadall === true)

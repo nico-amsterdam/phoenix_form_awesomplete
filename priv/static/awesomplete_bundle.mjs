@@ -930,13 +930,13 @@ var getCustomFunction = (customCtx, lookupValue, name) => {
   return customCtx[lookupValue];
 };
 var makeReplaceFun = (replaceFun, multipleChar, descrSearch2) => {
-  var re2 = null, separator;
+  var re = null, separator;
   if (multipleChar) {
-    re2 = new RegExp("^.+[" + multipleChar + "]\\s*|");
+    re = new RegExp("^.+[" + multipleChar + "]\\s*|");
     separator = multipleChar[0] + " ";
   }
   return function(data) {
-    var selectedValue = descrSearch2 ? data.value.substring(0, data.value.lastIndexOf("|")) : data.value, replaceText = re2 ? re2.match(this.input.value)[0] + selectedValue + separator : selectedValue;
+    var selectedValue = descrSearch2 ? data.value.substring(0, data.value.lastIndexOf("|")) : data.value, replaceText = re ? re.match(this.input.value)[0] + selectedValue + separator : selectedValue;
     if (replaceFun) {
       replaceFun.call(this, replaceText);
     } else {
@@ -944,43 +944,43 @@ var makeReplaceFun = (replaceFun, multipleChar, descrSearch2) => {
     }
   };
 };
-var makeItemFun = (itemFun, filterAtStart, re2, descrSearch2) => {
+var makeItemFun = (itemFun, filterAtStart, re, descrSearch2) => {
   if (!itemFun) {
     if (descrSearch2) {
       itemFun = AwesompleteUtil.itemMarkAll;
     } else if (filterAtStart) {
       itemFun = AwesompleteUtil.itemStartsWith;
-    } else if (re2) {
+    } else if (re) {
       itemFun = AwesompleteUtil.itemContains;
     }
   }
-  if (!re2)
+  if (!re)
     return itemFun;
   return function(text, inp) {
-    return itemFun(text, re2.match(inp)[0]);
+    return itemFun(text, re.match(inp)[0]);
   };
 };
-var makeFilterFun = (filterFun, filterAtStart, re2, valueAttr, labelOrDescrAttr) => {
-  if (!re2 && !labelOrDescrAttr)
+var makeFilterFun = (filterFun, filterAtStart, re, valueAttr, labelOrDescrAttr) => {
+  if (!re && !labelOrDescrAttr)
     return filterFun;
   let applyThisFilter = filterFun;
   if (filterAtStart) {
     if (descrSearch) {
       return function(dat, inp) {
-        var inputPart = re2 ? re2.match(inp)[0] : inp;
+        var inputPart = re ? re.match(inp)[0] : inp;
         return AwesompleteUtil.filterStartsWith(dat, inputPart) || Awesomplete.FILTER_STARTSWITH(dat.value.substring(dat.value.lastIndexOf("|") + 1), inputPart);
       };
     }
-    if (!re2)
+    if (!re)
       return AwesompleteUtil.filterStartsWith;
     applyThisFilter = Awesomplete.FILTER_STARTSWITH;
   } else if (!filterFun || filterFun === AwesompleteUtil.filterContains || filterFun === Awesomplete.FILTER_CONTAINS) {
-    if (!re2)
+    if (!re)
       return AwesompleteUtil.filterContains;
     applyThisFilter = Awesomplete.FILTER_CONTAINS;
   }
   return function(dat, inp) {
-    return applyThisFilter(!labelOrDescrAttr ? dat : dat.value, re2 ? re2.match(inp)[0] : inp);
+    return applyThisFilter(!labelOrDescrAttr ? dat : dat.value, re ? re.match(inp)[0] : inp);
   };
 };
 var makeDataFun = (dataFun, valueAttr, labelAttr, descrAttr, descrSearch2) => {
@@ -1021,7 +1021,7 @@ var attachAwesomplete = (node, defaultValues, customCtx) => {
   if (fieldID === void 0)
     throw new Error("Missing forField attribute.");
   const url = a("url"), loadall = a("loadall"), prepop = a("prepop"), minChars = a("minChars"), maxItems = a("maxItems"), valueAttr = a("value"), combobox = a("combobox"), comboSelectID = "#" + (combobox !== "true" && combobox !== true ? combobox : "awe_btn_" + fieldID), descrAttr = a("descr"), descrSearchStr = a("descrSearch"), labelAttr = a("label"), filter = a("filter"), debounce = a("debounce"), urlEnd = a("urlEnd"), limit = a("limit"), ajax = a("ajax"), autoFirst = a("autoFirst"), convertInput = a("convertInput"), convertResponse = a("convertResponse"), data = a("data"), item = a("item"), assign = a("assign"), multiple = a("multiple"), replace = a("replace"), descrSearch2 = descrSearchStr === "true" || descrSearchStr === true, list = a("list"), sort = a("sort"), container = a("container"), listLabel = a("listLabel"), filterFun = getCustomFunction(customCtx, filter, "filter"), replaceFun = getCustomFunction(customCtx, replace, "replace"), dataFun = getCustomFunction(customCtx, data, "data"), itemFun = getCustomFunction(customCtx, item, "item"), convertInputFun = getCustomFunction(customCtx, convertInput, "convertInput"), filterAtStart = filterFun === Awesomplete.FILTER_STARTSWITH || filterFun === AwesompleteUtil.filterStartsWith;
-  let opts = {}, awesompleteOpts = {}, multipleChar = null, separator = null;
+  let opts = {}, awesompleteOpts = {}, multipleChar = null, separator = null, re = null;
   if (url)
     opts["url"] = url;
   if (urlEnd)
