@@ -128,7 +128,7 @@ const
       , dataFun = getCustomFunction(customCtx, data, 'data')
       , itemFun = getCustomFunction(customCtx, item, 'item')
       , convertInputFun = getCustomFunction(customCtx, convertInput, 'convertInput')
-      , filterAtStart = (filterFun === Awesomplete.FILTER_STARTSWITH || filterfun === AwesompleteUtil.filterStartsWith)
+      , filterAtStart = (filterFun === Awesomplete.FILTER_STARTSWITH || filterFun === AwesompleteUtil.filterStartsWith)
 
     let opts = {}, awesompleteOpts = {}, multipleChar = null, separator = null;
     if (url) opts['url'] = url
