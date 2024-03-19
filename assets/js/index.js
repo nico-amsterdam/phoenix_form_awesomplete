@@ -3,8 +3,8 @@
  * @module AwesompleteBundle
  */
 
-import Awesomplete from '../vendor/awesomplete-v2020.min.js'
-import AwesompleteUtil from '../vendor/awesomplete-util.min.js'
+import Awesomplete from '../vendor/awesomplete.js'
+import AwesompleteUtil from '../vendor/awesomplete-util.js'
 import attachAwesomplete from './attach-awesomplete.js'
 
 export {

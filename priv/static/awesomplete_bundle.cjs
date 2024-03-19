@@ -29,620 +29,1015 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// vendor/awesomplete-v2020.min.js
-var require_awesomplete_v2020_min = __commonJS({
-  "vendor/awesomplete-v2020.min.js"(exports, module2) {
-    !function() {
-      function t(t2) {
-        var e2 = Array.isArray(t2) ? { label: t2[0], value: t2[1] } : "object" == typeof t2 && "label" in t2 && "value" in t2 ? t2 : { label: t2, value: t2 };
-        this.label = e2.label || e2.value, this.value = e2.value;
-      }
-      function e(t2, e2, i2) {
-        for (var n2 in e2) {
-          var s2 = e2[n2], r2 = t2.input.getAttribute("data-" + n2.toLowerCase());
-          "number" == typeof s2 ? t2[n2] = parseInt(r2) : false === s2 ? t2[n2] = null !== r2 : s2 instanceof Function ? t2[n2] = null : t2[n2] = r2, t2[n2] || 0 === t2[n2] || (t2[n2] = n2 in i2 ? i2[n2] : s2);
-        }
-      }
-      function i(t2, e2) {
-        return "string" == typeof t2 ? (e2 || document).querySelector(t2) : t2 || null;
-      }
-      function n(t2, e2) {
-        return o.call((e2 || document).querySelectorAll(t2));
-      }
-      function s() {
-        n("input.awesomplete").forEach(function(t2) {
-          new r(t2);
+// vendor/awesomplete.js
+var require_awesomplete = __commonJS({
+  "vendor/awesomplete.js"(exports, module2) {
+    (function() {
+      var _ = function(input, o) {
+        var me = this;
+        _.count = (_.count || 0) + 1;
+        this.count = _.count;
+        this.isOpened = false;
+        this.input = $(input);
+        this.input.setAttribute("autocomplete", "off");
+        this.input.setAttribute("aria-expanded", "false");
+        this.input.setAttribute("aria-owns", "awesomplete_list_" + this.count);
+        this.input.setAttribute("role", "combobox");
+        this.options = o = o || {};
+        configure(this, {
+          minChars: 2,
+          maxItems: 10,
+          autoFirst: false,
+          data: _.DATA,
+          filter: _.FILTER_CONTAINS,
+          sort: o.sort === false ? false : _.SORT_BYLENGTH,
+          container: _.CONTAINER,
+          item: _.ITEM,
+          replace: _.REPLACE,
+          tabSelect: false,
+          listLabel: "Results List"
+        }, o);
+        this.index = -1;
+        this.container = this.container(input);
+        this.ul = $.create("ul", {
+          hidden: "hidden",
+          role: "listbox",
+          id: "awesomplete_list_" + this.count,
+          inside: this.container,
+          "aria-label": this.listLabel
         });
-      }
-      var r = function(t2, n2) {
-        var s2 = this;
-        r.count = (r.count || 0) + 1, this.count = r.count, this.isOpened = false, this.input = i(t2), this.input.setAttribute("autocomplete", "off"), this.input.setAttribute("aria-expanded", "false"), this.input.setAttribute("aria-owns", "awesomplete_list_" + this.count), this.input.setAttribute("role", "combobox"), this.options = n2 = n2 || {}, e(this, { minChars: 2, maxItems: 10, autoFirst: false, data: r.DATA, filter: r.FILTER_CONTAINS, sort: false !== n2.sort && r.SORT_BYLENGTH, container: r.CONTAINER, item: r.ITEM, replace: r.REPLACE, tabSelect: false, listLabel: "Results List" }, n2), this.index = -1, this.container = this.container(t2), this.ul = i.create("ul", { hidden: "hidden", role: "listbox", id: "awesomplete_list_" + this.count, inside: this.container, "aria-label": this.listLabel }), this.status = i.create("span", { className: "visually-hidden", role: "status", "aria-live": "assertive", "aria-atomic": true, inside: this.container, textContent: 0 != this.minChars ? "Type " + this.minChars + " or more characters for results." : "Begin typing for results." }), this._events = { input: { input: this.evaluate.bind(this), blur: this.close.bind(this, { reason: "blur" }), keydown: function(t3) {
-          var e2 = t3.keyCode;
-          s2.opened && (13 === e2 && s2.selected ? (t3.preventDefault(), s2.select(void 0, void 0, t3)) : 9 === e2 && s2.selected && s2.tabSelect ? s2.select(void 0, void 0, t3) : 27 === e2 ? s2.close({ reason: "esc" }) : 38 !== e2 && 40 !== e2 || (t3.preventDefault(), s2[38 === e2 ? "previous" : "next"]()));
-        } }, form: { submit: this.close.bind(this, { reason: "submit" }) }, ul: { mousedown: function(t3) {
-          t3.preventDefault();
-        }, click: function(t3) {
-          var e2 = t3.target;
-          if (e2 !== this) {
-            for (; e2 && !/li/i.test(e2.nodeName); )
-              e2 = e2.parentNode;
-            e2 && 0 === t3.button && (t3.preventDefault(), s2.select(e2, t3.target, t3));
-          }
-        } } }, i.bind(this.input, this._events.input), i.bind(this.input.form, this._events.form), i.bind(this.ul, this._events.ul), this.input.hasAttribute("list") ? (this.list = "#" + this.input.getAttribute("list"), this.input.removeAttribute("list")) : this.list = this.input.getAttribute("data-list") || n2.list || [], r.all.push(this);
-      };
-      r.prototype = { set list(t2) {
-        if (Array.isArray(t2))
-          this._list = t2;
-        else if ("string" == typeof t2 && t2.indexOf(",") > -1)
-          this._list = t2.split(/\s*,\s*/);
-        else if ((t2 = i(t2)) && t2.children) {
-          var e2 = [];
-          o.apply(t2.children).forEach(function(t3) {
-            if (!t3.disabled) {
-              var i2 = t3.textContent.trim(), n2 = t3.value || i2, s2 = t3.label || i2;
-              "" !== n2 && e2.push({ label: s2, value: n2 });
+        this.status = $.create("span", {
+          className: "visually-hidden",
+          role: "status",
+          "aria-live": "assertive",
+          "aria-atomic": true,
+          inside: this.container,
+          textContent: this.minChars != 0 ? "Type " + this.minChars + " or more characters for results." : "Begin typing for results."
+        });
+        this._events = {
+          input: {
+            "input": this.evaluate.bind(this),
+            "blur": this.close.bind(this, { reason: "blur" }),
+            "keydown": function(evt) {
+              var c = evt.keyCode;
+              if (me.opened) {
+                if (c === 13 && me.selected) {
+                  evt.preventDefault();
+                  me.select(void 0, void 0, evt);
+                } else if (c === 9 && me.selected && me.tabSelect) {
+                  evt.preventDefault();
+                  me.select(void 0, void 0, evt);
+                } else if (c === 27) {
+                  me.close({ reason: "esc" });
+                } else if (c === 38 || c === 40) {
+                  evt.preventDefault();
+                  me[c === 38 ? "previous" : "next"]();
+                }
+              }
             }
-          }), this._list = e2;
+          },
+          form: {
+            "submit": this.close.bind(this, { reason: "submit" })
+          },
+          ul: {
+            // Prevent the default mousedowm, which ensures the input is not blurred.
+            // The actual selection will happen on click. This also ensures dragging the
+            // cursor away from the list item will cancel the selection
+            "mousedown": function(evt) {
+              evt.preventDefault();
+            },
+            // The click event is fired even if the corresponding mousedown event has called preventDefault
+            "click": function(evt) {
+              var li = evt.target;
+              if (li !== this) {
+                while (li && !/li/i.test(li.nodeName)) {
+                  li = li.parentNode;
+                }
+                if (li && evt.button === 0) {
+                  evt.preventDefault();
+                  me.select(li, evt.target, evt);
+                }
+              }
+            }
+          }
+        };
+        $.bind(this.input, this._events.input);
+        $.bind(this.input.form, this._events.form);
+        $.bind(this.ul, this._events.ul);
+        if (this.input.hasAttribute("list")) {
+          this.list = "#" + this.input.getAttribute("list");
+          this.input.removeAttribute("list");
+        } else {
+          this.list = this.input.getAttribute("data-list") || o.list || [];
         }
-        document.activeElement === this.input && this.evaluate();
-      }, get selected() {
-        return this.index > -1;
-      }, get opened() {
-        return this.isOpened;
-      }, close: function(t2) {
-        this.opened && (this.input.setAttribute("aria-expanded", "false"), this.ul.setAttribute("hidden", ""), this.isOpened = false, this.index = -1, this.status.setAttribute("hidden", ""), i.fire(this.input, "awesomplete-close", t2 || {}));
-      }, open: function() {
-        this.input.setAttribute("aria-expanded", "true"), this.ul.removeAttribute("hidden"), this.isOpened = true, this.status.removeAttribute("hidden"), this.autoFirst && -1 === this.index && this.goto(0), i.fire(this.input, "awesomplete-open");
-      }, destroy: function() {
-        if (i.unbind(this.input, this._events.input), i.unbind(this.input.form, this._events.form), !this.options.container) {
-          var t2 = this.container.parentNode;
-          t2.insertBefore(this.input, this.container), t2.removeChild(this.container);
+        _.all.push(this);
+      };
+      _.prototype = {
+        set list(list) {
+          if (Array.isArray(list)) {
+            this._list = list;
+          } else if (typeof list === "string" && list.indexOf(",") > -1) {
+            this._list = list.split(/\s*,\s*/);
+          } else {
+            list = $(list);
+            if (list && list.children) {
+              var items = [];
+              slice.apply(list.children).forEach(function(el) {
+                if (!el.disabled) {
+                  var text = el.textContent.trim();
+                  var value = el.value || text;
+                  var label = el.label || text;
+                  if (value !== "") {
+                    items.push({ label, value });
+                  }
+                }
+              });
+              this._list = items;
+            }
+          }
+          if (document.activeElement === this.input) {
+            this.evaluate();
+          }
+        },
+        get selected() {
+          return this.index > -1;
+        },
+        get opened() {
+          return this.isOpened;
+        },
+        close: function(o) {
+          if (!this.opened) {
+            return;
+          }
+          this.input.setAttribute("aria-expanded", "false");
+          this.ul.setAttribute("hidden", "");
+          this.isOpened = false;
+          this.index = -1;
+          this.status.setAttribute("hidden", "");
+          $.fire(this.input, "awesomplete-close", o || {});
+        },
+        open: function() {
+          this.input.setAttribute("aria-expanded", "true");
+          this.ul.removeAttribute("hidden");
+          this.isOpened = true;
+          this.status.removeAttribute("hidden");
+          if (this.autoFirst && this.index === -1) {
+            this.goto(0);
+          }
+          $.fire(this.input, "awesomplete-open");
+        },
+        destroy: function() {
+          $.unbind(this.input, this._events.input);
+          $.unbind(this.input.form, this._events.form);
+          if (!this.options.container) {
+            var parentNode = this.container.parentNode;
+            parentNode.insertBefore(this.input, this.container);
+            parentNode.removeChild(this.container);
+          }
+          this.input.removeAttribute("autocomplete");
+          this.input.removeAttribute("aria-autocomplete");
+          var indexOfAwesomplete = _.all.indexOf(this);
+          if (indexOfAwesomplete !== -1) {
+            _.all.splice(indexOfAwesomplete, 1);
+          }
+        },
+        next: function() {
+          var count = this.ul.children.length;
+          this.goto(this.index < count - 1 ? this.index + 1 : count ? 0 : -1);
+        },
+        previous: function() {
+          var count = this.ul.children.length;
+          var pos = this.index - 1;
+          this.goto(this.selected && pos !== -1 ? pos : count - 1);
+        },
+        // Should not be used, highlights specific item without any checks!
+        goto: function(i) {
+          var lis = this.ul.children;
+          if (this.selected) {
+            lis[this.index].setAttribute("aria-selected", "false");
+          }
+          this.index = i;
+          if (i > -1 && lis.length > 0) {
+            lis[i].setAttribute("aria-selected", "true");
+            this.status.textContent = lis[i].textContent + ", list item " + (i + 1) + " of " + lis.length;
+            this.input.setAttribute("aria-activedescendant", this.ul.id + "_item_" + this.index);
+            this.ul.scrollTop = lis[i].offsetTop - this.ul.clientHeight + lis[i].clientHeight;
+            $.fire(this.input, "awesomplete-highlight", {
+              text: this.suggestions[this.index]
+            });
+          }
+        },
+        select: function(selected, origin, originalEvent) {
+          if (selected) {
+            this.index = $.siblingIndex(selected);
+          } else {
+            selected = this.ul.children[this.index];
+          }
+          if (selected) {
+            var suggestion = this.suggestions[this.index];
+            var allowed = $.fire(this.input, "awesomplete-select", {
+              text: suggestion,
+              origin: origin || selected,
+              originalEvent
+            });
+            if (allowed) {
+              this.replace(suggestion);
+              this.close({ reason: "select" });
+              $.fire(this.input, "awesomplete-selectcomplete", {
+                text: suggestion,
+                originalEvent
+              });
+            }
+          }
+        },
+        evaluate: function() {
+          var me = this;
+          var value = this.input.value;
+          if (value.length >= this.minChars && this._list && this._list.length > 0) {
+            this.index = -1;
+            this.ul.innerHTML = "";
+            this.suggestions = this._list.map(function(item) {
+              return new Suggestion(me.data(item, value));
+            }).filter(function(item) {
+              return me.filter(item, value);
+            });
+            if (this.sort !== false) {
+              this.suggestions = this.suggestions.sort(this.sort);
+            }
+            this.suggestions = this.suggestions.slice(0, this.maxItems);
+            this.suggestions.forEach(function(text, index) {
+              me.ul.appendChild(me.item(text, value, index));
+            });
+            if (this.ul.children.length === 0) {
+              this.status.textContent = "No results found";
+              this.close({ reason: "nomatches" });
+            } else {
+              this.open();
+              this.status.textContent = this.ul.children.length + " results found";
+            }
+          } else {
+            this.close({ reason: "nomatches" });
+            this.status.textContent = "No results found";
+          }
         }
-        this.input.removeAttribute("autocomplete"), this.input.removeAttribute("aria-autocomplete");
-        var e2 = r.all.indexOf(this);
-        -1 !== e2 && r.all.splice(e2, 1);
-      }, next: function() {
-        var t2 = this.ul.children.length;
-        this.goto(this.index < t2 - 1 ? this.index + 1 : t2 ? 0 : -1);
-      }, previous: function() {
-        var t2 = this.ul.children.length, e2 = this.index - 1;
-        this.goto(this.selected && -1 !== e2 ? e2 : t2 - 1);
-      }, goto: function(t2) {
-        var e2 = this.ul.children;
-        this.selected && e2[this.index].setAttribute("aria-selected", "false"), this.index = t2, t2 > -1 && e2.length > 0 && (e2[t2].setAttribute("aria-selected", "true"), this.status.textContent = e2[t2].textContent + ", list item " + (t2 + 1) + " of " + e2.length, this.input.setAttribute("aria-activedescendant", this.ul.id + "_item_" + this.index), this.ul.scrollTop = e2[t2].offsetTop - this.ul.clientHeight + e2[t2].clientHeight, i.fire(this.input, "awesomplete-highlight", { text: this.suggestions[this.index] }));
-      }, select: function(t2, e2, n2) {
-        if (t2 ? this.index = i.siblingIndex(t2) : t2 = this.ul.children[this.index], t2) {
-          var s2 = this.suggestions[this.index];
-          i.fire(this.input, "awesomplete-select", { text: s2, origin: e2 || t2, originalEvent: n2 }) && (this.replace(s2), this.close({ reason: "select" }), i.fire(this.input, "awesomplete-selectcomplete", { text: s2, originalEvent: n2 }));
+      };
+      _.all = [];
+      _.FILTER_CONTAINS = function(text, input) {
+        return RegExp($.regExpEscape(input.trim()), "i").test(text);
+      };
+      _.FILTER_STARTSWITH = function(text, input) {
+        return RegExp("^" + $.regExpEscape(input.trim()), "i").test(text);
+      };
+      _.SORT_BYLENGTH = function(a, b) {
+        if (a.length !== b.length) {
+          return a.length - b.length;
         }
-      }, evaluate: function() {
-        var e2 = this, i2 = this.input.value;
-        i2.length >= this.minChars && this._list && this._list.length > 0 ? (this.index = -1, this.ul.innerHTML = "", this.suggestions = this._list.map(function(n2) {
-          return new t(e2.data(n2, i2));
-        }).filter(function(t2) {
-          return e2.filter(t2, i2);
-        }), false !== this.sort && (this.suggestions = this.suggestions.sort(this.sort)), this.suggestions = this.suggestions.slice(0, this.maxItems), this.suggestions.forEach(function(t2, n2) {
-          e2.ul.appendChild(e2.item(t2, i2, n2));
-        }), 0 === this.ul.children.length ? (this.status.textContent = "No results found", this.close({ reason: "nomatches" })) : (this.open(), this.status.textContent = this.ul.children.length + " results found")) : (this.close({ reason: "nomatches" }), this.status.textContent = "No results found");
-      } }, r.all = [], r.FILTER_CONTAINS = function(t2, e2) {
-        return RegExp(i.regExpEscape(e2.trim()), "i").test(t2);
-      }, r.FILTER_STARTSWITH = function(t2, e2) {
-        return RegExp("^" + i.regExpEscape(e2.trim()), "i").test(t2);
-      }, r.SORT_BYLENGTH = function(t2, e2) {
-        return t2.length !== e2.length ? t2.length - e2.length : t2 < e2 ? -1 : 1;
-      }, r.CONTAINER = function(t2) {
-        return i.create("div", { className: "awesomplete", around: t2 });
-      }, r.ITEM = function(t2, e2, n2) {
-        return i.create("li", { innerHTML: "" === e2.trim() ? t2 : t2.replace(RegExp(i.regExpEscape(e2.trim()), "gi"), "<mark>$&</mark>"), role: "option", "aria-selected": "false", id: "awesomplete_list_" + this.count + "_item_" + n2 });
-      }, r.REPLACE = function(t2) {
-        this.input.value = t2.value;
-      }, r.DATA = function(t2) {
-        return t2;
-      }, Object.defineProperty(t.prototype = Object.create(String.prototype), "length", { get: function() {
-        return this.label.length;
-      } }), t.prototype.toString = t.prototype.valueOf = function() {
+        return a < b ? -1 : 1;
+      };
+      _.CONTAINER = function(input) {
+        return $.create("div", {
+          className: "awesomplete",
+          around: input
+        });
+      };
+      _.ITEM = function(text, input, item_id) {
+        var html = input.trim() === "" ? text : text.replace(RegExp($.regExpEscape(input.trim()), "gi"), "<mark>$&</mark>");
+        return $.create("li", {
+          innerHTML: html,
+          "role": "option",
+          "aria-selected": "false",
+          "id": "awesomplete_list_" + this.count + "_item_" + item_id
+        });
+      };
+      _.REPLACE = function(text) {
+        this.input.value = text.value;
+      };
+      _.DATA = function(item) {
+        return item;
+      };
+      function Suggestion(data) {
+        var o = Array.isArray(data) ? { label: data[0], value: data[1] } : typeof data === "object" && "label" in data && "value" in data ? data : { label: data, value: data };
+        this.label = o.label || o.value;
+        this.value = o.value;
+      }
+      Object.defineProperty(Suggestion.prototype = Object.create(String.prototype), "length", {
+        get: function() {
+          return this.label.length;
+        }
+      });
+      Suggestion.prototype.toString = Suggestion.prototype.valueOf = function() {
         return "" + this.label;
       };
-      var o = Array.prototype.slice;
-      i.create = function(t2, e2) {
-        var n2 = document.createElement(t2);
-        for (var s2 in e2) {
-          var r2 = e2[s2];
-          if ("inside" === s2)
-            i(r2).appendChild(n2);
-          else if ("around" === s2) {
-            var o2 = i(r2);
-            o2.parentNode.insertBefore(n2, o2), n2.appendChild(o2), null != o2.getAttribute("autofocus") && o2.focus();
-          } else
-            s2 in n2 ? n2[s2] = r2 : n2.setAttribute(s2, r2);
+      function configure(instance, properties, o) {
+        for (var i in properties) {
+          var initial = properties[i], attrValue = instance.input.getAttribute("data-" + i.toLowerCase());
+          if (typeof initial === "number") {
+            instance[i] = parseInt(attrValue);
+          } else if (initial === false) {
+            instance[i] = attrValue !== null;
+          } else if (initial instanceof Function) {
+            instance[i] = null;
+          } else {
+            instance[i] = attrValue;
+          }
+          if (!instance[i] && instance[i] !== 0) {
+            instance[i] = i in o ? o[i] : initial;
+          }
         }
-        return n2;
-      }, i.bind = function(t2, e2) {
-        if (t2)
-          for (var i2 in e2) {
-            var n2 = e2[i2];
-            i2.split(/\s+/).forEach(function(e3) {
-              t2.addEventListener(e3, n2);
+      }
+      var slice = Array.prototype.slice;
+      function $(expr, con) {
+        return typeof expr === "string" ? (con || document).querySelector(expr) : expr || null;
+      }
+      function $$(expr, con) {
+        return slice.call((con || document).querySelectorAll(expr));
+      }
+      $.create = function(tag, o) {
+        var element = document.createElement(tag);
+        for (var i in o) {
+          var val = o[i];
+          if (i === "inside") {
+            $(val).appendChild(element);
+          } else if (i === "around") {
+            var ref = $(val);
+            ref.parentNode.insertBefore(element, ref);
+            element.appendChild(ref);
+            if (ref.getAttribute("autofocus") != null) {
+              ref.focus();
+            }
+          } else if (i in element) {
+            element[i] = val;
+          } else {
+            element.setAttribute(i, val);
+          }
+        }
+        return element;
+      };
+      $.bind = function(element, o) {
+        if (element) {
+          for (var event in o) {
+            var callback = o[event];
+            event.split(/\s+/).forEach(function(event2) {
+              element.addEventListener(event2, callback);
             });
           }
-      }, i.unbind = function(t2, e2) {
-        if (t2)
-          for (var i2 in e2) {
-            var n2 = e2[i2];
-            i2.split(/\s+/).forEach(function(e3) {
-              t2.removeEventListener(e3, n2);
+        }
+      };
+      $.unbind = function(element, o) {
+        if (element) {
+          for (var event in o) {
+            var callback = o[event];
+            event.split(/\s+/).forEach(function(event2) {
+              element.removeEventListener(event2, callback);
             });
           }
-      }, i.fire = function(t2, e2, i2) {
-        var n2 = document.createEvent("HTMLEvents");
-        n2.initEvent(e2, true, true);
-        for (var s2 in i2)
-          n2[s2] = i2[s2];
-        return t2.dispatchEvent(n2);
-      }, i.regExpEscape = function(t2) {
-        return t2.replace(/[-\\^$*+?.()|[\]{}]/g, "\\$&");
-      }, i.siblingIndex = function(t2) {
-        for (var e2 = 0; t2 = t2.previousElementSibling; e2++)
+        }
+      };
+      $.fire = function(target, type, properties) {
+        var evt = document.createEvent("HTMLEvents");
+        evt.initEvent(type, true, true);
+        for (var j in properties) {
+          evt[j] = properties[j];
+        }
+        return target.dispatchEvent(evt);
+      };
+      $.regExpEscape = function(s) {
+        return s.replace(/[-\\^$*+?.()|[\]{}]/g, "\\$&");
+      };
+      $.siblingIndex = function(el) {
+        for (var i = 0; el = el.previousElementSibling; i++)
           ;
-        return e2;
-      }, "undefined" != typeof self && (self.Awesomplete = r), "undefined" != typeof Document && ("loading" !== document.readyState ? s() : document.addEventListener("DOMContentLoaded", s)), r.$ = i, r.$$ = n, "object" == typeof module2 && module2.exports && (module2.exports = r);
-    }();
+        return i;
+      };
+      function init() {
+        $$("input.awesomplete").forEach(function(input) {
+          new _(input);
+        });
+      }
+      if (typeof self !== "undefined") {
+        self.Awesomplete = _;
+      }
+      if (typeof Document !== "undefined") {
+        if (document.readyState !== "loading") {
+          init();
+        } else {
+          document.addEventListener("DOMContentLoaded", init);
+        }
+      }
+      _.$ = $;
+      _.$$ = $$;
+      if (typeof module2 === "object" && module2.exports) {
+        module2.exports = _;
+      }
+      return _;
+    })();
   }
 });
 
-// vendor/awesomplete-util.min.js
-var require_awesomplete_util_min = __commonJS({
-  "vendor/awesomplete-util.min.js"(exports, module2) {
+// vendor/awesomplete-util.js
+var require_awesomplete_util = __commonJS({
+  "vendor/awesomplete-util.js"(exports, module2) {
     var AwesompleteUtil3 = function() {
-      var t = "awesomplete-", n = t + "loadcomplete", e = t + "close", r = t + "match", u = t + "prepop", i = t + "select", o = "awe-found", a = "awe-not-found", c = Awesomplete.$;
-      function f(t2, n2, e2) {
-        return c.fire(t2, n2, { detail: e2 });
+      var _AWE = "awesomplete-", _AWE_LOAD = _AWE + "loadcomplete", _AWE_CLOSE = _AWE + "close", _AWE_MATCH = _AWE + "match", _AWE_PREPOP = _AWE + "prepop", _AWE_SELECT = _AWE + "select", _CLS_FOUND = "awe-found", _CLS_NOT_FOUND = "awe-not-found", $ = Awesomplete.$;
+      function _suggestion(data) {
+        var lv = Array.isArray(data) ? { label: data[0], value: data[1] } : typeof data === "object" && "label" in data && "value" in data ? data : { label: data, value: data };
+        return { label: lv.label || lv.value, value: lv.value };
       }
-      function l(t2, n2) {
-        var e2, i2, c2, l2, s2, d2, p2 = t2.input, m2 = p2.classList, v2 = t2.utilprops, h2 = v2.selected, y2 = v2.convertInput.call(t2, p2.value), b2 = t2.opened, w2 = [], A2 = t2._list;
-        if (v2.prepop = false, A2) {
-          for (l2 = 0; l2 < A2.length; l2++)
-            if (c2 = A2[l2], s2 = t2.data(c2, y2), d2 = void 0, e2 = { label: (d2 = Array.isArray(s2) ? { label: s2[0], value: s2[1] } : "object" == typeof s2 && "label" in s2 && "value" in s2 ? s2 : { label: s2, value: s2 }).label || d2.value, value: d2.value }, 0 === t2.maxItems && (e2.toString = function() {
-              return "" + this.label;
-            }, t2.filter(e2, y2) && (b2 = true)), i2 = { input: { value: "" } }, t2.replace.call(i2, e2), v2.convertInput.call(t2, i2.input.value) === y2) {
-              if (h2 && h2.value === e2.value && h2.label === e2.label) {
-                w2 = [c2];
+      function _fire(target, name, detail) {
+        return $.fire(target, name, { detail });
+      }
+      function _matchValue(awe, prepop) {
+        var input = awe.input, classList = input.classList, utilprops = awe.utilprops, selected = utilprops.selected, val = utilprops.convertInput.call(awe, input.value), opened = awe.opened, result = [], list = awe._list, suggestion, fake, rec, j;
+        utilprops.prepop = false;
+        if (list) {
+          for (j = 0; j < list.length; j++) {
+            rec = list[j];
+            suggestion = _suggestion(awe.data(rec, val));
+            if (awe.maxItems === 0) {
+              suggestion.toString = function() {
+                return "" + this.label;
+              };
+              if (awe.filter(suggestion, val)) {
+                opened = true;
+              }
+            }
+            fake = { input: { value: "" } };
+            awe.replace.call(fake, suggestion);
+            if (utilprops.convertInput.call(awe, fake.input.value) === val) {
+              if (selected && selected.value === suggestion.value && selected.label === suggestion.label) {
+                result = [rec];
                 break;
               }
-              w2.push(c2);
+              result.push(rec);
             }
-          v2.prevSelected !== w2 && (w2.length > 0 ? n2 ? f(p2, u, w2) : v2.changed && (v2.prevSelected = w2, m2.remove(a), m2.add(o), f(p2, r, w2)) : n2 ? f(p2, u, []) : v2.changed && (v2.prevSelected = [], m2.remove(o), b2 && p2 === document.activeElement ? m2.remove(a) : "" !== y2 && (m2.add(a), f(p2, r, []))));
+          }
+          if (utilprops.prevSelected !== result) {
+            if (result.length > 0) {
+              if (prepop) {
+                _fire(input, _AWE_PREPOP, result);
+              } else if (utilprops.changed) {
+                utilprops.prevSelected = result;
+                classList.remove(_CLS_NOT_FOUND);
+                classList.add(_CLS_FOUND);
+                _fire(input, _AWE_MATCH, result);
+              }
+            } else if (prepop) {
+              _fire(input, _AWE_PREPOP, []);
+            } else if (utilprops.changed) {
+              utilprops.prevSelected = [];
+              classList.remove(_CLS_FOUND);
+              if (!opened || input !== document.activeElement) {
+                if (val !== "") {
+                  classList.add(_CLS_NOT_FOUND);
+                  _fire(input, _AWE_MATCH, []);
+                }
+              } else {
+                classList.remove(_CLS_NOT_FOUND);
+              }
+            }
+          }
         }
       }
-      function s(t2) {
-        var r2 = this;
-        t2.type !== e && t2.type !== n && "blur" !== t2.type || t2.target !== r2.input || l(r2, r2.utilprops.prepop && t2.type === n);
+      function _match(ev) {
+        var awe = this;
+        if ((ev.type === _AWE_CLOSE || ev.type === _AWE_LOAD || ev.type === "blur") && ev.target === awe.input) {
+          _matchValue(awe, awe.utilprops.prepop && ev.type === _AWE_LOAD);
+        }
       }
-      function d(t2) {
-        t2.target === this.input && 9 === t2.keyCode && this.select();
+      function _onKeydown(ev) {
+        var awe = this;
+        if (ev.target === awe.input && ev.keyCode === 9) {
+          awe.select();
+        }
       }
-      function p(t2) {
-        var n2 = this;
-        clearTimeout(n2.utilprops.timeoutID), n2.utilprops.changed = true, n2.utilprops.selected = t2.text;
+      function _select(ev) {
+        var awe = this;
+        clearTimeout(awe.utilprops.timeoutID);
+        awe.utilprops.changed = true;
+        awe.utilprops.selected = ev.text;
       }
-      function m(t2, n2, e2) {
-        var r2 = t2.utilprops;
-        return !r2.t || !r2.loadall && 0 === n2.lastIndexOf(e2, 0) && (0 !== n2.lastIndexOf(r2.t, 0) || "number" == typeof r2.limit && t2._list.length >= r2.limit);
+      function _isEmpty(val) {
+        return Object.keys(val).length === 0 && val.constructor === Object;
       }
-      function v(t2, e2, r2) {
-        t2.list = e2, t2.utilprops.t = r2, f(t2.input, n, r2);
+      function _ifNeedListUpdate(awe, val, queryVal) {
+        var utilprops = awe.utilprops;
+        return !utilprops.listQuery || !utilprops.loadall && /* with loadall, if there is a result, there is no need for new lists */
+        val.lastIndexOf(queryVal, 0) === 0 && (val.lastIndexOf(utilprops.listQuery, 0) !== 0 || "number" === typeof utilprops.limit && awe._list.length >= utilprops.limit);
       }
-      function h() {
-        var t2, n2, e2 = this, r2 = e2.u, u2 = e2.i, i2 = e2.queryVal, o2 = r2.utilprops.val;
-        if (200 === u2.status) {
-          if (t2 = JSON.parse(u2.responseText), r2.utilprops.convertResponse && (t2 = r2.utilprops.convertResponse(t2)), !Array.isArray(t2)) {
-            if (0 === r2.utilprops.limit || 1 === r2.utilprops.limit)
-              t2 = function(t3) {
-                return 0 === Object.keys(t3).length && t3.constructor === Object;
-              }(t2) ? [] : [t2];
-            else
-              for (n2 in t2)
-                if (Array.isArray(t2[n2])) {
-                  t2 = t2[n2];
+      function _loadComplete(awe, list, queryVal) {
+        awe.list = list;
+        awe.utilprops.listQuery = queryVal;
+        _fire(awe.input, _AWE_LOAD, queryVal);
+      }
+      function _onLoad() {
+        var t = this, awe = t.awe, xhr = t.xhr, queryVal = t.queryVal, val = awe.utilprops.val, data, prop;
+        if (xhr.status === 200) {
+          data = JSON.parse(xhr.responseText);
+          if (awe.utilprops.convertResponse)
+            data = awe.utilprops.convertResponse(data);
+          if (!Array.isArray(data)) {
+            if (awe.utilprops.limit === 0 || awe.utilprops.limit === 1) {
+              data = _isEmpty(data) ? [] : [data];
+            } else {
+              for (prop in data) {
+                if (Array.isArray(data[prop])) {
+                  data = data[prop];
                   break;
                 }
+              }
+            }
           }
-          Array.isArray(t2) && m(r2, o2, i2) && v(r2, t2, i2 || r2.utilprops.loadall);
+          if (Array.isArray(data)) {
+            if (_ifNeedListUpdate(awe, val, queryVal)) {
+              _loadComplete(awe, data, queryVal || awe.utilprops.loadall);
+            }
+          }
         }
       }
-      function y(t2, n2) {
-        var e2 = new XMLHttpRequest();
-        t2.utilprops.ajax.call(t2, t2.utilprops.url, t2.utilprops.urlEnd, t2.utilprops.loadall ? "" : n2, h.bind({ u: t2, i: e2, queryVal: n2 }), e2);
+      function _ajax(awe, val) {
+        var xhr = new XMLHttpRequest();
+        awe.utilprops.ajax.call(
+          awe,
+          awe.utilprops.url,
+          awe.utilprops.urlEnd,
+          awe.utilprops.loadall ? "" : val,
+          _onLoad.bind({ awe, xhr, queryVal: val }),
+          xhr
+        );
       }
-      function b(t2, n2, e2) {
-        t2.utilprops.url && m(t2, n2, n2) ? "number" == typeof e2 && e2 > 0 ? t2.utilprops.timeoutID = setTimeout(y.bind(null, t2, n2), e2) : y(t2, n2) : l(t2, t2.utilprops.prepop);
-      }
-      function w(t2, n2, e2) {
-        return t2.utilprops.prepop = e2 || false, t2.utilprops.val !== n2 && (clearTimeout(t2.utilprops.timeoutID), t2.utilprops.selected = null, t2.utilprops.changed = true, t2.utilprops.val = n2, ("" === n2 || n2.length < t2.minChars) && function(t3) {
-          var n3 = t3.input, e3 = n3.classList;
-          e3.remove(a), e3.remove(o), f(n3, r, []);
-        }(t2), n2.length >= t2.minChars && b(t2, n2, t2.utilprops.debounce)), t2;
-      }
-      function A(t2) {
-        var n2, e2 = this;
-        t2.target === e2.input && (n2 = e2.utilprops.convertInput.call(e2, e2.input.value), w(e2, n2));
-      }
-      function k(t2) {
-        return c.create("li", { innerHTML: t2, role: "option", "aria-selected": "false" });
-      }
-      function C(t2) {
-        var n2, e2, r2 = this, u2 = r2.o, i2 = r2.l, o2 = r2.p;
-        t2.target === c(u2) && ("function" == typeof o2 ? o2(t2, i2) : (n2 = c(o2)) && n2 !== document.activeElement && (e2 = Array.isArray(t2.detail) && 1 === t2.detail.length ? t2.detail[0] : null, e2 = (i2 && e2 ? e2[i2] : e2) || "", void 0 !== n2.value ? (n2.value = e2, n2.classList && n2.classList.remove && n2.classList.remove(a)) : void 0 !== n2.src ? n2.src = e2 : n2.innerHTML = e2));
-      }
-      function F(t2) {
-        var n2, e2;
-        t2.target === c(this.btnId) && (t2.preventDefault(), 0 === (n2 = this.u).ul.childNodes.length || n2.ul.hasAttribute("hidden") ? (e2 = n2.minChars, n2.minChars = 0, n2.evaluate(), n2.minChars = e2) : n2.close());
-      }
-      function j(t2, n2, e2) {
-        var r2 = c.regExpEscape(function(t3) {
-          return t3.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
-        }(n2).trim()), u2 = "" === r2 ? null : e2 ? RegExp("^" + r2, "i") : RegExp("(?!<[^>]+?>)" + r2 + "(?![^<]*?>)", "gi");
-        return t2.replace(u2, "<mark>$&</mark>");
-      }
-      function O(t2, n2, e2, r2, u2) {
-        var i2, o2 = u2.root, a2 = u2.value, c2 = u2.label || u2.value, f2 = true, l2 = [];
-        if (0 === r2 && o2 && e2 && 0 !== (e2 + ".").lastIndexOf(o2 + ".", 0) && 0 !== (o2 + ".").lastIndexOf(e2 + ".", 0))
-          return t2;
-        if (Object(n2) !== n2)
-          e2 ? t2[e2] = n2 : t2 = n2;
-        else if (Array.isArray(n2)) {
-          for (i2 = 0; i2 < n2.length; i2++)
-            l2.push(O({}, n2[i2], "", r2 + 1, u2));
-          e2 ? t2[e2] = l2 : t2 = l2;
+      function _lookup(awe, val, debounce) {
+        if (awe.utilprops.url) {
+          if (_ifNeedListUpdate(awe, val, val)) {
+            if ("number" === typeof debounce && debounce > 0) {
+              awe.utilprops.timeoutID = setTimeout(_ajax.bind(null, awe, val), debounce);
+            } else {
+              _ajax(awe, val);
+            }
+          } else {
+            _matchValue(awe, awe.utilprops.prepop);
+          }
         } else {
-          for (i2 in n2)
-            f2 = false, O(t2, n2[i2], e2 ? e2 + "." + i2 : i2, r2, u2);
-          f2 && e2 && (t2[e2] = {});
+          _matchValue(awe, awe.utilprops.prepop);
         }
-        return r2 < 2 && e2 && (a2 && 0 === (e2 + ".").lastIndexOf(a2 + ".", 0) && (t2.value = t2[e2]), c2 && 0 === (e2 + ".").lastIndexOf(c2 + ".", 0) && (t2.label = t2[e2])), 0 === r2 && (a2 && !("value" in t2) && (t2.value = null), c2 && !("label" in t2) && (t2.label = null)), t2;
       }
-      function g() {
-        var t2 = this, r2 = t2.u.input, u2 = t2.m, o2 = t2.v, a2 = t2.h, c2 = t2.A;
-        r2.removeEventListener(i, c2), r2.removeEventListener(n, u2), r2.removeEventListener(e, u2), r2.removeEventListener("blur", u2), r2.removeEventListener("input", o2), r2.removeEventListener("keydown", a2);
+      function _restart(awe) {
+        var elem = awe.input, classList = elem.classList;
+        classList.remove(_CLS_NOT_FOUND);
+        classList.remove(_CLS_FOUND);
+        _fire(elem, _AWE_MATCH, []);
       }
-      return { ajax: function(t2, n2, e2, r2, u2) {
-        var i2 = encodeURIComponent(e2);
-        return (u2 = u2 || new XMLHttpRequest()).open("GET", t2 + ("function" == typeof n2 ? n2(i2) : i2 + (n2 || ""))), u2.onload = r2, u2.send(), u2;
-      }, convertInput: function(t2) {
-        return "string" == typeof t2 ? t2.trim().toLowerCase() : "";
-      }, item: k, load: v, mark: j, itemContains: function(t2, n2, e2) {
-        var r2;
-        return "" !== n2.trim() && ((r2 = ("" + t2).split(/<p>/))[0] = j(r2[0], n2), t2 = r2.join("<p>")), k(t2);
-      }, itemMarkAll: function(t2, n2, e2) {
-        return k("" === n2.trim() ? "" + t2 : j("" + t2, n2));
-      }, itemStartsWith: function(t2, n2, e2) {
-        return k("" === n2.trim() ? "" + t2 : j("" + t2, n2, true));
-      }, itemWords: function(t2, n2, e2) {
-        var r2, u2, i2 = n2.split(/\s+/);
-        if ("" !== n2.trim()) {
-          for (r2 = ("" + t2).split("<"), u2 = 0; u2 < i2.length; u2++)
-            r2[0] = j(r2[0], i2[u2]);
-          t2 = r2.join("<");
+      function _update(awe, val, prepop) {
+        awe.utilprops.prepop = prepop || false;
+        if (awe.utilprops.val !== val) {
+          clearTimeout(awe.utilprops.timeoutID);
+          awe.utilprops.selected = null;
+          awe.utilprops.changed = true;
+          awe.utilprops.val = val;
+          if (val === "" || val.length < awe.minChars) {
+            _restart(awe);
+          }
+          if (val.length >= awe.minChars) {
+            _lookup(awe, val, awe.utilprops.debounce);
+          }
         }
-        return k(t2);
-      }, create: function(t2, n2, e2) {
-        e2.item = e2.item || this.itemContains;
-        var r2 = new Awesomplete(t2, e2);
-        return r2.utilprops = n2 || {}, r2.utilprops.url || void 0 !== r2.utilprops.loadall || (r2.utilprops.loadall = true), r2.utilprops.ajax = r2.utilprops.ajax || this.ajax, r2.utilprops.convertInput = r2.utilprops.convertInput || this.convertInput, r2;
-      }, attach: function(t2) {
-        var r2 = t2.input, u2 = s.bind(t2), o2 = d.bind(t2), a2 = A.bind(t2), f2 = p.bind(t2), l2 = g.bind({ u: t2, m: u2, v: a2, h: o2, A: f2 }), m2 = { keydown: o2, input: a2 };
-        return m2.blur = m2[e] = m2[n] = u2, m2[i] = f2, c.bind(r2, m2), t2.utilprops.detach = l2, t2.utilprops.prepop && (t2.utilprops.loadall || "" !== r2.value) && (t2.utilprops.val = t2.utilprops.convertInput.call(t2, r2.value), b(t2, t2.utilprops.val)), t2;
-      }, update: function(t2, n2, e2) {
-        return t2.input.value = n2, w(t2, n2, e2);
-      }, start: function(t2, n2, e2) {
-        return this.attach(this.create(t2, n2, e2));
-      }, detach: function(t2) {
-        return clearTimeout(t2.utilprops.timeoutID), t2.utilprops.detach && (t2.utilprops.detach(), delete t2.utilprops.detach), t2;
-      }, createCopyFun: function(t2, n2, e2) {
-        return C.bind({ o: t2, l: n2, p: c(e2) || e2 });
-      }, attachCopyFun: function(t2, n2, e2) {
-        return n2 = "boolean" != typeof n2 || n2, (e2 = e2 || document.body).addEventListener(r, t2), n2 && e2.addEventListener(u, t2), t2;
-      }, startCopy: function(t2, n2, e2, r2) {
-        var u2 = c(t2);
-        return this.attachCopyFun(this.createCopyFun(u2 || t2, n2, e2), r2, u2);
-      }, detachCopyFun: function(t2, n2) {
-        return (n2 = n2 || document.body).removeEventListener(u, t2), n2.removeEventListener(r, t2), t2;
-      }, createClickFun: function(t2, n2) {
-        return F.bind({ btnId: t2, u: n2 });
-      }, attachClickFun: function(t2, n2) {
-        return (n2 = n2 || document.body).addEventListener("click", t2), t2;
-      }, startClick: function(t2, n2) {
-        var e2 = c(t2);
-        return this.attachClickFun(this.createClickFun(e2 || t2, n2), e2);
-      }, detachClickFun: function(t2, n2) {
-        return (n2 = n2 || document.body).removeEventListener("click", t2), t2;
-      }, filterContains: function(t2, n2) {
-        return Awesomplete.FILTER_CONTAINS(t2.value, n2);
-      }, filterStartsWith: function(t2, n2) {
-        return Awesomplete.FILTER_STARTSWITH(t2.value, n2);
-      }, filterOff: function(t2, n2) {
-        return true;
-      }, filterWords: function(t2, n2) {
-        var e2, r2 = n2.split(/\s+/), u2 = true;
-        for (t2 = " " + t2, e2 = 0; u2 && e2 < r2.length; e2++)
-          u2 = Awesomplete.FILTER_CONTAINS(t2, " " + r2[e2]);
-        return u2;
-      }, jsonFlatten: function(t2) {
-        return O({}, t2, "", 0, this);
-      } };
+        return awe;
+      }
+      function _onInput(e) {
+        var awe = this, val;
+        if (e.target === awe.input) {
+          val = awe.utilprops.convertInput.call(awe, awe.input.value);
+          _update(awe, val);
+        }
+      }
+      function _item(html) {
+        return $.create("li", {
+          innerHTML: html,
+          "role": "option",
+          "aria-selected": "false"
+        });
+      }
+      function _htmlEscape(text) {
+        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+      }
+      function _copyFun(e) {
+        var t = this, sourceId = t.sourceId, dataField = t.dataField, targetId = t.targetId, elem, val;
+        if (e.target === $(sourceId)) {
+          if ("function" === typeof targetId) {
+            targetId(e, dataField);
+          } else {
+            elem = $(targetId);
+            if (elem && elem !== document.activeElement) {
+              val = Array.isArray(e.detail) && e.detail.length === 1 ? e.detail[0] : null;
+              val = (dataField && val ? val[dataField] : val) || "";
+              if ("undefined" !== typeof elem.value) {
+                elem.value = val;
+                if (elem.classList && elem.classList.remove) {
+                  elem.classList.remove(_CLS_NOT_FOUND);
+                }
+              } else if ("undefined" !== typeof elem.src) {
+                elem.src = val;
+              } else {
+                elem.innerHTML = val;
+              }
+            }
+          }
+        }
+      }
+      function _clickFun(e) {
+        var t = this, awe, minChars;
+        if (e.target === $(t.btnId)) {
+          e.preventDefault();
+          awe = t.awe;
+          if (awe.ul.childNodes.length === 0 || awe.ul.hasAttribute("hidden")) {
+            minChars = awe.minChars;
+            awe.minChars = 0;
+            awe.evaluate();
+            awe.minChars = minChars;
+          } else {
+            awe.close();
+          }
+        }
+      }
+      function _mark(text, input, startsWith) {
+        var searchText = $.regExpEscape(_htmlEscape(input).trim()), regExp = searchText === "" ? null : startsWith ? RegExp("^" + searchText, "i") : RegExp("(?!<[^>]+?>)" + searchText + "(?![^<]*?>)", "gi");
+        return text.replace(regExp, "<mark>$&</mark>");
+      }
+      function _jsonFlatten(result, cur, prop, level, opts) {
+        var root = opts.root, value = opts.value, label = opts.label || opts.value, isEmpty = true, arrayResult = [], j;
+        if (level === 0 && root && prop && (prop + ".").lastIndexOf(root + ".", 0) !== 0 && (root + ".").lastIndexOf(prop + ".", 0) !== 0) {
+          return result;
+        }
+        if (Object(cur) !== cur) {
+          if (prop) {
+            result[prop] = cur;
+          } else {
+            result = cur;
+          }
+        } else if (Array.isArray(cur)) {
+          for (j = 0; j < cur.length; j++) {
+            arrayResult.push(_jsonFlatten({}, cur[j], "", level + 1, opts));
+          }
+          if (prop) {
+            result[prop] = arrayResult;
+          } else {
+            result = arrayResult;
+          }
+        } else {
+          for (j in cur) {
+            isEmpty = false;
+            _jsonFlatten(result, cur[j], prop ? prop + "." + j : j, level, opts);
+          }
+          if (isEmpty && prop)
+            result[prop] = {};
+        }
+        if (level < 2 && prop) {
+          if (value && (prop + ".").lastIndexOf(value + ".", 0) === 0) {
+            result["value"] = result[prop];
+          }
+          if (label && (prop + ".").lastIndexOf(label + ".", 0) === 0) {
+            result["label"] = result[prop];
+          }
+        }
+        if (level === 0) {
+          if (value && !("value" in result)) {
+            result["value"] = null;
+          }
+          if (label && !("label" in result)) {
+            result["label"] = null;
+          }
+        }
+        return result;
+      }
+      function _detach() {
+        var t = this, elem = t.awe.input, boundMatch = t.boundMatch, boundOnInput = t.boundOnInput, boundOnKeydown = t.boundOnKeydown, boundSelect = t.boundSelect;
+        elem.removeEventListener(_AWE_SELECT, boundSelect);
+        elem.removeEventListener(_AWE_LOAD, boundMatch);
+        elem.removeEventListener(_AWE_CLOSE, boundMatch);
+        elem.removeEventListener("blur", boundMatch);
+        elem.removeEventListener("input", boundOnInput);
+        elem.removeEventListener("keydown", boundOnKeydown);
+      }
+      return {
+        // ajax call for url + val + urlEnd. fn is the callback function. xhr parameter is optional.
+        ajax: function(url, urlEnd, val, fn, xhr) {
+          var encodedVal = encodeURIComponent(val);
+          xhr = xhr || new XMLHttpRequest();
+          xhr.open("GET", url + ("function" === typeof urlEnd ? urlEnd(encodedVal) : encodedVal + (urlEnd || "")));
+          xhr.onload = fn;
+          xhr.send();
+          return xhr;
+        },
+        // Convert input before comparing it with suggestion. lowercase and trim the text
+        convertInput: function(text) {
+          return "string" === typeof text ? text.trim().toLowerCase() : "";
+        },
+        // item function as defined in Awesomplete.
+        // item(html, input). input is optional and ignored in this implementation
+        item: _item,
+        // Set a new suggestion list. Trigger loadcomplete event.
+        // load(awesomplete, list, queryVal)
+        load: _loadComplete,
+        // Return text with mark tags arround matching input. Don't replace inside <HTML> tags.
+        // When startsWith is true, mark only the matching begin text.
+        // mark(text, input, startsWith)
+        mark: _mark,
+        // highlight items: Marks input in the first line, not in the optional description
+        itemContains: function(text, input, item_id) {
+          var arr;
+          if (input.trim() !== "") {
+            arr = ("" + text).split(/<p>/);
+            arr[0] = _mark(arr[0], input);
+            text = arr.join("<p>");
+          }
+          return _item(text, input, item_id);
+        },
+        // highlight items: mark all occurrences of the input text
+        itemMarkAll: function(text, input, item_id) {
+          return _item(input.trim() === "" ? "" + text : _mark("" + text, input), input, item_id);
+        },
+        // highlight items: mark input in the begin text
+        itemStartsWith: function(text, input, item_id) {
+          return _item(input.trim() === "" ? "" + text : _mark("" + text, input, true), input, item_id);
+        },
+        // highlight items: highlight matching words
+        itemWords: function(text, input, item_id) {
+          var arr, words = input.split(/\s+/), j;
+          if (input.trim() !== "") {
+            arr = ("" + text).split("<");
+            for (j = 0; j < words.length; j++) {
+              arr[0] = _mark(arr[0], words[j]);
+            }
+            text = arr.join("<");
+          }
+          return _item(text, input, item_id);
+        },
+        // create Awesomplete object for input control elemId. opts are passed unchanged to Awesomplete.
+        create: function(elemId, utilOpts, opts) {
+          opts.item = opts.item || this.itemContains;
+          var awe = new Awesomplete(elemId, opts);
+          awe.utilprops = utilOpts || {};
+          if (!awe.utilprops.url && "undefined" === typeof awe.utilprops.loadall) {
+            awe.utilprops.loadall = true;
+          }
+          awe.utilprops.ajax = awe.utilprops.ajax || this.ajax;
+          awe.utilprops.convertInput = awe.utilprops.convertInput || this.convertInput;
+          return awe;
+        },
+        // attach Awesomplete object to event listeners
+        attach: function(awe) {
+          var elem = awe.input, boundMatch = _match.bind(awe), boundOnKeydown = _onKeydown.bind(awe), boundOnInput = _onInput.bind(awe), boundSelect = _select.bind(awe), boundDetach = _detach.bind({
+            awe,
+            boundMatch,
+            boundOnInput,
+            boundOnKeydown,
+            boundSelect
+          }), events = {
+            "keydown": boundOnKeydown,
+            "input": boundOnInput
+          };
+          events["blur"] = events[_AWE_CLOSE] = events[_AWE_LOAD] = boundMatch;
+          events[_AWE_SELECT] = boundSelect;
+          $.bind(elem, events);
+          awe.utilprops.detach = boundDetach;
+          if (awe.utilprops.prepop && (awe.utilprops.loadall || elem.value !== "")) {
+            awe.utilprops.val = awe.utilprops.convertInput.call(awe, elem.value);
+            _lookup(awe, awe.utilprops.val);
+          }
+          return awe;
+        },
+        // update input value via javascript. Use prepop=true when this is an initial/prepopulation value.
+        update: function(awe, value, prepop) {
+          awe.input.value = value;
+          return _update(awe, value, prepop);
+        },
+        // create and attach Awesomplete object for input control elemId. opts are passed unchanged to Awesomplete.
+        start: function(elemId, utilOpts, opts) {
+          return this.attach(this.create(elemId, utilOpts, opts));
+        },
+        // Stop AwesompleteUtil; detach event handlers from the Awesomplete object.
+        detach: function(awe) {
+          clearTimeout(awe.utilprops.timeoutID);
+          if (awe.utilprops.detach) {
+            awe.utilprops.detach();
+            delete awe.utilprops.detach;
+          }
+          return awe;
+        },
+        // Create function to copy a field from the selected autocomplete item to another DOM element.
+        // dataField can be null.
+        createCopyFun: function(sourceId, dataField, targetId) {
+          return _copyFun.bind({ sourceId, dataField, targetId: $(targetId) || targetId });
+        },
+        // attach copy function to event listeners. prepop is optional and by default true.
+        // if true the copy function will also listen to awesomplete-prepop events.
+        // The optional listenEl is the element that listens, defaults to document.body.
+        attachCopyFun: function(fun, prepop, listenEl) {
+          prepop = "boolean" === typeof prepop ? prepop : true;
+          listenEl = listenEl || document.body;
+          listenEl.addEventListener(_AWE_MATCH, fun);
+          if (prepop)
+            listenEl.addEventListener(_AWE_PREPOP, fun);
+          return fun;
+        },
+        // Create and attach copy function.
+        startCopy: function(sourceId, dataField, targetId, prepop) {
+          var sourceEl = $(sourceId);
+          return this.attachCopyFun(this.createCopyFun(sourceEl || sourceId, dataField, targetId), prepop, sourceEl);
+        },
+        // Stop copy function. Detach it from event listeners.
+        // The optional listenEl must be the same element that was used during startCopy/attachCopyFun;
+        // in general: Awesomplete.$(sourceId). listenEl defaults to document.body.
+        detachCopyFun: function(fun, listenEl) {
+          listenEl = listenEl || document.body;
+          listenEl.removeEventListener(_AWE_PREPOP, fun);
+          listenEl.removeEventListener(_AWE_MATCH, fun);
+          return fun;
+        },
+        // Create function for combobox button (btnId) to toggle dropdown list.
+        createClickFun: function(btnId, awe) {
+          return _clickFun.bind({ btnId, awe });
+        },
+        // Attach click function for combobox to click event.
+        // The optional listenEl is the element that listens, defaults to document.body.
+        attachClickFun: function(fun, listenEl) {
+          listenEl = listenEl || document.body;
+          listenEl.addEventListener("click", fun);
+          return fun;
+        },
+        // Create and attach click function for combobox button. Toggles open/close of suggestion list.
+        startClick: function(btnId, awe) {
+          var btnEl = $(btnId);
+          return this.attachClickFun(this.createClickFun(btnEl || btnId, awe), btnEl);
+        },
+        // Stop click function. Detach it from event listeners.
+        // The optional listenEl must be the same element that was used during startClick/attachClickFun;
+        // in general: Awesomplete.$(btnId). listenEl defaults to document.body.
+        detachClickFun: function(fun, listenEl) {
+          listenEl = listenEl || document.body;
+          listenEl.removeEventListener("click", fun);
+          return fun;
+        },
+        // filter function as specified in Awesomplete. Filters suggestion list on items containing input value.
+        // Awesomplete.FILTER_CONTAINS filters on data.label, however
+        // this function filters on value and not on the shown label which may contain markup.
+        filterContains: function(data, input) {
+          return Awesomplete.FILTER_CONTAINS(data.value, input);
+        },
+        // filter function as specified in Awesomplete. Filters suggestion list on matching begin text.
+        // Awesomplete.FILTER_STARTSWITH filters on data.label, however
+        // this function filters on value and not on the shown label which may contain markup.
+        filterStartsWith: function(data, input) {
+          return Awesomplete.FILTER_STARTSWITH(data.value, input);
+        },
+        // Do not filter; rely on server responses to filter the results.
+        filterOff: function(data, input) {
+          return true;
+        },
+        // filter on words without caring about word order.
+        // To return true: all words in the input must be found.
+        // A word is also a match when a longer word is found which starts with the input word.
+        filterWords: function(data, input) {
+          var words = input.split(/\s+/), result = true, j;
+          data = " " + data;
+          for (j = 0; result && j < words.length; j++) {
+            result = Awesomplete.FILTER_CONTAINS(data, " " + words[j]);
+          }
+          return result;
+        },
+        // Flatten JSON.
+        // { "a":{"b":{"c":[{"d":{"e":1}}]}}} becomes {"a.b.c":[{"d.e":1}]}.
+        // This function can be bind to configure it with extra options;
+        //   bind({root: '<root path>', value: '<value property>', label: '<label property>'})
+        jsonFlatten: function(data) {
+          return _jsonFlatten({}, data, "", 0, this);
+        }
+      };
     }();
-    "object" == typeof module2 && module2.exports && (module2.exports = AwesompleteUtil3), "undefined" != typeof self && (self.AwesompleteUtil = AwesompleteUtil3);
+    if (typeof module2 === "object" && module2.exports) {
+      module2.exports = AwesompleteUtil3;
+    }
+    if (typeof self !== "undefined") {
+      self.AwesompleteUtil = AwesompleteUtil3;
+    }
   }
 });
 
 // js/index.js
 var js_exports = {};
 __export(js_exports, {
-  Awesomplete: () => import_awesomplete_v2020_min.default,
-  AwesompleteUtil: () => import_awesomplete_util_min.default,
+  Awesomplete: () => import_awesomplete.default,
+  AwesompleteUtil: () => import_awesomplete_util.default,
   attachAwesomplete: () => attach_awesomplete_default
 });
 module.exports = __toCommonJS(js_exports);
-var import_awesomplete_v2020_min = __toESM(require_awesomplete_v2020_min());
-var import_awesomplete_util_min = __toESM(require_awesomplete_util_min());
+var import_awesomplete = __toESM(require_awesomplete());
+var import_awesomplete_util = __toESM(require_awesomplete_util());
 
 // js/attach-awesomplete.js
-function makeReplaceFun(replaceFun, multipleChar, descrSearch2) {
-  const getText = descrSearch2 ? descrSearchFun : dataValueFun;
-  if (multipleChar) {
-    let replaceMulti = function(data) {
-      let text = getText(data);
-      this.input.value = re.match(this.input.value)[0] + text + separator;
-    };
-    const re = new RegExp("^.+[" + multipleChar + "]\\s*|"), separator = multipleChar[0] + " ";
-    if ("function" === typeof replaceFun) {
-      let replaceMultiFun = function(data) {
-        let text = getText(data);
-        replaceFun(re.match(this.input.value)[0] + text + separator);
-      };
-      ;
-      return replaceMultiFun;
-    }
-    ;
-    return replaceMulti;
-  }
-  if ("function" === typeof replaceFun) {
-    let replaceWithFun = function(data) {
-      replaceFun.call(this, getText(data));
-    };
-    ;
-    return replaceWithFun;
-  }
-  function simpleReplace(data) {
-    this.input.value = getText(data);
-  }
-  ;
-  return simpleReplace;
-}
-var descrSearchFun = (data) => {
-  return data.value.substring(0, data.value.lastIndexOf("|"));
-};
-var dataValueFun = (data) => {
-  return data.value;
-};
-var lookupFilterFun = (filter, customCtx) => {
-  let filterFun = null, filterAtStart = false;
-  switch (filter) {
-    case void 0:
-    case null:
-    case "":
-    case "FILTER_CONTAINS":
-    case "Awesomplete.FILTER_CONTAINS":
-      break;
-    case "FILTER_STARTSWITH":
-    case "Awesomplete.FILTER_STARTSWITH":
-      filterFun = Awesomplete.FILTER_STARTSWITH;
-      filterAtStart = true;
-      break;
-    case "filterStartsWith":
-    case "AwesompleteUtil.filterStartsWith":
-      filterFun = AwesompleteUtil.filterStartsWith;
-      filterAtStart = true;
-      break;
-    case "filterContains":
-    case "AwesompleteUtil.filterContains":
-      filterFun = AwesompleteUtil.filterContains;
-      break;
-    case "filterWords":
-    case "AwesompleteUtil.filterWords":
-      filterFun = AwesompleteUtil.filterWords;
-      break;
-    case "filterOff":
-    case "AwesompleteUtil.filterOff":
-      filterFun = AwesompleteUtil.filterOff;
-      break;
-    default:
-      if ("function" === typeof customCtx[filter])
-        filterFun = customCtx[filter];
-      else
-        throw new Error("Unknown filter " + filter);
-  }
-  return { filterFun, filterAtStart };
-};
-var lookupItemFun = (item, customCtx) => {
-  let itemFun = null;
-  switch (item) {
-    case void 0:
-    case null:
-    case "":
-      break;
-    case "item":
-    case "AwesompleteUtil.item":
-      itemFun = AwesompleteUtil.item;
-      break;
-    case "itemStartsWith":
-    case "AwesompleteUtil.itemStartsWith":
-      itemFun = AwesompleteUtil.itemStartsWith;
-      break;
-    case "itemContains":
-    case "AwesompleteUtil.itemContains":
-      itemFun = AwesompleteUtil.itemContains;
-      break;
-    case "itemMarkAll":
-    case "AwesompleteUtil.itemMarkAll":
-      itemFun = AwesompleteUtil.itemMarkAll;
-      break;
-    case "itemWords":
-    case "AwesompleteUtil.itemWords":
-      itemFun = AwesompleteUtil.itemWords;
-      break;
-    default:
-      if ("function" === typeof customCtx[item])
-        itemFun = customCtx[item];
-      else
-        throw new Error("Unknown item " + item);
-  }
-  return itemFun;
-};
-var makeItemFun = (item, filterFun, filterAtStart, multipleChar, combobox, valueAttr, labelAttr, descrAttr, descrSearch2, customCtx) => {
-  let itemFun = lookupItemFun(item, customCtx);
-  if (!multipleChar) {
-    if (itemFun)
-      return itemFun;
-    if (descrSearch2)
-      return AwesompleteUtil.itemMarkAll;
-    if (filterAtStart)
-      return AwesompleteUtil.itemStartsWith;
+var getCustomFunction = (customCtx, lookupValue, name) => {
+  if (lookupValue === null)
     return null;
-  } else {
-    let itemMultipleFun = function(text, inp) {
-      return itemFun(text, re.match(inp)[0]);
-    };
-    const fileSep = combobox && combobox !== "false" ? "" : "([#{" + multipleChar + "}]\\s*)?", re = new RegExp("[^" + multipleChar + "]*" + fileSep + "$");
-    if (!itemFun) {
-    } else if (descrSearch2) {
+  if ("function" !== typeof customCtx[lookupValue])
+    throw new Error("Unknown " + name + " function " + lookupValue);
+  return customCtx[lookupValue];
+};
+var makeReplaceFun = (replaceFun, multipleChar, descrSearch2) => {
+  var re2 = null, separator;
+  if (multipleChar) {
+    re2 = new RegExp("^.+[" + multipleChar + "]\\s*|");
+    separator = multipleChar[0] + " ";
+  }
+  return function(data) {
+    var selectedValue = descrSearch2 ? data.value.substring(0, data.value.lastIndexOf("|")) : data.value, replaceText = re2 ? re2.match(this.input.value)[0] + selectedValue + separator : selectedValue;
+    if (replaceFun) {
+      replaceFun.call(this, replaceText);
+    } else {
+      this.input.value = replaceText;
+    }
+  };
+};
+var makeItemFun = (itemFun, filterAtStart, re2, descrSearch2) => {
+  if (!itemFun) {
+    if (descrSearch2) {
       itemFun = AwesompleteUtil.itemMarkAll;
     } else if (filterAtStart) {
       itemFun = AwesompleteUtil.itemStartsWith;
-    } else {
+    } else if (re2) {
       itemFun = AwesompleteUtil.itemContains;
     }
-    return itemMultipleFun;
   }
-};
-var makeFilterFun = (filterFun, filterAtStart, multipleChar, combobox, valueAttr, labelAttr, descrAttr) => {
-  const hasOnlyData = !valueAttr || !labelAttr && !descrAttr;
-  if (!multipleChar) {
-    if (!filterFun && hasOnlyData)
-      return filterFun;
-    if (!filterFun || filterFun === AwesompleteUtil.filterContains)
-      return AwesompleteUtil.filterContains;
-    if (hasOnlyData)
-      return filterFun;
-    if (!labelAttr && !descrAttr && filterFun === Awesomplete.FILTER_STARTSWITH) {
-      return filterFun;
-    }
-    if (filterAtStart) {
-      if (descrSearch) {
-        const startsWithFilterFun = function(dat, inp) {
-          return AwesompleteUtil.filterStartsWith(dat, inp) || Awesomplete.FILTER_STARTSWITH(dat.value.substring(dat.value.lastIndexOf("|") + 1), inp);
-        };
-        return startsWithFilterFun;
-      }
-      return AwesompleteUtil.filterStartsWith;
-    }
-    return function(dat, inp) {
-      return filterFun(dat.value, inp);
-    };
-  } else {
-    const fileSep = combobox && combobox !== "false" ? "" : "([#{" + multipleChar + "}]\\s*)?";
-    const re = new RegExp("[^" + multipleChar + "]*" + fileSep + "$");
-    let applyThisFilter = filterFun;
-    if (filterAtStart) {
-      if (descrSearch) {
-        const startsWithFilterFun = function(dat, inp) {
-          var inputPart = re.match(inp)[0];
-          return AwesompleteUtil.filterStartsWith(dat, inputPart) || Awesomplete.FILTER_STARTSWITH(dat.value.substring(dat.value.lastIndexOf("|") + 1), inputPart);
-        };
-        return startsWithFilterFun;
-      }
-      applyThisFilter = Awesomplete.FILTER_STARTSWITH;
-    } else if (!filterFun) {
-      applyThisFilter = Awesomplete.FILTER_CONTAINS;
-    }
-    const lastPartSearchFun = function(dat, inp) {
-      return filterFun(hasOnlyData ? dat : dat.value, re.match(inp)[0]);
-    };
-    return lastPartSearchFun;
-  }
-};
-var makeDataFun = (customCtx, data, valueAttr, labelAttr, descrAttr, descrSearch2) => {
-  let data_fun = null;
-  const labelOrValue = labelAttr || valueAttr;
-  if (descrAttr && descrSearch2) {
-    data_fun = function(rec, input) {
-      return {
-        label: (rec[labelOrValue] || "").replace("<p>", "<p >") + "<p>" + (rec[descrAttr] || ""),
-        value: (rec[valueAttr] || "") + "|" + (rec[descrAttr] || "").replace("|", " ")
-      };
-    };
-  } else if (descrAttr) {
-    data_fun = function(rec, input) {
-      return {
-        label: (rec[labelOrValue] || "").replace("<p>", "<p >") + "<p>" + (rec[descrAttr] || ""),
-        value: rec[valueAttr] || ""
-      };
-    };
-  } else if (labelAttr) {
-    data_fun = function(rec, input) {
-      return {
-        label: (rec[labelAttr] || "").replace("<p>", "<p >"),
-        value: rec[valueAttr] || ""
-      };
-    };
-  } else {
-    data_fun = function(rec, input) {
-      return rec[valueAttr] || "";
-    };
-  }
-  if (!data)
-    return data_fun;
-  if ("function" !== typeof customCtx[data])
-    throw new Error("Unknown data function " + data);
-  let customDataFun = customCtx[data];
-  return function(rec, input) {
-    return customDataFun(data_fun(rec, input), input);
+  if (!re2)
+    return itemFun;
+  return function(text, inp) {
+    return itemFun(text, re2.match(inp)[0]);
   };
 };
-var makeConvertInput = (convertInput, multipleChar, customCtx) => {
-  let convertInputFun = null;
-  if (convertInput) {
-    if ("function" !== typeof customCtx[convertInput])
-      throw new Error("Unknown convertInput function " + convertInput);
-    convertInputFun = customCtx[convertInput];
+var makeFilterFun = (filterFun, filterAtStart, re2, valueAttr, labelOrDescrAttr) => {
+  if (!re2 && !labelOrDescrAttr)
+    return filterFun;
+  let applyThisFilter = filterFun;
+  if (filterAtStart) {
+    if (descrSearch) {
+      return function(dat, inp) {
+        var inputPart = re2 ? re2.match(inp)[0] : inp;
+        return AwesompleteUtil.filterStartsWith(dat, inputPart) || Awesomplete.FILTER_STARTSWITH(dat.value.substring(dat.value.lastIndexOf("|") + 1), inputPart);
+      };
+    }
+    if (!re2)
+      return AwesompleteUtil.filterStartsWith;
+    applyThisFilter = Awesomplete.FILTER_STARTSWITH;
+  } else if (!filterFun || filterFun === AwesompleteUtil.filterContains || filterFun === Awesomplete.FILTER_CONTAINS) {
+    if (!re2)
+      return AwesompleteUtil.filterContains;
+    applyThisFilter = Awesomplete.FILTER_CONTAINS;
   }
-  if (!multipleChar)
-    return convertInputFun;
-  const rem = new RegExp("^.+[" + multipleChar + "]\\s*|"), rel = new RegExp("[^" + multipleChar + "]*$");
-  let convertMultipleInputFun;
-  if (!convertInput) {
-    convertMultipleInputFun = function(inp) {
-      return inp.replace(rem, "").match(rel)[0].trim().toLowerCase();
+  return function(dat, inp) {
+    return applyThisFilter(!labelOrDescrAttr ? dat : dat.value, re2 ? re2.match(inp)[0] : inp);
+  };
+};
+var makeDataFun = (dataFun, valueAttr, labelAttr, descrAttr, descrSearch2) => {
+  let resultDataFun = null;
+  if (labelAttr || descrAttr) {
+    resultDataFun = function(rec, input) {
+      return {
+        label: (rec[labelAttr || valueAttr] || "").replace("<p>", "<p >") + (descrAttr ? "<p>" + (rec[descrAttr] || "") : ""),
+        value: (rec[valueAttr] || "") + (descrSearch2 ? "|" + (rec[descrAttr] || "").replace("|", " ") : "")
+      };
+    };
+  } else if (valueAttr) {
+    resultDataFun = function(rec, input) {
+      return rec[valueAttr] || "";
     };
   } else {
-    convertMultipleInputFun = function(inp) {
-      return convertInputFun(inp.replace(rem, "").match(rel)[0].trim().toLowerCase());
-    };
+    return dataFun;
   }
-  return convertMultipleInputFun;
+  if (!dataFun)
+    return resultDataFun;
+  return function(rec, input) {
+    return dataFun(resultDataFun(rec, input), input);
+  };
 };
-var attachAwesomplete = (node, customCtx) => {
-  const a = node.getAttribute.bind(node), fieldID = a("forField");
+var makeConvertInputFun = (convertInputFun, multipleChar) => {
+  if (!multipleChar)
+    return convertInputFun;
+  const rem = new RegExp("[" + multipleChar + "]*\\s$"), rel = new RegExp("[^" + multipleChar + "]*$");
+  return function(inp) {
+    var convInp = inp.replace(rem, "").match(rel)[0].trim().toLowerCase();
+    return convertInputFun ? convertInputFun(convInp) : convInp;
+  };
+};
+var attachAwesomplete = (node, defaultValues, customCtx) => {
+  const b = node.getAttribute.bind(node), a = function(attr) {
+    return a(attr) || defaultValues[attr];
+  }, fieldID = a("forField");
   if (fieldID === void 0)
     throw new Error("Missing forField attribute.");
-  const url = a("url"), loadall = a("loadall"), prepop = a("prepop"), minChars = a("minChars"), maxItems = a("maxItems"), valueAttr = a("value"), combobox = a("combobox"), comboSelectID = "#" + (combobox !== "true" && combobox !== true ? combobox : "awe_btn_" + fieldID), descrAttr = a("descr"), descrSearchStr = a("descrSearch"), labelAttr = a("label"), filter = a("filter"), debounce = a("debounce"), urlEnd = a("urlEnd"), limit = a("limit"), ajax = a("ajax"), autoFirst = a("autoFirst"), convertInput = a("convertInput"), convertResponse = a("convertResponse"), data = a("data"), item = a("item"), assign = a("assign"), multiple = a("multiple"), replace = a("replace"), descrSearch2 = descrSearchStr === "true" || descrSearchStr === true, list = a("list"), sort = a("sort"), container = a("container"), listLabel = a("listLabel");
-  let opts = {}, awesompleteOpts = {}, replaceFun, multipleChar = null;
+  const url = a("url"), loadall = a("loadall"), prepop = a("prepop"), minChars = a("minChars"), maxItems = a("maxItems"), valueAttr = a("value"), combobox = a("combobox"), comboSelectID = "#" + (combobox !== "true" && combobox !== true ? combobox : "awe_btn_" + fieldID), descrAttr = a("descr"), descrSearchStr = a("descrSearch"), labelAttr = a("label"), filter = a("filter"), debounce = a("debounce"), urlEnd = a("urlEnd"), limit = a("limit"), ajax = a("ajax"), autoFirst = a("autoFirst"), convertInput = a("convertInput"), convertResponse = a("convertResponse"), data = a("data"), item = a("item"), assign = a("assign"), multiple = a("multiple"), replace = a("replace"), descrSearch2 = descrSearchStr === "true" || descrSearchStr === true, list = a("list"), sort = a("sort"), container = a("container"), listLabel = a("listLabel"), filterFun = getCustomFunction(customCtx, filter, "filter"), replaceFun = getCustomFunction(customCtx, replace, "replace"), dataFun = getCustomFunction(customCtx, data, "data"), itemFun = getCustomFunction(customCtx, item, "item"), convertInputFun = getCustomFunction(customCtx, convertInput, "convertInput"), filterAtStart = filterFun === Awesomplete.FILTER_STARTSWITH || filterfun === AwesompleteUtil.filterStartsWith;
+  let opts = {}, awesompleteOpts = {}, multipleChar = null, separator = null;
   if (url)
     opts["url"] = url;
   if (urlEnd)
-    opts["urlEnd"] = urlEnd;
-  if (urlEnd && "function" === typeof customCtx[urlEnd])
-    opts["urlEnd"] = customCtx[urlEnd];
+    opts["urlEnd"] = "function" === typeof customCtx[urlEnd] ? customCtx[urlEnd] : urlEnd;
   if (loadall)
     opts["loadall"] = loadall === "true" || loadall === true;
   if (prepop)
@@ -651,11 +1046,6 @@ var attachAwesomplete = (node, customCtx) => {
     opts["debounce"] = Number(debounce);
   if (limit)
     opts["limit"] = Number(limit);
-  if (convertResponse) {
-    if ("function" !== typeof customCtx[convertResponse])
-      throw new Error("Unknown convertResponse function " + convertResponse);
-    opts["convertResponse"] = customCtx[convertResponse];
-  }
   if (!valueAttr && descrAttr)
     throw new Error("'descr' without 'value' parameter.");
   if (!valueAttr && labelAttr)
@@ -664,18 +1054,20 @@ var attachAwesomplete = (node, customCtx) => {
     throw new Error("Cannot search description texts without knowing the description field. Please supply descr parameter.");
   if (multiple && multiple !== "false") {
     multipleChar = multiple === "true" || multiple === true ? " " : multiple;
+    separator = combobox && combobox !== "false" ? "" : "([" + multipleChar + "]\\s*)?", re = new RegExp("[^" + multipleChar + "]*" + separator + "$");
   }
-  let { filterFun, filterAtStart } = lookupFilterFun(filter, customCtx);
-  const madeFilterFun = makeFilterFun(filterFun, filterAtStart, multipleChar, combobox, valueAttr, labelAttr, descrAttr);
+  if (convertResponse) {
+    opts["convertResponse"] = getCustomFunction(customCtx, convertResponse, "convertResponse");
+  }
+  const madeFilterFun = makeFilterFun(filterFun, filterAtStart, re, valueAttr, labelAttr || descrAttr);
   if (madeFilterFun)
     awesompleteOpts["filter"] = madeFilterFun;
-  const itemFun = makeItemFun(item, filterFun, filterAtStart, multipleChar, combobox, valueAttr, labelAttr, descrAttr, descrSearch2, customCtx);
-  if (itemFun)
-    awesompleteOpts["item"] = itemFun;
-  const convertInputFun = makeConvertInput(convertInput, multipleChar, customCtx);
-  if (convertInputFun) {
-    opts["convertInput"] = convertInputFun;
-  }
+  const madeItemFun = makeItemFun(itemFun, filterAtStart, re, descrSearch2);
+  if (madeItemFun)
+    awesompleteOpts["item"] = madeItemFun;
+  const madeConvertInputFun = makeConvertInputFun(convertInputFun, multipleChar);
+  if (madeConvertInputFun)
+    opts["convertInput"] = madeConvertInputFun;
   if (minChars)
     awesompleteOpts["minChars"] = Number(minChars);
   if (maxItems)
@@ -683,28 +1075,19 @@ var attachAwesomplete = (node, customCtx) => {
   if (autoFirst)
     awesompleteOpts["autoFirst"] = autoFirst === "true" || autoFirst === true;
   if (ajax) {
-    if ("function" !== typeof customCtx[ajax])
-      throw new Error("Unknown ajax function " + ajax);
-    awesompleteOpts["ajax"] = customCtx[ajax];
-  }
-  if (replace) {
-    if ("function" !== typeof customCtx[replace])
-      throw new Error("Unknown replace function " + replace);
-    replaceFun = customCtx[replace];
+    awesompleteOpts["ajax"] = getCustomFunction(customCtx, ajax, "ajax");
   }
   if (container) {
-    if ("function" !== typeof customCtx[container])
-      throw new Error("Unknown container function " + container);
-    awesompleteOpts["container"] = customCtx[container];
+    awesompleteOpts["container"] = getCustomFunction(customCtx, container, "container");
   }
   if (replace || multipleChar || descrSearch2) {
     awesompleteOpts["replace"] = makeReplaceFun(replaceFun, multipleChar, descrSearch2);
   }
-  if (valueAttr) {
-    awesompleteOpts["data"] = makeDataFun(customCtx, data, valueAttr, labelAttr, descrAttr, descrSearch2);
+  if (valueAttr || data) {
+    awesompleteOpts["data"] = makeDataFun(dataFun, valueAttr, labelAttr, descrAttr, descrSearch2);
   }
   if (list) {
-    awesompleteOpts["list"] = customCtx[list] || list;
+    awesompleteOpts["list"] = ("function" === typeof customCtx[list] ? customCtx[list]() : customCtx[list]) || list;
   }
   if (listLabel) {
     awesompleteOpts["listLabel"] = listLabel;
