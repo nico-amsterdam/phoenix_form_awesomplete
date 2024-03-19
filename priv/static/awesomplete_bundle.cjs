@@ -935,7 +935,7 @@ var import_awesomplete_util = __toESM(require_awesomplete_util());
 
 // js/attach-awesomplete.js
 var getCustomFunction = (customCtx, lookupValue, name) => {
-  if (lookupValue === null)
+  if (lookupValue == null)
     return null;
   if ("function" !== typeof customCtx[lookupValue])
     throw new Error("Unknown " + name + " function " + lookupValue);

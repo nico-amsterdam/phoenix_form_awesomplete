@@ -1,6 +1,6 @@
 const
   getCustomFunction = (customCtx, lookupValue, name) => {
-    if (lookupValue === null) return null
+    if (lookupValue == null) return null // null or undefined
     if ('function' !== typeof customCtx[lookupValue]) throw new Error('Unknown ' + name + ' function ' + lookupValue)
     return customCtx[lookupValue]
   }, // end getCustomFuncion
