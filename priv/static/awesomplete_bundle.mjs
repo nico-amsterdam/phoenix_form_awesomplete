@@ -1100,11 +1100,23 @@ var attachAwesomplete = (node, defaultValues, customCtx) => {
     UTIL.startClick(comboSelectID, awe);
 };
 var attach_awesomplete_default = attachAwesomplete;
+
+// js/copy-value-to-id.js
+copyValueToId = (node) => {
+  const a = node.getAttribute.bind(node), dataField = a("dataField"), field = a("field"), targetField = a("targetField"), target = a("target");
+  if (field == null)
+    throw new Error("Missing field attribute.");
+  if (target == null && targetField == null)
+    throw new Error("Missing target or targetField attribute.");
+  AwesompleteUtil.startCopy("#" + field, dataField, targetField ? "#" + targetField : target);
+};
+var copy_value_to_id_default = copyValueToId;
 var export_Awesomplete = import_awesomplete.default;
 var export_AwesompleteUtil = import_awesomplete_util.default;
 export {
   export_Awesomplete as Awesomplete,
   export_AwesompleteUtil as AwesompleteUtil,
-  attach_awesomplete_default as attachAwesomplete
+  attach_awesomplete_default as attachAwesomplete,
+  copy_value_to_id_default as copyValueToId
 };
 //# sourceMappingURL=awesomplete_bundle.mjs.map

@@ -927,7 +927,8 @@ var js_exports = {};
 __export(js_exports, {
   Awesomplete: () => import_awesomplete.default,
   AwesompleteUtil: () => import_awesomplete_util.default,
-  attachAwesomplete: () => attach_awesomplete_default
+  attachAwesomplete: () => attach_awesomplete_default,
+  copyValueToId: () => copy_value_to_id_default
 });
 module.exports = __toCommonJS(js_exports);
 var import_awesomplete = __toESM(require_awesomplete());
@@ -1112,4 +1113,15 @@ var attachAwesomplete = (node, defaultValues, customCtx) => {
     UTIL.startClick(comboSelectID, awe);
 };
 var attach_awesomplete_default = attachAwesomplete;
+
+// js/copy-value-to-id.js
+copyValueToId = (node) => {
+  const a = node.getAttribute.bind(node), dataField = a("dataField"), field = a("field"), targetField = a("targetField"), target = a("target");
+  if (field == null)
+    throw new Error("Missing field attribute.");
+  if (target == null && targetField == null)
+    throw new Error("Missing target or targetField attribute.");
+  AwesompleteUtil.startCopy("#" + field, dataField, targetField ? "#" + targetField : target);
+};
+var copy_value_to_id_default = copyValueToId;
 //# sourceMappingURL=awesomplete_bundle.cjs.map
