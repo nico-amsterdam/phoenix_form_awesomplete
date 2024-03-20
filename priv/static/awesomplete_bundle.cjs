@@ -934,6 +934,7 @@ var import_awesomplete = __toESM(require_awesomplete());
 var import_awesomplete_util = __toESM(require_awesomplete_util());
 
 // js/attach-awesomplete.js
+var UTIL = AwesompleteUtil;
 var getCustomFunction = (customCtx, lookupValue, name) => {
   if (lookupValue == null)
     return null;
@@ -945,7 +946,9 @@ var makeReplaceFun = (replaceFun, multipleChar, descrSearch2) => {
   var re = null, separator;
   if (multipleChar) {
     re = new RegExp("^.+[" + multipleChar + "]\\s*|");
-    separator = multipleChar[0] + " ";
+    separator = multipleChar[0];
+    if (multipleChar[0] !== " ")
+      separator += " ";
   }
   return function(data) {
     var selectedValue = descrSearch2 ? data.value.substring(0, data.value.lastIndexOf("|")) : data.value, replaceText = re ? this.input.value.match(re)[0] + selectedValue + separator : selectedValue;
@@ -959,11 +962,11 @@ var makeReplaceFun = (replaceFun, multipleChar, descrSearch2) => {
 var makeItemFun = (itemFun, filterAtStart, re, descrSearch2) => {
   if (!itemFun) {
     if (descrSearch2) {
-      itemFun = AwesompleteUtil.itemMarkAll;
+      itemFun = UTIL.itemMarkAll;
     } else if (filterAtStart) {
-      itemFun = AwesompleteUtil.itemStartsWith;
+      itemFun = UTIL.itemStartsWith;
     } else if (re) {
-      itemFun = AwesompleteUtil.itemContains;
+      itemFun = UTIL.itemContains;
     }
   }
   if (!re)
@@ -972,24 +975,25 @@ var makeItemFun = (itemFun, filterAtStart, re, descrSearch2) => {
     return itemFun(text, inp.match(re)[0]);
   };
 };
-var makeFilterFun = (filterFun, filterAtStart, re, valueAttr, labelOrDescrAttr) => {
+var makeFilterFun = (filterFun, filterAtStart, re, labelOrDescrAttr) => {
   if (!re && !labelOrDescrAttr)
     return filterFun;
   let applyThisFilter = filterFun;
+  const AWE = Awesomplete;
   if (filterAtStart) {
     if (descrSearch) {
       return function(dat, inp) {
         var inputPart = re ? inp.match(re)[0] : inp;
-        return AwesompleteUtil.filterStartsWith(dat, inputPart) || Awesomplete.FILTER_STARTSWITH(dat.value.substring(dat.value.lastIndexOf("|") + 1), inputPart);
+        return UTIL.filterStartsWith(dat, inputPart) || AWE.FILTER_STARTSWITH(dat.value.substring(dat.value.lastIndexOf("|") + 1), inputPart);
       };
     }
     if (!re)
-      return AwesompleteUtil.filterStartsWith;
-    applyThisFilter = Awesomplete.FILTER_STARTSWITH;
-  } else if (!filterFun || filterFun === AwesompleteUtil.filterContains || filterFun === Awesomplete.FILTER_CONTAINS) {
+      return UTIL.filterStartsWith;
+    applyThisFilter = AWE.FILTER_STARTSWITH;
+  } else if (!filterFun || filterFun === UTIL.filterContains || filterFun === AWE.FILTER_CONTAINS) {
     if (!re)
-      return AwesompleteUtil.filterContains;
-    applyThisFilter = Awesomplete.FILTER_CONTAINS;
+      return UTIL.filterContains;
+    applyThisFilter = AWE.FILTER_CONTAINS;
   }
   return function(dat, inp) {
     return applyThisFilter(!labelOrDescrAttr ? dat : dat.value, re ? inp.match(re)[0] : inp);
@@ -1029,10 +1033,9 @@ var makeConvertInputFun = (convertInputFun, multipleChar) => {
 var attachAwesomplete = (node, defaultValues, customCtx) => {
   const b = node.getAttribute.bind(node), a = function(attr) {
     return b(attr) || defaultValues[attr];
-  }, fieldID = a("forField");
-  if (fieldID === void 0)
+  }, ajax = a("ajax"), assign = a("assign"), autoFirst = a("autoFirst"), combobox = a("combobox"), container = a("container"), convertInput = a("convertInput"), convertResponse = a("convertResponse"), data = a("data"), debounce = a("debounce"), descr = a("descr"), descrSearch2 = a("descrSearch"), item = a("item"), filter = a("filter"), forField = a("forField"), label = a("label"), limit = a("limit"), list = a("list"), loadall = a("loadall"), listLabel = a("listLabel"), maxItems = a("maxItems"), minChars = a("minChars"), multiple = a("multiple"), prepop = a("prepop"), replace = a("replace"), sort = a("sort"), value = a("value"), url = a("url"), urlEnd = a("urlEnd"), comboSelectID = "#" + (combobox !== "true" && combobox !== true ? combobox : "awe_btn_" + forField), convertInputFun = getCustomFunction(customCtx, convertInput, "convertInput"), dataFun = getCustomFunction(customCtx, data, "data"), filterFun = getCustomFunction(customCtx, filter, "filter"), itemFun = getCustomFunction(customCtx, item, "item"), replaceFun = getCustomFunction(customCtx, replace, "replace"), filterAtStart = filterFun === Awesomplete.FILTER_STARTSWITH || filterFun === UTIL.filterStartsWith, isDescrSearch = descrSearch2 === "true" || descrSearch2 === true;
+  if (forField === void 0)
     throw new Error("Missing forField attribute.");
-  const url = a("url"), loadall = a("loadall"), prepop = a("prepop"), minChars = a("minChars"), maxItems = a("maxItems"), valueAttr = a("value"), combobox = a("combobox"), comboSelectID = "#" + (combobox !== "true" && combobox !== true ? combobox : "awe_btn_" + fieldID), descrAttr = a("descr"), descrSearchStr = a("descrSearch"), labelAttr = a("label"), filter = a("filter"), debounce = a("debounce"), urlEnd = a("urlEnd"), limit = a("limit"), ajax = a("ajax"), autoFirst = a("autoFirst"), convertInput = a("convertInput"), convertResponse = a("convertResponse"), data = a("data"), item = a("item"), assign = a("assign"), multiple = a("multiple"), replace = a("replace"), descrSearch2 = descrSearchStr === "true" || descrSearchStr === true, list = a("list"), sort = a("sort"), container = a("container"), listLabel = a("listLabel"), filterFun = getCustomFunction(customCtx, filter, "filter"), replaceFun = getCustomFunction(customCtx, replace, "replace"), dataFun = getCustomFunction(customCtx, data, "data"), itemFun = getCustomFunction(customCtx, item, "item"), convertInputFun = getCustomFunction(customCtx, convertInput, "convertInput"), filterAtStart = filterFun === Awesomplete.FILTER_STARTSWITH || filterFun === AwesompleteUtil.filterStartsWith;
   let opts = {}, awesompleteOpts = {}, multipleChar = null, separator = null, re = null;
   if (url)
     opts["url"] = url;
@@ -1046,71 +1049,67 @@ var attachAwesomplete = (node, defaultValues, customCtx) => {
     opts["debounce"] = Number(debounce);
   if (limit)
     opts["limit"] = Number(limit);
-  if (!valueAttr && descrAttr)
+  if (!value && descr)
     throw new Error("'descr' without 'value' parameter.");
-  if (!valueAttr && labelAttr)
+  if (!value && label)
     throw new Error("'label' without 'value' parameter.");
-  if (descrSearch2 && !descrAttr)
+  if (isDescrSearch && !descr)
     throw new Error("Cannot search description texts without knowing the description field. Please supply descr parameter.");
   if (multiple && multiple !== "false") {
     multipleChar = multiple === "true" || multiple === true ? " " : multiple;
     separator = combobox && combobox !== "false" ? "" : "([" + multipleChar + "]\\s*)?", re = new RegExp("[^" + multipleChar + "]*" + separator + "$");
   }
-  if (convertResponse) {
+  if (convertResponse)
     opts["convertResponse"] = getCustomFunction(customCtx, convertResponse, "convertResponse");
-  }
-  const madeFilterFun = makeFilterFun(filterFun, filterAtStart, re, valueAttr, labelAttr || descrAttr);
-  if (madeFilterFun)
-    awesompleteOpts["filter"] = madeFilterFun;
-  const madeItemFun = makeItemFun(itemFun, filterAtStart, re, descrSearch2);
-  if (madeItemFun)
-    awesompleteOpts["item"] = madeItemFun;
   const madeConvertInputFun = makeConvertInputFun(convertInputFun, multipleChar);
   if (madeConvertInputFun)
     opts["convertInput"] = madeConvertInputFun;
+  const madeFilterFun = makeFilterFun(filterFun, filterAtStart, re, label || descr);
+  if (madeFilterFun)
+    awesompleteOpts["filter"] = madeFilterFun;
+  const madeItemFun = makeItemFun(itemFun, filterAtStart, re, isDescrSearch);
+  if (madeItemFun)
+    awesompleteOpts["item"] = madeItemFun;
   if (minChars)
     awesompleteOpts["minChars"] = Number(minChars);
   if (maxItems)
     awesompleteOpts["maxItems"] = Number(maxItems);
   if (autoFirst)
     awesompleteOpts["autoFirst"] = autoFirst === "true" || autoFirst === true;
-  if (ajax) {
+  if (ajax)
     awesompleteOpts["ajax"] = getCustomFunction(customCtx, ajax, "ajax");
-  }
-  if (container) {
+  if (container)
     awesompleteOpts["container"] = getCustomFunction(customCtx, container, "container");
+  if (replace || multipleChar || isDescrSearch) {
+    awesompleteOpts["replace"] = makeReplaceFun(replaceFun, multipleChar, isDescrSearch);
   }
-  if (replace || multipleChar || descrSearch2) {
-    awesompleteOpts["replace"] = makeReplaceFun(replaceFun, multipleChar, descrSearch2);
-  }
-  if (valueAttr || data) {
-    awesompleteOpts["data"] = makeDataFun(dataFun, valueAttr, labelAttr, descrAttr, descrSearch2);
+  if (value || data) {
+    awesompleteOpts["data"] = makeDataFun(dataFun, value, label, descr, isDescrSearch);
   }
   if (list) {
     awesompleteOpts["list"] = ("function" === typeof customCtx[list] ? customCtx[list]() : customCtx[list]) || list;
   }
-  if (listLabel) {
+  if (listLabel)
     awesompleteOpts["listLabel"] = listLabel;
-  }
   if (sort === "false" || sort === false) {
     awesompleteOpts["sort"] = false;
   } else if (sort) {
     awesompleteOpts["sort"] = customCtx[sort] || sort;
   }
-  let awe = AwesompleteUtil.start(
-    "#" + fieldID,
+  let awe = UTIL.start(
+    "#" + forField,
     opts,
     awesompleteOpts
   );
   if (assign) {
     if (assign === "true" || assign === true) {
-      customCtx["awe_" + fieldID] = awe;
+      customCtx["awe_" + forField] = awe;
     } else {
       customCtx[assign] = awe;
     }
   }
   if (combobox && combobox !== "false")
-    AwesompleteUtil.startClick(comboSelectID, awe);
+    UTIL.startClick(comboSelectID, awe);
 };
 var attach_awesomplete_default = attachAwesomplete;
 //# sourceMappingURL=awesomplete_bundle.cjs.map
