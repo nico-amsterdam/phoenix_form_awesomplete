@@ -63,7 +63,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
       is_nil(item_fun) and starts_with -> filter_opts ++ [item: "function(text, input) { return #{@util}.itemStartsWith(text, #{filter_str}); }"]
       is_nil(item_fun) ->  filter_opts ++ [item: "function(text, input) { return #{@util}.itemContains(text, #{filter_str}); }"]
       is_nil(multiple_char) -> filter_opts ++ [item: "#{item_fun}"]
-      true -> filter_opts ++ [item: "function(text, input) { return (#{item_fun})(text, #{filter_str}); }"]
+      true -> filter_opts ++ [item: "function(text, input) { return (#{item_fun}).call(this, text, #{filter_str}); }"]
     end
   end
 
@@ -96,7 +96,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
       is_nil(multiple_char) and is_nil(conv_input_fun) -> [] 
       is_nil(multiple_char) -> [convertInput: conv_input_fun] 
       is_nil(conv_input_fun) -> [convertInput: "function(input) { return #{conv_input_str}.trim().toLowerCase(); }"]
-      true -> [convertInput: "function(input) { return (#{conv_input_fun})(#{conv_input_str}.trim().toLowerCase()); }"]
+      true -> [convertInput: "function(input) { return (#{conv_input_fun}).call(this, #{conv_input_str}.trim().toLowerCase()); }"]
     end
   end
 
@@ -105,7 +105,8 @@ defmodule PhoenixFormAwesomplete.GenJS do
     if is_nil(multiple_char) do
       "text"
     else
-      "this.input.value.match(/^.+[#{multiple_char}]\\s*|/)[0] + text + '" <> String.at(multiple_char, 0) <> " '"
+      optional_space = if String.at(multiple_char, 0) == " ", do: "", else: " "
+      "this.input.value.match(/^.+[#{multiple_char}]\\s*|/)[0] + text + '" <> String.at(multiple_char, 0) <> optional_space <> "'"
     end
   end
 
@@ -263,7 +264,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
       starts_with and descr_search -> [filter: starts_with_filter_fun]
       starts_with -> [filter: "function(data, input) { return #{@awe}.FILTER_STARTSWITH(#{data_val}, #{filter_str}); }"]
       is_nil(filter_fun) -> [filter: "function(data, input) { return #{@awe}.FILTER_CONTAINS(#{data_val}, #{filter_str}); }"]
-      true -> [filter: "function(data, input) { return (#{filter_fun})(#{data_val}, #{filter_str}); }"]
+      true -> [filter: "function(data, input) { return (#{filter_fun}).call(#{data_val}, #{filter_str}); }"]
     end 
     
     # add item: in filter_opts
@@ -281,7 +282,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
       if is_nil(data_fun) do
         "function(rec, input) { return #{data_fun_result}; }"
       else
-        "function(rec, input) { return (#{data_fun})(#{data_fun_result}, input); }"
+        "function(rec, input) { return (#{data_fun}).call(this, #{data_fun_result}, input); }"
       end
 
     awesomplete_opts = cond do

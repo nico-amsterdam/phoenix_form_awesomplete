@@ -37,7 +37,7 @@ const
     }
     if (!re) return itemFun;
     return function(text, inp) {
-      return (itemFun)(text, inp.match(re)[0]);
+      return (itemFun).call(this, text, inp.match(re)[0]);
     }
   }, // end makeItemFun
 
@@ -70,13 +70,13 @@ const
     }
     return function(dat, inp) {
       // For simplicity, call enclosed filter with just the text string, not a Suggestion object.
-      return (applyThisFilter)(!labelOrDescrAttr ? dat : dat.value, re ? inp.match(re)[0] : inp);
+      return (applyThisFilter).call(this, !labelOrDescrAttr ? dat : dat.value, re ? inp.match(re)[0] : inp);
     }
   }, // end makeFilterFun
 
-  // makeDataFun is only called when valueAttr or dataFun is not null
   makeDataFun = (dataFun, valueAttr, labelAttr, descrAttr, descrSearch) => {
-    let resultDataFun = null;
+  // precondition: makeDataFun is only called when valueAttr or dataFun is not null
+  let resultDataFun = null;
     if (labelAttr || descrAttr) {
       resultDataFun =
         function(rec, input) {
@@ -94,7 +94,7 @@ const
     }
     if (!dataFun) return resultDataFun;
     // combine custom function with the above resultDataFun
-    return function(rec, input) { return (dataFun)(resultDataFun(rec, input), input); }
+    return function(rec, input) { return (dataFun).call(this, resultDataFun(rec, input), input); }
   }, // end makeDataFun
 
   makeConvertInputFun = (convertInputFun, multipleChar) => {
@@ -106,32 +106,11 @@ const
 
     return function(inp) {
       var convInp = inp.replace(rem, '').match(rel)[0].trim().toLowerCase();
-      return convertInputFun ? (convertInputFun)(convInp) : convInp;
+      return convertInputFun ? (convertInputFun).call(this, convInp) : convInp;
     }
   }, // end makeConvertInputFun
 
   attachAwesomplete = (node, defaultValues, customCtx) => {
-/*
-   // somehow this commented out solution is 150 bytes more when minified and gzipped
-
-    const namedNodeMap = node.attributes, settings = {...defaultValues} // make a copy
-    // iterate the NamedNodeMap and put everything in settings object, overriding defaultValues.
-    for (let i = 0; i < namedNodeMap.length; i++) {
-      let nodeItem = namedNodeMap.item(i)
-      settings[nodeItem.name] = nodeItem.value // name is always lowercase
-    }
-    if (settings.forfield === undefined) throw new Error('Missing forField attribute.')
-    const { ajax, assign, combobox, container, data, debounce, descr, filter, item, label, limit, list, loadall, multiple, prepop, replace, sort, value, url } = settings
-      , autoFirst = settings.autofirst || defaultValues.autoFirst 
-      , convertInput = settings.convertinput || defaultValues.convertInput
-      , convertResponse = settings.convertresponse || defaultValues.convertResponse
-      , descrSearch = settings.descrsearch || defaultValues.descrSearch 
-      , forField = settings.forfield || defaultValues.forField
-      , listLabel = settings.listlabel || defaultValues.listLabel
-      , maxItems = settings.maxitems || defaultValues.maxItems
-      , minChars = settings.minchars || defaultValues.minChars
-      , urlEnd = settings.urlend || defaultValues.urlEnd
-  */
     const b = node.getAttribute.bind(node)
     , a = function(attr) { return b(attr) || defaultValues[attr] }
     , ajax = a('ajax')
@@ -163,7 +142,6 @@ const
     , url = a('url')
     , urlEnd = a('urlEnd')
 
-    , comboSelectID = '#' + (combobox !== 'true' && combobox !== true ? combobox : 'awe_btn_' +   forField)
     , convertInputFun = getCustomFunction(customCtx, convertInput, 'convertInput')
     , dataFun = getCustomFunction(customCtx, data, 'data')
     , filterFun = getCustomFunction(customCtx, filter, 'filter')
@@ -185,22 +163,21 @@ const
     if (!value && descr) throw new Error("'descr' without 'value' parameter.")
     if (!value && label) throw new Error("'label' without 'value' parameter.")
     if (isDescrSearch && !descr) throw new Error('Cannot search description texts without knowing the description field. Please supply descr parameter.')
+    if (convertResponse) opts['convertResponse'] = getCustomFunction(customCtx, convertResponse, 'convertResponse')
     if (multiple && multiple !== 'false') {
       multipleChar = (multiple === 'true' || multiple === true ? ' ' : multiple)
       separator = (combobox && combobox !== 'false' ? '' : '([' + multipleChar + ']\\s*)?'),
       re = new RegExp('[^' + multipleChar + ']*' + separator + '$')
     }
 
-    if (convertResponse) opts['convertResponse'] = getCustomFunction(customCtx, convertResponse, 'convertResponse')
-
     const madeConvertInputFun = makeConvertInputFun(convertInputFun, multipleChar)
+    , madeFilterFun = makeFilterFun(filterFun, filterAtStart, re, label || descr)
+    , madeItemFun = makeItemFun(itemFun, filterAtStart, re, isDescrSearch)
+
     if (madeConvertInputFun) opts['convertInput'] = madeConvertInputFun
+    if (madeFilterFun) awesompleteOpts['filter'] = madeFilterFun
+    if (madeItemFun) awesompleteOpts['item'] = madeItemFun
 
-    const madeFilterFun = makeFilterFun(filterFun, filterAtStart, re, label || descr)
-    if (madeFilterFun) awesompleteOpts['filter'] = madeFilterFun;
-
-    const madeItemFun = makeItemFun(itemFun, filterAtStart, re, isDescrSearch)
-    if (madeItemFun) awesompleteOpts['item'] = madeItemFun;
     if (minChars) awesompleteOpts['minChars'] = Number(minChars)
     if (maxItems) awesompleteOpts['maxItems'] = Number(maxItems)
     if (autoFirst) awesompleteOpts['autoFirst'] = (autoFirst === 'true' || autoFirst === true)
@@ -225,24 +202,22 @@ const
       awesompleteOpts['sort'] = customCtx[sort] || sort
     }
 
-    let awe = UTIL.start('#' + forField,
+    const aweInstance = UTIL.start('#' + forField,
       opts,
       awesompleteOpts
     )
-    if (assign) {
-      if (assign === 'true' || assign === true) {
-        customCtx['awe_' + forField] = awe
-      } else {
-        customCtx[assign] = awe
-      }
+
+    if (assign && assign !== 'false') {
+      customCtx[assign === 'true' || assign === true ? 'awe_' + forField : assign] = aweInstance
     }
 
-    if (combobox && combobox !== 'false') UTIL.startClick(comboSelectID, awe)
+    if (combobox && combobox !== 'false') {
+      UTIL.startClick(
+        '#' + (combobox === 'true' || combobox === true ? 'awe_btn_' + forField : combobox)
+        , aweInstance)
+    }
 
+    return aweInstance
   } // end attachAwesomplete
 
-
-// module.exports = {
-//    attachAwesomplete: attachAwesomplete
-// }
 export default attachAwesomplete

@@ -973,7 +973,7 @@ var makeItemFun = (itemFun, filterAtStart, re, descrSearch2) => {
   if (!re)
     return itemFun;
   return function(text, inp) {
-    return itemFun(text, inp.match(re)[0]);
+    return itemFun.call(this, text, inp.match(re)[0]);
   };
 };
 var makeFilterFun = (filterFun, filterAtStart, re, labelOrDescrAttr) => {
@@ -997,7 +997,7 @@ var makeFilterFun = (filterFun, filterAtStart, re, labelOrDescrAttr) => {
     applyThisFilter = AWE.FILTER_CONTAINS;
   }
   return function(dat, inp) {
-    return applyThisFilter(!labelOrDescrAttr ? dat : dat.value, re ? inp.match(re)[0] : inp);
+    return applyThisFilter.call(this, !labelOrDescrAttr ? dat : dat.value, re ? inp.match(re)[0] : inp);
   };
 };
 var makeDataFun = (dataFun, valueAttr, labelAttr, descrAttr, descrSearch2) => {
@@ -1019,7 +1019,7 @@ var makeDataFun = (dataFun, valueAttr, labelAttr, descrAttr, descrSearch2) => {
   if (!dataFun)
     return resultDataFun;
   return function(rec, input) {
-    return dataFun(resultDataFun(rec, input), input);
+    return dataFun.call(this, resultDataFun(rec, input), input);
   };
 };
 var makeConvertInputFun = (convertInputFun, multipleChar) => {
@@ -1028,13 +1028,13 @@ var makeConvertInputFun = (convertInputFun, multipleChar) => {
   const rem = new RegExp("[" + multipleChar + "]*\\s$"), rel = new RegExp("[^" + multipleChar + "]*$");
   return function(inp) {
     var convInp = inp.replace(rem, "").match(rel)[0].trim().toLowerCase();
-    return convertInputFun ? convertInputFun(convInp) : convInp;
+    return convertInputFun ? convertInputFun.call(this, convInp) : convInp;
   };
 };
 var attachAwesomplete = (node, defaultValues, customCtx) => {
   const b = node.getAttribute.bind(node), a = function(attr) {
     return b(attr) || defaultValues[attr];
-  }, ajax = a("ajax"), assign = a("assign"), autoFirst = a("autoFirst"), combobox = a("combobox"), container = a("container"), convertInput = a("convertInput"), convertResponse = a("convertResponse"), data = a("data"), debounce = a("debounce"), descr = a("descr"), descrSearch2 = a("descrSearch"), item = a("item"), filter = a("filter"), forField = a("forField"), label = a("label"), limit = a("limit"), list = a("list"), loadall = a("loadall"), listLabel = a("listLabel"), maxItems = a("maxItems"), minChars = a("minChars"), multiple = a("multiple"), prepop = a("prepop"), replace = a("replace"), sort = a("sort"), value = a("value"), url = a("url"), urlEnd = a("urlEnd"), comboSelectID = "#" + (combobox !== "true" && combobox !== true ? combobox : "awe_btn_" + forField), convertInputFun = getCustomFunction(customCtx, convertInput, "convertInput"), dataFun = getCustomFunction(customCtx, data, "data"), filterFun = getCustomFunction(customCtx, filter, "filter"), itemFun = getCustomFunction(customCtx, item, "item"), replaceFun = getCustomFunction(customCtx, replace, "replace"), filterAtStart = filterFun === Awesomplete.FILTER_STARTSWITH || filterFun === UTIL.filterStartsWith, isDescrSearch = descrSearch2 === "true" || descrSearch2 === true;
+  }, ajax = a("ajax"), assign = a("assign"), autoFirst = a("autoFirst"), combobox = a("combobox"), container = a("container"), convertInput = a("convertInput"), convertResponse = a("convertResponse"), data = a("data"), debounce = a("debounce"), descr = a("descr"), descrSearch2 = a("descrSearch"), item = a("item"), filter = a("filter"), forField = a("forField"), label = a("label"), limit = a("limit"), list = a("list"), loadall = a("loadall"), listLabel = a("listLabel"), maxItems = a("maxItems"), minChars = a("minChars"), multiple = a("multiple"), prepop = a("prepop"), replace = a("replace"), sort = a("sort"), value = a("value"), url = a("url"), urlEnd = a("urlEnd"), convertInputFun = getCustomFunction(customCtx, convertInput, "convertInput"), dataFun = getCustomFunction(customCtx, data, "data"), filterFun = getCustomFunction(customCtx, filter, "filter"), itemFun = getCustomFunction(customCtx, item, "item"), replaceFun = getCustomFunction(customCtx, replace, "replace"), filterAtStart = filterFun === Awesomplete.FILTER_STARTSWITH || filterFun === UTIL.filterStartsWith, isDescrSearch = descrSearch2 === "true" || descrSearch2 === true;
   if (forField === void 0)
     throw new Error("Missing forField attribute.");
   let opts = {}, awesompleteOpts = {}, multipleChar = null, separator = null, re = null;
@@ -1056,19 +1056,17 @@ var attachAwesomplete = (node, defaultValues, customCtx) => {
     throw new Error("'label' without 'value' parameter.");
   if (isDescrSearch && !descr)
     throw new Error("Cannot search description texts without knowing the description field. Please supply descr parameter.");
+  if (convertResponse)
+    opts["convertResponse"] = getCustomFunction(customCtx, convertResponse, "convertResponse");
   if (multiple && multiple !== "false") {
     multipleChar = multiple === "true" || multiple === true ? " " : multiple;
     separator = combobox && combobox !== "false" ? "" : "([" + multipleChar + "]\\s*)?", re = new RegExp("[^" + multipleChar + "]*" + separator + "$");
   }
-  if (convertResponse)
-    opts["convertResponse"] = getCustomFunction(customCtx, convertResponse, "convertResponse");
-  const madeConvertInputFun = makeConvertInputFun(convertInputFun, multipleChar);
+  const madeConvertInputFun = makeConvertInputFun(convertInputFun, multipleChar), madeFilterFun = makeFilterFun(filterFun, filterAtStart, re, label || descr), madeItemFun = makeItemFun(itemFun, filterAtStart, re, isDescrSearch);
   if (madeConvertInputFun)
     opts["convertInput"] = madeConvertInputFun;
-  const madeFilterFun = makeFilterFun(filterFun, filterAtStart, re, label || descr);
   if (madeFilterFun)
     awesompleteOpts["filter"] = madeFilterFun;
-  const madeItemFun = makeItemFun(itemFun, filterAtStart, re, isDescrSearch);
   if (madeItemFun)
     awesompleteOpts["item"] = madeItemFun;
   if (minChars)
@@ -1097,20 +1095,21 @@ var attachAwesomplete = (node, defaultValues, customCtx) => {
   } else if (sort) {
     awesompleteOpts["sort"] = customCtx[sort] || sort;
   }
-  let awe = UTIL.start(
+  const aweInstance = UTIL.start(
     "#" + forField,
     opts,
     awesompleteOpts
   );
-  if (assign) {
-    if (assign === "true" || assign === true) {
-      customCtx["awe_" + forField] = awe;
-    } else {
-      customCtx[assign] = awe;
-    }
+  if (assign && assign !== "false") {
+    customCtx[assign === "true" || assign === true ? "awe_" + forField : assign] = aweInstance;
   }
-  if (combobox && combobox !== "false")
-    UTIL.startClick(comboSelectID, awe);
+  if (combobox && combobox !== "false") {
+    UTIL.startClick(
+      "#" + (combobox === "true" || combobox === true ? "awe_btn_" + forField : combobox),
+      aweInstance
+    );
+  }
+  return aweInstance;
 };
 var attach_awesomplete_default = attachAwesomplete;
 
