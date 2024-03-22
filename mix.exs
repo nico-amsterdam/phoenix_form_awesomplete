@@ -1,7 +1,7 @@
 defmodule PhoenixFormAwesomplete.Mixfile do
   use Mix.Project
 
-  @version "1.0.0"
+  @version "0.3.0"
   @source_url "https://github.com/nico-amsterdam/phoenix_form_awesomplete"
 
   def project do
@@ -75,7 +75,7 @@ defmodule PhoenixFormAwesomplete.Mixfile do
 
   defp aliases do
     [
-      "assets.build": ["esbuild module", "esbuild main"]
+      "assets.build": ["esbuild module", "esbuild main", "esbuild css"]
     ]
   end
 end

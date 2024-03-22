@@ -1,6 +1,6 @@
 {
   "name": "phoenix_form_awesomplete",
-  "version": "1.0.0",
+  "version": "0.3.0",
   "main": "./priv/static/awesomplete_bundle.cjs",
   "module": "./priv/static/awesomplete_bundle.mjs",
   "exports": {
