@@ -33,9 +33,9 @@ defmodule PhoenixFormAwesomplete do
   - It is specially suitable for suggestions supplied by HTTP web services that produce JSON.
   - It can give suggestions for a list with multiple values.
   - It doesn't force the user to pick on of the suggestions; other values can be entered.
-  - It can highlight the input field if there is a match or no match.
+  - It can highlight the input field when there is a match or no match.
   - The list with suggestions can be customized, for example to show an extra description.
-  - The client stops interacting with the backend, and filters on it's own when enough characters have been typed and the suggestionlist has become smaller than the search result limit.
+  - The client stops interacting with the backend, and filters on it's own when enough characters have been typed and the suggestion list has become smaller than the search result limit.
   - Search requests can be cached by the browser, if the web service sets HTTP Cache headers.
   - It can fill dependend readonly fields/tags. The typical example would be a productcode with a product description shown in order lines. For the existing order lines the database can join the product description to be shown on the screen, but for new entries and when changing the productcode it has te be dynamicly looked up. This can be done while typing. After leaving the input field, the product description stays visible on the screen.
 
@@ -44,41 +44,15 @@ defmodule PhoenixFormAwesomplete do
   In HEEx templates and ~H sigils, function components offer a method of reuse.  
   And they make the HEEx markup arguable more readable.
 
-  ### Outside LiveView, a.k.a. "dead" views
 
-  When currently using Awesomplete, the templates can easily be rewritten to use
-  function components. The input tag is seperated from the script tag of Awesomplete,
-  which makes it easier to customize the style of the input field.
+  ### Use both inside and outside LiveView - via hooks
 
-  Example:
-
-  ```elixir
-  <.simple_form :let={f} for={@changeset} action={@action}>
-    <.input field={f[:country]} type="text" label="Country" autocomplete="off" />
-    <.autocomplete    forField={f[:country]}
-                      url="https://restcountries.com/v2/all"
-                      loadall="true"
-                      prepop="true"
-                      minChars="1" 
-                      maxItems="8" 
-                      value="name"
-                      nonce={@script_src_nonce}
-                      />
-  </.simple_form>
-  ```
-
-  The nonce in the example above, is to allow inline script to be executed
-  in combination with a Content-Security-Policy that doesn't 
-  allow unsafe evals or unsafe inline scripts.
-
-  ### Both inside and outside LiveView
-
-  For security reasons, LiveView doesn't execute the javascript in dynamicly loaded script tags. Adding new javascript after the page is loaded via the HTTP-request is what every malicious Cross Site Scripting (XSS) code tries to do. Via the Content-Security-Policy HTTP-header, it is possible to prevent dynamicly loaded script to be executed.
+  For security reasons, LiveView doesn't execute the javascript in dynamicly loaded script tags. Adding new javascript after the page is loaded via the HTTP-request is what every malicious Cross Site Scripting (XSS) code tries to do. Via the Content-Security-Policy HTTP-header, it is possible to prevent dynamicly loaded scripts to be executed.
   In LiveView the javascript code is loaded as a static asset, and 
    [client hooks via the phx-hook](https://hexdocs.pm/phoenix_live_view/js-interop.html#client-hooks-via-phx-hook) can be used to execute javascript code for
    dynamicly added DOM elements.
   Instead of generating javascript code for every autocomplete field, a javascript hook
-  is used which gets it's parameters at runtime. This javascript hook can handle the straightforward cases, but could need some tweaking for the corner cases. If these corner cases are complex and only applicable for a small subset of pages/components, you might consider to split off new client hooks.
+  is used which gets it's parameters at runtime.
 
   The beauty of the client hooks is that this can be used both inside and outside LiveView as they both use the mounted callback. This makes it possible define a reusable component with autocomplete fields, which can be incorporated inside and outside LiveView.
 
@@ -108,6 +82,37 @@ defmodule PhoenixFormAwesomplete do
     </div>
   </.simple_form>
   ```
+
+  ### Use outside LiveView, a.k.a. "dead" views - Via page scripts
+
+  When using Awesomplete 0.1, the EEx templates can easily be rewritten to use
+  function components. The input tag is seperated from the script tag of Awesomplete,
+  which makes it easier to customize the style of the input field.
+
+  The <.autocomplete> tag in the HEEX template will produce a script in the HTML page.
+  The advantage is that inline functions or functions defined on the same page can be used.
+
+  Example:
+
+  ```elixir
+  <.simple_form :let={f} for={@changeset} action={@action}>
+    <.input field={f[:country]} type="text" label="Country" autocomplete="off" />
+    <.autocomplete    forField={f[:country]}
+                      url="https://restcountries.com/v2/all"
+                      loadall="true"
+                      prepop="true"
+                      minChars="1" 
+                      maxItems="8" 
+                      value="name"
+                      nonce={@script_src_nonce}
+                      />
+  </.simple_form>
+  ```
+
+  The nonce in the example above, is to allow inline script to be executed
+  in combination with a Content-Security-Policy that doesn't 
+  allow unsafe evals or unsafe inline scripts.
+
  
   ## Security
 
@@ -127,13 +132,84 @@ defmodule PhoenixFormAwesomplete do
   
   ## Installation
 
+
+  ### Installation for using both inside and outside LiveView  
+
+  - Add `phoenix_form_awesomplete`to the list of dependencies in `mix.exs`:
+    ```elixir
+    def deps do
+      [
+      {:phoenix_form_awesomplete, "~> 0.3"}
+      ]
+    end
+    ```
+  - run
+    ```sh
+    mix deps.get
+    ```
+  - Add the import statement in assets/js/app.js
+    ```javascript
+    import { AwesompleteUtil, attachAwesomplete, copyValueToId } from "phoenix_form_awesomplete"
+    ```
+  - Add the Hooks Autocomplete and AutocompleteCopyValueToId in assets/js/app.js
+    ```javascript
+    const AU = AwesompleteUtil
+        , customAwesompleteContext = {
+
+      // These functions and objects can be referenced by name in the autocomplete function components.
+      // This list can be customized.
+
+      filterContains:   AU.filterContains
+    , filterStartsWith: AU.filterStartsWith
+    , filterWords:      AU.filterWords
+    , filterOff:        AU.filterOff
+
+    , item:             AU.item          // does NOT mark matching text 
+    // , itemContains:     AU.itemContains  // this is the default, no need to specify it.
+    , itemStartsWith:   AU.itemStartsWith
+    , itemMarkAll:      AU.itemMarkAll   // also mark matching text inside the description
+    , itemWords:        AU.itemWords     // mark matching words
+
+      // add your custom functions and/or lists here
+
+    }
+
+    Hooks.Autocomplete = {
+      mounted() { attachAwesomplete(this.el, customAwesompleteContext, {} /* defaultSettings */ ) }
+    }
+
+    Hooks.AutocompleteCopyValueToId = {
+      mounted() { copyValueToId(this.el) }
+    }
+    ```
+  - Add lib/<your_project>_web/components/[awesomplete_components.ex](https://github.com/nico-amsterdam/todo_trek/blob/main/lib/todo_trek_web/components/awesomplete_components.ex) 
+    
+    Rename the module to match your project. 
+  - Add these function components in lib/<your_project>_web/components/core_components.ex:
+    ```elixir
+    @awesomplete <YourProject>Web.AwesompleteComponents
+
+    defdelegate autocomplete(assigns), to: @awesomplete
+    defdelegate copy_value_to_id(assigns), to: @awesomplete
+    defdelegate copy_value_to_field(assigns), to: @awesomplete
+    ```
+  - add in assets/css/app.css
+    ```css
+    @import "../../deps/phoenix_form_awesomplete/priv/static/awesomplete_bundle.css";
+    ```
+    If you want to modify this file, copy it to your assets/css directory and import that css file.
+  - run
+    ```sh
+    mix phx.server
+    ```
+
   ### Installation for use outside LiveView only 
 
   - Add `phoenix_form_awesomplete`to the list of dependencies in `mix.exs`:
     ```elixir
     def deps do
       [
-      {:phoenix_form_awesomplete, "~> 0.2"}
+      {:phoenix_form_awesomplete, "~> 0.3"}
       ]
     end
     ```
@@ -152,100 +228,24 @@ defmodule PhoenixFormAwesomplete do
     defdelegate copy_value_to_id(assigns), to: @awesomplete
     defdelegate copy_value_to_field(assigns), to: @awesomplete
     ``` 
-  - copy [awesomplete.css](https://github.com/LeaVerou/awesomplete/blob/gh-pages/awesomplete.css) to assets/css 
-  - copy [awesomplete-util.min.js](https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete-util.min.js) to assets/vendor
-  - copy [awesomplete-v2020.min.js](https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete-v2020.min.js) to assets/vendor
-  - create assets/js/awesomplete.js:
-    ```elixir
-    import Awesomplete from '../vendor/awesomplete-v2020.min.js'
-    import AwesompleteUtil from '../vendor/awesomplete-util.min.js'
+  - Add this code in assets/js/app.js
+    ```javascript
+    import { Awesomplete, AwesompleteUtil } from "phoenix_form_awesomplete"
 
     // expose Awesomplete
     window.Awesomplete = Awesomplete
     window.AwesompleteUtil = AwesompleteUtil
     ```
-  - in config/config.exs add awesomplete.css and awesomplete.js in the esbuild config:
-    ```elixir
-    ~w(js/app.js js/awesomplete.js css/awesomplete.css --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
-    ```
   - add in assets/css/app.css
     ```elixir
-    @import "awesomplete.css";
+    @import "../../deps/phoenix_form_awesomplete/priv/static/awesomplete_bundle.css";
     ```
-  - add styles in assets/css/app.css
-    ```css
-    /*
-    * Awesomplete
-    */
-    div.awesomplete {display: block}
-    div.awesomplete ul li p {display: block; font-size: small; margin-left: 1em}
-    div.awesomplete .awe-found {border: 2px solid green}
-    .hide-not-found div.awesomplete .awe-not-found {border-color: lightblue}
-    div.awesomplete .awe-not-found {border: 2px solid red}
-    .awe-btn .caron { pointer-events: none }
-    ```
-  - In lib/<your_project>_web/components/layouts/root.html.heex add this to the head:
-    ```elixir
-    <script phx-track-static src={~p"/assets/js/awesomplete.js"}></script>
-    <link rel="stylesheet" href={~p"/assets/css/awesomplete.css"}>
-    ```
+    If you want to modify this file, copy it to your assets/css directory and import that css file.
   - run
     ```sh
     mix phx.server
     ```
 
-
-
-  ### Installation for using both inside and outside LiveView  
-
-  - Add the [Hooks Autocomplete and AutocompleteCopyValueToId](https://github.com/nico-amsterdam/todo_trek/blob/main/assets/js/app.js#L78) in assets/js/app.js
-  - Add lib/<your_project>_web/components/[awesomplete_components.ex](https://github.com/nico-amsterdam/todo_trek/blob/main/lib/todo_trek_web/components/awesomplete_components.ex) 
-    
-    Rename the module to match your project. 
-  - Add these function components in lib/<your_project>_web/components/core_components.ex:
-    ```elixir
-    @awesomplete <YourProject>Web.AwesompleteComponents
-
-    defdelegate autocomplete(assigns), to: @awesomplete
-    defdelegate copy_value_to_id(assigns), to: @awesomplete
-    defdelegate copy_value_to_field(assigns), to: @awesomplete
-    ```
-  - copy [awesomplete-util.min.js](https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete-util.min.js) to assets/vendor
-  - copy [awesomplete-v2020.min.js](https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete-v2020.min.js) to assets/vendor
-  - in assets/js/app.js add:
-    ```elixir
-    import Awesomplete from '../vendor/awesomplete-v2020.min.js'
-    import AwesompleteUtil from '../vendor/awesomplete-util.min.js'
-    ```
-  - copy [awesomplete.css](https://github.com/LeaVerou/awesomplete/blob/gh-pages/awesomplete.css) to assets/css 
-  - in config/config.exs add awesomplete.css in the esbuild config:
-    ```elixir
-    ~w(js/app.js css/awesomplete.css --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
-    ```
-  - add in assets/css/app.css
-    ```elixir
-    @import "awesomplete.css";
-    ```
-  - add styles in assets/css/app.css
-    ```css
-    /*
-    * Awesomplete
-    */
-    div.awesomplete {display: block}
-    div.awesomplete ul li p {display: block; font-size: small; margin-left: 1em}
-    div.awesomplete .awe-found {border: 2px solid green}
-    .hide-not-found div.awesomplete .awe-not-found {border-color: lightblue}
-    div.awesomplete .awe-not-found {border: 2px solid red}
-    .awe-btn .caron { pointer-events: none }
-    ```
-  - lib/<your_project>_web/components/layouts/root.html.heex add this to the head:
-    ```elixir
-    <link rel="stylesheet" href={~p"/assets/css/awesomplete.css"}>
-    ```
-  - run
-    ```sh
-    mix phx.server
-    ```
 
   ## PhoenixFormAwesomplete raw example
 
@@ -558,16 +558,18 @@ defmodule PhoenixFormAwesomplete do
    * `assign`          - Assign the Awesomplete object to a variable. true/false/name. If true the variable name will be 'awe\_' + id of input tag. Default: false
    * `autoFirst`       - true/false. Automatically select the first element. Default: false. 
    * `combobox`        - Id of the combobox button. true/false/id. If true the assumed button id is 'awe\_btn\_' + id of the input tag. Default: false
+   * `container`       - Container function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). By default a div element is added as the parent of the input element.
    * `convertInput`    - Convert input function. Internally convert input for comparison with the data list items. By default it trims the input and converts it to lowercase for a case-insensitive comparison.
    * `convertResponse` - Convert JSON response from ajax calls. This function is called with the parsed JSON, and allows conversion of the data before further processing. Default: nil - no conversion. 
    * `data`            - Data function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `debounce`        - Time in milliseconds to wait for additional user input before doing the ajax call to retrieve suggestions. It limits the rate at which the json service is called per user session.
    * `descr`           - Name of the field in the data list (the JSON response) that contains the description text to show below the value in the suggestion list. Default: no description
    * `descrSearch`     - true/false. Filter must also search the input value in the description field. Default: false
-   * `filter`          - Filter function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). Mostly Awesomplete.FILTER\_STARTSWITH or Awesomplete.FILTER\_CONTAINS. If label is different as value, filter on value with AweompleteUtil.filterStartsWith or AwesompleteUtil.filterContains.
+   * `filter`          - Filter function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). Mostly use Awesomplete.FILTER\_STARTSWITH or Awesomplete.FILTER\_CONTAINS. If label is different as value, filter on value with AweompleteUtil.filterStartsWith, AwesompleteUtil.filterContains or AwesompleteUtil.filterWords. To turn off filtering, use AwesompleteUtil.filterOff.
    * `item`            - Item function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). Default is to highlight all occurrences of the input text. Use AwesompleteUtil.itemStartsWith if that matches with the used filter.
    * `label`           - Name of the field in the data list (the JSON response) that contains the text that should be shown instead of the value. 
    * `list`            - Data list as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility).
+   * `listLabel`       - Denotes a label to be used as aria-label on the generated autocomplete list.
    * `loadall`         - true/false. Use true if the data list contains all items, and the input value should not be used in ajax calls. Default: false
    * `limit`           - number. If a limit is specified, and the number of items returned by the server is equal or more as this limit, the AwesompleteUtil code assumes that there are more results, so it will re-query if more characters are typed to get more refined results. The limit:1 tells that not more than 1 result is expected, so the json service doesn’t have to return an array. With limit:0 it will always re-query if more characters are typed and the result doesn't have to be an array either. Limit:-1 will always requery and the expected result is an array. When no limit is specified, the code assumes that all possible suggestions are returned based on the typed characters, and it will not re-query if more characters are typed. It uses the specified filter for the suggestions in the dropdown. Default: no limit 
    * `maxItems`        - Maximum number of suggestions to display. Default: 10 
@@ -578,7 +580,7 @@ defmodule PhoenixFormAwesomplete do
    * `replace`         - Replace function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `sort`            - Sort function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `url`             - url for ajax calls.
-   * `urlEnd`          - Addition at the end of the url of the ajax call, after the input value. 
+   * `urlEnd`          - Addition at the end of the url for the ajax call, after the input value. Or a function, which receives the value and must return the last part of the url after the base url. 
    * `value`           - Name of the field in the data list (the JSON response) that contains the value.
 
   ## Example

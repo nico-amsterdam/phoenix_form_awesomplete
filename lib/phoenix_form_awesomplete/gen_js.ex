@@ -45,28 +45,32 @@ defmodule PhoenixFormAwesomplete.GenJS do
      |> Enum.map_join(", ", fn{k, v} -> "#{k}: #{v}" end)
   end
 
-  # optionally convert string to integer
-  defp to_integer(val) do
-    if is_nil(val) or is_integer(val), do: val, else: String.to_integer(val)
-  end
+  # convert string to integer
+  defp to_integer!(val) when is_nil(val) or is_integer(val), do: val
+  defp to_integer!(val) when is_binary(val), do: String.to_integer(val)
+
+  # convert string to boolean
+  defp to_bool!(true), do: true
+  defp to_bool!("true"), do: true
+  defp to_bool!(_), do: false
 
   # returns filter_opts with added item
-  defp addItem(filter_opts, item_fun, starts_with, multiple_char, filter_str, descr_search) do
+  defp add_item(filter_opts, item_fun, starts_with, multiple_char, filter_str, descr_search) do
     cond do
       is_nil(item_fun) and is_nil(multiple_char) and descr_search -> filter_opts ++ [item: "#{@util}.itemMarkAll"]
       is_nil(item_fun) and is_nil(multiple_char) -> filter_opts
-      is_nil(item_fun) and starts_with -> filter_opts ++ [item: "function(text, input) { return #{@util}.itemStartsWith(text, #{filter_str}); }"]
       is_nil(item_fun) and descr_search ->  filter_opts ++ [item: "function(text, input) { return #{@util}.itemMarkAll(text, #{filter_str}); }"]
+      is_nil(item_fun) and starts_with -> filter_opts ++ [item: "function(text, input) { return #{@util}.itemStartsWith(text, #{filter_str}); }"]
       is_nil(item_fun) ->  filter_opts ++ [item: "function(text, input) { return #{@util}.itemContains(text, #{filter_str}); }"]
       is_nil(multiple_char) -> filter_opts ++ [item: "#{item_fun}"]
-      true -> filter_opts ++ [item: "function(text, input) { return (#{item_fun})(text, #{filter_str}); }"]
+      true -> filter_opts ++ [item: "function(text, input) { return (#{item_fun}).call(this, text, #{filter_str}); }"]
     end
   end
 
   # 
     # Be permissive about all kind of parameter combinations, except for these:
   # 
-  defp parameterChecks(fld_name, label_fld, descr_fld, descr_search) do
+  defp parameter_checks(fld_name, label_fld, descr_fld, descr_search) do
     # We could take the default of 'value' for the 'value' parameter (a.k.a. fld_name,) but it's more clear to be explicit.
     if is_nil(fld_name)  and descr_fld != nil, do: raise(ArgumentError, "'descr' without 'value' parameter.")
     if is_nil(fld_name)  and label_fld != nil, do: raise(ArgumentError, "'label' without 'value' parameter.")
@@ -92,7 +96,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
       is_nil(multiple_char) and is_nil(conv_input_fun) -> [] 
       is_nil(multiple_char) -> [convertInput: conv_input_fun] 
       is_nil(conv_input_fun) -> [convertInput: "function(input) { return #{conv_input_str}.trim().toLowerCase(); }"]
-      true -> [convertInput: "function(input) { return (#{conv_input_fun})(#{conv_input_str}.trim().toLowerCase()); }"]
+      true -> [convertInput: "function(input) { return (#{conv_input_fun}).call(this, #{conv_input_str}.trim().toLowerCase()); }"]
     end
   end
 
@@ -101,7 +105,8 @@ defmodule PhoenixFormAwesomplete.GenJS do
     if is_nil(multiple_char) do
       "text"
     else
-      "this.input.value.match(/^.+[#{multiple_char}]\\s*|/)[0] + text + '" <> String.at(multiple_char, 0) <> " '"
+      optional_space = if String.at(multiple_char, 0) == " ", do: "", else: " "
+      "this.input.value.match(/^.+[#{multiple_char}]\\s*|/)[0] + text + '" <> String.at(multiple_char, 0) <> optional_space <> "'"
     end
   end
 
@@ -110,7 +115,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
     cond do
       is_nil(multiple_char) -> []
       is_nil(replace_fun) -> [replace: "function(data) { var text=data.value; this.input.value = #{assign_replace_text}; }"]
-      true -> [replace: "function(data) { var text=data.value; (#{replace_fun}).(#{assign_replace_text}); }"]
+      true -> [replace: "function(data) { var text=data.value; (#{replace_fun}).call(this, #{assign_replace_text}); }"]
     end
   end
 
@@ -186,7 +191,14 @@ defmodule PhoenixFormAwesomplete.GenJS do
     {url,               awesomplete_opts} = Keyword.pop(awesomplete_opts, :url)
     {url_end,           awesomplete_opts} = Keyword.pop(awesomplete_opts, :urlEnd)
 
-    parameterChecks(fld_name, label_fld, descr_fld, descr_search) 
+    # 
+      # Convert descr_search to boolean
+    # 
+    descr_search = to_bool!(descr_search)
+    loadall = to_bool!(loadall)
+    prepop = to_bool!(prepop)
+
+    parameter_checks(fld_name, label_fld, descr_fld, descr_search) 
 
     # generated js code uses @util & @awe but in the input we expect the standard Awesomplete & AwesompleteUtil names.
     starts_with = filter_fun == "Awesomplete.FILTER_STARTSWITH" or filter_fun == "AwesompleteUtil.filterStartsWith"
@@ -194,9 +206,9 @@ defmodule PhoenixFormAwesomplete.GenJS do
     # 
       # Convert limit and debounce to integer
     # 
-    limit    = to_integer(limit)
-    debounce = to_integer(debounce)
-    
+    limit    = to_integer!(limit)
+    debounce = to_integer!(debounce)
+
     multiple_char = construct_multiple_char(multiple)
 
     # 
@@ -252,11 +264,11 @@ defmodule PhoenixFormAwesomplete.GenJS do
       starts_with and descr_search -> [filter: starts_with_filter_fun]
       starts_with -> [filter: "function(data, input) { return #{@awe}.FILTER_STARTSWITH(#{data_val}, #{filter_str}); }"]
       is_nil(filter_fun) -> [filter: "function(data, input) { return #{@awe}.FILTER_CONTAINS(#{data_val}, #{filter_str}); }"]
-      true -> [filter: "function(data, input) { return (#{filter_fun})(#{data_val}, #{filter_str}); }"]
+      true -> [filter: "function(data, input) { return (#{filter_fun}).call(#{data_val}, #{filter_str}); }"]
     end 
     
     # add item: in filter_opts
-    filter_opts = addItem(filter_opts, item_fun, starts_with, multiple_char, filter_str, descr_search)
+    filter_opts = add_item(filter_opts, item_fun, starts_with, multiple_char, filter_str, descr_search)
 
     conv_input_opts = construct_conv_input_opts(multiple_char, conv_input_fun, conv_input_str)
        
@@ -270,7 +282,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
       if is_nil(data_fun) do
         "function(rec, input) { return #{data_fun_result}; }"
       else
-        "function(rec, input) { return (#{data_fun})(#{data_fun_result}, input); }"
+        "function(rec, input) { return (#{data_fun}).call(this, #{data_fun_result}, input); }"
       end
 
     awesomplete_opts = cond do
@@ -278,7 +290,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
       is_nil(fld_name) -> awesomplete_opts ++ [data: data_fun] ++ multiple_replace_opts
       !descr_search ->       awesomplete_opts ++ [data: data_fun_str] ++ multiple_replace_opts
       is_nil(replace_fun) -> awesomplete_opts ++ [data: data_fun_str, replace: "function(data) { var text = data.value.substring(0, data.value.lastIndexOf('|')); this.input.value = #{assign_replace_text}; }"]
-      true -> awesomplete_opts ++ [data: data_fun_str, replace: "function(data) { var text = data.value.substring(0, data.value.lastIndexOf('|')); (#{replace_fun}).(#{assign_replace_text}); }"]
+      true -> awesomplete_opts ++ [data: data_fun_str, replace: "function(data) { var text = data.value.substring(0, data.value.lastIndexOf('|')); (#{replace_fun}).call(this, #{assign_replace_text}); }"]
     end
 
     awesomplete_opts = awesomplete_opts ++ filter_opts

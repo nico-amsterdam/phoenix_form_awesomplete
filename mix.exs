@@ -1,13 +1,13 @@
 defmodule PhoenixFormAwesomplete.Mixfile do
   use Mix.Project
 
-  @version "0.2.1"
+  @version "0.3.0"
   @source_url "https://github.com/nico-amsterdam/phoenix_form_awesomplete"
 
   def project do
     [app: :phoenix_form_awesomplete,
      version: @version,
-     elixir: "~> 1.11",
+     elixir: "~> 1.15",
 
      # Hex
      package: package(),
@@ -23,7 +23,8 @@ defmodule PhoenixFormAwesomplete.Mixfile do
      build_embedded:  Mix.env == :prod,
      start_permanent: Mix.env == :prod,
 
-     deps: deps()
+     deps: deps(),
+     aliases: aliases()
     ]
   end
 
@@ -48,7 +49,9 @@ defmodule PhoenixFormAwesomplete.Mixfile do
   defp deps do
     [
       {:phoenix_html, "~> 2.10 or ~> 3.0"},   # mix test of this project requires >= 3.3.0
-      {:ex_doc, "~> 0.30.9", only: :dev}
+      {:phoenix_live_view, "~> 0.20.13", override: true},
+      {:ex_doc, "~> 0.30.9", only: :dev},
+      {:esbuild, "~> 0.8", only: [:dev, :test]}
     ]
   end
 
@@ -67,6 +70,12 @@ defmodule PhoenixFormAwesomplete.Mixfile do
      licenses: ["MIT"],
      links: %{"GitHub" => @source_url,
               "Documentation with live examples" => "https://nico-amsterdam.github.io/awesomplete-util/phoenix.html" }
+    ]
+  end
+
+  defp aliases do
+    [
+      "assets.build": ["esbuild module", "esbuild main", "esbuild css"]
     ]
   end
 end
