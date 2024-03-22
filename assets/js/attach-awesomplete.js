@@ -110,9 +110,11 @@ const
     }
   }, // end makeConvertInputFun
 
-  attachAwesomplete = (node, defaultValues, customCtx) => {
+  attachAwesomplete = (node, customCtx, defaultSettings) => {
+    defaultSettings = defaultSettings || {}
+    customCtx = customCtx || {}
     const b = node.getAttribute.bind(node)
-    , a = function(attr) { return b(attr) || defaultValues[attr] }
+    , a = function(attr) { return b(attr) || defaultSettings[attr] }
     , ajax = a('ajax')
     , assign = a('assign')
     , autoFirst = a('autoFirst')
