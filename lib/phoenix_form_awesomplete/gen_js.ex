@@ -55,7 +55,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
   defp to_bool!(_), do: false
 
   # returns filter_opts with added item
-  defp addItem(filter_opts, item_fun, starts_with, multiple_char, filter_str, descr_search) do
+  defp add_item(filter_opts, item_fun, starts_with, multiple_char, filter_str, descr_search) do
     cond do
       is_nil(item_fun) and is_nil(multiple_char) and descr_search -> filter_opts ++ [item: "#{@util}.itemMarkAll"]
       is_nil(item_fun) and is_nil(multiple_char) -> filter_opts
@@ -70,7 +70,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
   # 
     # Be permissive about all kind of parameter combinations, except for these:
   # 
-  defp parameterChecks(fld_name, label_fld, descr_fld, descr_search) do
+  defp parameter_checks(fld_name, label_fld, descr_fld, descr_search) do
     # We could take the default of 'value' for the 'value' parameter (a.k.a. fld_name,) but it's more clear to be explicit.
     if is_nil(fld_name)  and descr_fld != nil, do: raise(ArgumentError, "'descr' without 'value' parameter.")
     if is_nil(fld_name)  and label_fld != nil, do: raise(ArgumentError, "'label' without 'value' parameter.")
@@ -198,7 +198,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
     loadall = to_bool!(loadall)
     prepop = to_bool!(prepop)
 
-    parameterChecks(fld_name, label_fld, descr_fld, descr_search) 
+    parameter_checks(fld_name, label_fld, descr_fld, descr_search) 
 
     # generated js code uses @util & @awe but in the input we expect the standard Awesomplete & AwesompleteUtil names.
     starts_with = filter_fun == "Awesomplete.FILTER_STARTSWITH" or filter_fun == "AwesompleteUtil.filterStartsWith"
@@ -268,7 +268,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
     end 
     
     # add item: in filter_opts
-    filter_opts = addItem(filter_opts, item_fun, starts_with, multiple_char, filter_str, descr_search)
+    filter_opts = add_item(filter_opts, item_fun, starts_with, multiple_char, filter_str, descr_search)
 
     conv_input_opts = construct_conv_input_opts(multiple_char, conv_input_fun, conv_input_str)
        
