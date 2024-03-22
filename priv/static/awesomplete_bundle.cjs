@@ -1031,9 +1031,11 @@ var makeConvertInputFun = (convertInputFun, multipleChar) => {
     return convertInputFun ? convertInputFun.call(this, convInp) : convInp;
   };
 };
-var attachAwesomplete = (node, defaultValues, customCtx) => {
+var attachAwesomplete = (node, customCtx, defaultSettings) => {
+  defaultSettings = defaultSettings || {};
+  customCtx = customCtx || {};
   const b = node.getAttribute.bind(node), a = function(attr) {
-    return b(attr) || defaultValues[attr];
+    return b(attr) || defaultSettings[attr];
   }, ajax = a("ajax"), assign = a("assign"), autoFirst = a("autoFirst"), combobox = a("combobox"), container = a("container"), convertInput = a("convertInput"), convertResponse = a("convertResponse"), data = a("data"), debounce = a("debounce"), descr = a("descr"), descrSearch2 = a("descrSearch"), item = a("item"), filter = a("filter"), forField = a("forField"), label = a("label"), limit = a("limit"), list = a("list"), loadall = a("loadall"), listLabel = a("listLabel"), maxItems = a("maxItems"), minChars = a("minChars"), multiple = a("multiple"), prepop = a("prepop"), replace = a("replace"), sort = a("sort"), value = a("value"), url = a("url"), urlEnd = a("urlEnd"), convertInputFun = getCustomFunction(customCtx, convertInput, "convertInput"), dataFun = getCustomFunction(customCtx, data, "data"), filterFun = getCustomFunction(customCtx, filter, "filter"), itemFun = getCustomFunction(customCtx, item, "item"), replaceFun = getCustomFunction(customCtx, replace, "replace"), filterAtStart = filterFun === Awesomplete.FILTER_STARTSWITH || filterFun === UTIL.filterStartsWith, isDescrSearch = descrSearch2 === "true" || descrSearch2 === true;
   if (forField === void 0)
     throw new Error("Missing forField attribute.");
