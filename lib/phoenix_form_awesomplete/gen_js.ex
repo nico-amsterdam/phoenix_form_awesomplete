@@ -264,7 +264,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
       starts_with and descr_search -> [filter: starts_with_filter_fun]
       starts_with -> [filter: "function(data, input) { return #{@awe}.FILTER_STARTSWITH(#{data_val}, #{filter_str}); }"]
       is_nil(filter_fun) -> [filter: "function(data, input) { return #{@awe}.FILTER_CONTAINS(#{data_val}, #{filter_str}); }"]
-      true -> [filter: "function(data, input) { return (#{filter_fun}).call(#{data_val}, #{filter_str}); }"]
+      true -> [filter: "function(data, input) { return (#{filter_fun}).call(this, #{data_val}, #{filter_str}); }"]
     end 
     
     # add item: in filter_opts

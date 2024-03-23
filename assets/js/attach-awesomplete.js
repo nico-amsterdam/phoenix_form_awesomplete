@@ -48,7 +48,7 @@ const
     // Filters are called with a Suggestion, which always has a value and label property,
     // The suggestion toString is used for string conversion. The toString returns: label || value.
     if (!re && !labelOrDescrAttr) return filterFun; // Suggestion label == value
-    let applyThisFilter = filterFun; 
+    let applyThisFilter = filterFun;
     const AWE = Awesomplete;
     if (filterAtStart) {
       if (descrSearch) {
@@ -101,7 +101,7 @@ const
     if (!multipleChar) return convertInputFun;
 
     // select the text that will be considered to be the current input.
-    const rem = new RegExp("[" + multipleChar + "]*\\s$"),
+    const rem = new RegExp("[" + multipleChar + "]\\s*$"),
       rel = new RegExp("[^" + multipleChar + "]*$");
 
     return function(inp) {
