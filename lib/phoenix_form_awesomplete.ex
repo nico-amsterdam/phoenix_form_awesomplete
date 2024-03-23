@@ -231,11 +231,12 @@ defmodule PhoenixFormAwesomplete do
   - Add this code in assets/js/app.js
     ```javascript
     import { Awesomplete, AwesompleteUtil } from "phoenix_form_awesomplete"
-
-    // expose Awesomplete
-    window.Awesomplete = Awesomplete
-    window.AwesompleteUtil = AwesompleteUtil
     ```
+  - In lib/<your_project>_web/components/layouts/root.html.heex remove 'defer' for app.js:
+    ```elixir
+    <script phx-track-static src={~p"/assets/js/app.js"}></script>
+    ```
+    Awesomplete and AwesompleteUtil must be loaded before running the inline scripts.
   - add in assets/css/app.css
     ```elixir
     @import "../../deps/phoenix_form_awesomplete/priv/static/awesomplete_bundle.css";
@@ -312,7 +313,21 @@ defmodule PhoenixFormAwesomplete do
       iex> PhoenixFormAwesomplete.script("alert(2);" , %{nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S"})
       {:safe, "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">alert(2);</script>"}
 
+      iex> PhoenixFormAwesomplete.script("alert(3);" , %{type: "module", id: "x42"})
+      {:safe, "<script id=\"x42\" type=\"module\">alert(3);</script>"}
+
   """
+  def script(script, [])
+      when is_binary(script) do
+    HTML.raw("<script>#{script}</script>")
+  end
+
+  def script(script, script_attributes)
+      when is_binary(script) 
+      and script_attributes == %{} do
+    HTML.raw("<script>#{script}</script>")
+  end
+
   def script(script, script_attributes)
       when is_binary(script)
        and is_list(script_attributes) do
@@ -612,6 +627,26 @@ defmodule PhoenixFormAwesomplete do
     HTML.html_escape([Form.text_input(form, field, opts), script])
   end
 
+  # extract nonce, type and id from awesomplete_opts to script_opts
+  # return {script_opts, awesomplete_opts}
+  defp extract_script_options(awesomplete_opts)
+      when is_list(awesomplete_opts) do
+
+    {script_id, awesomplete_opts} = Keyword.pop(awesomplete_opts, :id)
+    {type,      awesomplete_opts} = Keyword.pop(awesomplete_opts, :type)
+
+    script_opts = if !is_nil(script_id), do: %{id: script_id}, else: %{}
+    script_opts = if !is_nil(type), do: Map.put(script_opts, :type, type), else: script_opts
+
+    # Empty nonce is also past on for error handling.
+    if Keyword.has_key?(awesomplete_opts, :nonce) do
+        {csp_nonce_value, awesomplete_opts_remainder} = Keyword.pop!(awesomplete_opts, :nonce)
+        {Map.put(script_opts, :nonce, csp_nonce_value), awesomplete_opts_remainder}
+    else
+        {script_opts, awesomplete_opts}
+    end
+  end
+
   @doc ~S"""
   This method generates a script tag with javascript code for using Awesomplete(Util).
 
@@ -627,21 +662,16 @@ defmodule PhoenixFormAwesomplete do
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});</script>"}
 
   """
-  def awesomplete_script(%{id: awe_id} = _ff, %{nonce: csp_nonce_value} = awesomplete_opts) do
-    script(GenJS.awesomplete_js(awe_id, Map.delete(awesomplete_opts, :nonce)), %{nonce: csp_nonce_value})
+  def awesomplete_script(%{id: _awe_id} = ff, %{} = awesomplete_opts) do
+    awesomplete_script(ff, Enum.to_list(awesomplete_opts))
   end
 
   def awesomplete_script(%{id: awe_id} = _ff, awesomplete_opts)
       when is_list(awesomplete_opts) do
-    case Keyword.has_key?(awesomplete_opts, :nonce) do
-       true  -> {csp_nonce_value, awesomplete_opts_remainder} = Keyword.pop!(awesomplete_opts, :nonce) 
-                script(GenJS.awesomplete_js(awe_id, awesomplete_opts_remainder), %{nonce: csp_nonce_value})
-       false -> script(GenJS.awesomplete_js(awe_id, awesomplete_opts))
-    end
-  end
 
-  def awesomplete_script(%{id: awe_id} = _ff, awesomplete_opts) do
-    script(GenJS.awesomplete_js(awe_id, awesomplete_opts))
+    {script_opts, awesomplete_opts} = extract_script_options(awesomplete_opts)
+
+    script(GenJS.awesomplete_js(awe_id, awesomplete_opts), script_opts)
   end
 
   @doc ~S"""
@@ -661,20 +691,15 @@ defmodule PhoenixFormAwesomplete do
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});</script>"}
 
   """
-  def awesomplete_script(form, field, %{nonce: csp_nonce_value} = awesomplete_opts) do
-    script(awesomplete_js(form, field, Map.delete(awesomplete_opts, :nonce)), %{nonce: csp_nonce_value})
+  def awesomplete_script(form, field, %{} = awesomplete_opts) do
+    awesomplete_script(form, field, Enum.to_list(awesomplete_opts))
   end
 
   def awesomplete_script(form, field, awesomplete_opts)
       when is_list(awesomplete_opts) do
-    case Keyword.has_key?(awesomplete_opts, :nonce) do
-       true  -> {csp_nonce_value, awesomplete_opts_remainder} = Keyword.pop!(awesomplete_opts, :nonce) 
-                script(awesomplete_js(form, field, awesomplete_opts_remainder), %{nonce: csp_nonce_value})
-       false -> script(awesomplete_js(form, field, awesomplete_opts))
-    end
-  end
 
-  def awesomplete_script(form, field, awesomplete_opts) do
-    script(awesomplete_js(form, field, awesomplete_opts))
+    {script_opts, awesomplete_opts} = extract_script_options(awesomplete_opts)
+
+    script(awesomplete_js(form, field, awesomplete_opts), script_opts)
   end
 end

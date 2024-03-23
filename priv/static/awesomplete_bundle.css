@@ -90,7 +90,7 @@
   color: inherit;
 }
 
-/* css/awesomplete_bundle.css */
+/* vendor/awesomplete-util.css */
 div.awesomplete {
   display: block;
 }
@@ -111,4 +111,6 @@ div.awesomplete .awe-not-found {
 .awe-btn .caron {
   pointer-events: none;
 }
+
+/* css/awesomplete_bundle.css */
 /*# sourceMappingURL=awesomplete_bundle.css.map */
