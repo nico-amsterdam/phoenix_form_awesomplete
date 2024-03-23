@@ -83,14 +83,16 @@ defmodule PhoenixFormAwesomplete do
   </.simple_form>
   ```
 
-  ### Use outside LiveView, a.k.a. "dead" views - Via page scripts
+  ### Use outside LiveView, a.k.a. "dead" views - via page scripts
 
-  When using Awesomplete 0.1, the EEx templates can easily be rewritten to use
-  function components. The input tag is seperated from the script tag of Awesomplete,
+  The advantage of embedded page scripts is that anonymous functions and 
+  functions defined on the same page can be used. 
+  It also offers a smoother migration path from version 0.1.
+  The EEx templates can be rewritten to use function components. 
+  The input tag is separated from the script tag of Awesomplete,
   which makes it easier to customize the style of the input field.
 
   The <.autocomplete> tag in the HEEX template will produce a script in the HTML page.
-  The advantage is that inline functions or functions defined on the same page can be used.
 
   Example:
 
@@ -143,7 +145,7 @@ defmodule PhoenixFormAwesomplete do
       ]
     end
     ```
-  - run
+  - Run
     ```sh
     mix deps.get
     ```
@@ -193,12 +195,12 @@ defmodule PhoenixFormAwesomplete do
     defdelegate copy_value_to_id(assigns), to: @awesomplete
     defdelegate copy_value_to_field(assigns), to: @awesomplete
     ```
-  - add in assets/css/app.css
+  - Add in assets/css/app.css
     ```css
     @import "../../deps/phoenix_form_awesomplete/priv/static/awesomplete_bundle.css";
     ```
     If you want to modify this file, copy it to your assets/css directory and import that css file.
-  - run
+  - Run
     ```sh
     mix phx.server
     ```
@@ -213,7 +215,7 @@ defmodule PhoenixFormAwesomplete do
       ]
     end
     ```
-  - run
+  - Run
     ```sh
     mix deps.get
     ```
@@ -237,12 +239,12 @@ defmodule PhoenixFormAwesomplete do
     <script phx-track-static src={~p"/assets/js/app.js"}></script>
     ```
     Awesomplete and AwesompleteUtil must be loaded before running the inline scripts.
-  - add in assets/css/app.css
+  - Add in assets/css/app.css
     ```elixir
     @import "../../deps/phoenix_form_awesomplete/priv/static/awesomplete_bundle.css";
     ```
     If you want to modify this file, copy it to your assets/css directory and import that css file.
-  - run
+  - Run
     ```sh
     mix phx.server
     ```
@@ -270,7 +272,7 @@ defmodule PhoenixFormAwesomplete do
   Look at the [live examples](https://nico-amsterdam.github.io/awesomplete-util/phoenix.html) with code.
 
 
-  It is possible to use aliases for the javascript library references in the generated code 
+  It is possible to use aliases for the javascript library references in the generated page scripts 
   via the environment variables `util` and `awesomplete`.
   The default names, `AwesompleteUtil` and `Awesomplete` respectively, are a bit long.
   This can shorten the average page size.
