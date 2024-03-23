@@ -1012,7 +1012,7 @@ var makeDataFun = (dataFun, valueAttr, labelAttr, descrAttr, descrSearch2) => {
 var makeConvertInputFun = (convertInputFun, multipleChar) => {
   if (!multipleChar)
     return convertInputFun;
-  const rem = new RegExp("[" + multipleChar + "]*\\s$"), rel = new RegExp("[^" + multipleChar + "]*$");
+  const rem = new RegExp("[" + multipleChar + "]\\s*$"), rel = new RegExp("[^" + multipleChar + "]*$");
   return function(inp) {
     var convInp = inp.replace(rem, "").match(rel)[0].trim().toLowerCase();
     return convertInputFun ? convertInputFun.call(this, convInp) : convInp;
