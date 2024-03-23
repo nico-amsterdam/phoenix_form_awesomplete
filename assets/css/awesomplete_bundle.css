@@ -3,9 +3,4 @@
  */
 @import "../vendor/awesomplete.base.css";
 @import "../vendor/awesomplete.theme.css";
-div.awesomplete {display: block}
-div.awesomplete ul li p {display: block; font-size: small; margin-left: 1em}
-div.awesomplete .awe-found {border: 2px solid green}
-.hide-not-found div.awesomplete .awe-not-found {border-color: lightblue}
-div.awesomplete .awe-not-found {border: 2px solid red}
-.awe-btn .caron { pointer-events: none }
+@import "../vendor/awesomplete-util.css";

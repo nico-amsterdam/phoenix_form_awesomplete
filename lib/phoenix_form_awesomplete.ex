@@ -83,14 +83,16 @@ defmodule PhoenixFormAwesomplete do
   </.simple_form>
   ```
 
-  ### Use outside LiveView, a.k.a. "dead" views - Via page scripts
+  ### Use outside LiveView, a.k.a. "dead" views - via page scripts
 
-  When using Awesomplete 0.1, the EEx templates can easily be rewritten to use
-  function components. The input tag is seperated from the script tag of Awesomplete,
+  The advantage of embedded page scripts is that anonymous functions and 
+  functions defined on the same page can be used. 
+  It also offers a smoother migration path from version 0.1.
+  The EEx templates can be rewritten to use function components. 
+  The input tag is separated from the script tag of Awesomplete,
   which makes it easier to customize the style of the input field.
 
   The <.autocomplete> tag in the HEEX template will produce a script in the HTML page.
-  The advantage is that inline functions or functions defined on the same page can be used.
 
   Example:
 
@@ -143,7 +145,7 @@ defmodule PhoenixFormAwesomplete do
       ]
     end
     ```
-  - run
+  - Run
     ```sh
     mix deps.get
     ```
@@ -193,12 +195,12 @@ defmodule PhoenixFormAwesomplete do
     defdelegate copy_value_to_id(assigns), to: @awesomplete
     defdelegate copy_value_to_field(assigns), to: @awesomplete
     ```
-  - add in assets/css/app.css
+  - Add in assets/css/app.css
     ```css
     @import "../../deps/phoenix_form_awesomplete/priv/static/awesomplete_bundle.css";
     ```
     If you want to modify this file, copy it to your assets/css directory and import that css file.
-  - run
+  - Run
     ```sh
     mix phx.server
     ```
@@ -213,7 +215,7 @@ defmodule PhoenixFormAwesomplete do
       ]
     end
     ```
-  - run
+  - Run
     ```sh
     mix deps.get
     ```
@@ -231,17 +233,18 @@ defmodule PhoenixFormAwesomplete do
   - Add this code in assets/js/app.js
     ```javascript
     import { Awesomplete, AwesompleteUtil } from "phoenix_form_awesomplete"
-
-    // expose Awesomplete
-    window.Awesomplete = Awesomplete
-    window.AwesompleteUtil = AwesompleteUtil
     ```
-  - add in assets/css/app.css
+  - In lib/<your_project>_web/components/layouts/root.html.heex remove 'defer' for app.js:
+    ```elixir
+    <script phx-track-static src={~p"/assets/js/app.js"}></script>
+    ```
+    Awesomplete and AwesompleteUtil must be loaded before running the inline scripts.
+  - Add in assets/css/app.css
     ```elixir
     @import "../../deps/phoenix_form_awesomplete/priv/static/awesomplete_bundle.css";
     ```
     If you want to modify this file, copy it to your assets/css directory and import that css file.
-  - run
+  - Run
     ```sh
     mix phx.server
     ```
@@ -269,7 +272,7 @@ defmodule PhoenixFormAwesomplete do
   Look at the [live examples](https://nico-amsterdam.github.io/awesomplete-util/phoenix.html) with code.
 
 
-  It is possible to use aliases for the javascript library references in the generated code 
+  It is possible to use aliases for the javascript library references in the generated page scripts 
   via the environment variables `util` and `awesomplete`.
   The default names, `AwesompleteUtil` and `Awesomplete` respectively, are a bit long.
   This can shorten the average page size.
@@ -312,7 +315,21 @@ defmodule PhoenixFormAwesomplete do
       iex> PhoenixFormAwesomplete.script("alert(2);" , %{nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S"})
       {:safe, "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">alert(2);</script>"}
 
+      iex> PhoenixFormAwesomplete.script("alert(3);" , %{type: "module", id: "x42"})
+      {:safe, "<script id=\"x42\" type=\"module\">alert(3);</script>"}
+
   """
+  def script(script, [])
+      when is_binary(script) do
+    HTML.raw("<script>#{script}</script>")
+  end
+
+  def script(script, script_attributes)
+      when is_binary(script) 
+      and script_attributes == %{} do
+    HTML.raw("<script>#{script}</script>")
+  end
+
   def script(script, script_attributes)
       when is_binary(script)
        and is_list(script_attributes) do
@@ -612,6 +629,26 @@ defmodule PhoenixFormAwesomplete do
     HTML.html_escape([Form.text_input(form, field, opts), script])
   end
 
+  # extract nonce, type and id from awesomplete_opts to script_opts
+  # return {script_opts, awesomplete_opts}
+  defp extract_script_options(awesomplete_opts)
+      when is_list(awesomplete_opts) do
+
+    {script_id, awesomplete_opts} = Keyword.pop(awesomplete_opts, :id)
+    {type,      awesomplete_opts} = Keyword.pop(awesomplete_opts, :type)
+
+    script_opts = if !is_nil(script_id), do: %{id: script_id}, else: %{}
+    script_opts = if !is_nil(type), do: Map.put(script_opts, :type, type), else: script_opts
+
+    # Empty nonce is also past on for error handling.
+    if Keyword.has_key?(awesomplete_opts, :nonce) do
+        {csp_nonce_value, awesomplete_opts_remainder} = Keyword.pop!(awesomplete_opts, :nonce)
+        {Map.put(script_opts, :nonce, csp_nonce_value), awesomplete_opts_remainder}
+    else
+        {script_opts, awesomplete_opts}
+    end
+  end
+
   @doc ~S"""
   This method generates a script tag with javascript code for using Awesomplete(Util).
 
@@ -627,21 +664,16 @@ defmodule PhoenixFormAwesomplete do
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});</script>"}
 
   """
-  def awesomplete_script(%{id: awe_id} = _ff, %{nonce: csp_nonce_value} = awesomplete_opts) do
-    script(GenJS.awesomplete_js(awe_id, Map.delete(awesomplete_opts, :nonce)), %{nonce: csp_nonce_value})
+  def awesomplete_script(%{id: _awe_id} = ff, %{} = awesomplete_opts) do
+    awesomplete_script(ff, Enum.to_list(awesomplete_opts))
   end
 
   def awesomplete_script(%{id: awe_id} = _ff, awesomplete_opts)
       when is_list(awesomplete_opts) do
-    case Keyword.has_key?(awesomplete_opts, :nonce) do
-       true  -> {csp_nonce_value, awesomplete_opts_remainder} = Keyword.pop!(awesomplete_opts, :nonce) 
-                script(GenJS.awesomplete_js(awe_id, awesomplete_opts_remainder), %{nonce: csp_nonce_value})
-       false -> script(GenJS.awesomplete_js(awe_id, awesomplete_opts))
-    end
-  end
 
-  def awesomplete_script(%{id: awe_id} = _ff, awesomplete_opts) do
-    script(GenJS.awesomplete_js(awe_id, awesomplete_opts))
+    {script_opts, awesomplete_opts} = extract_script_options(awesomplete_opts)
+
+    script(GenJS.awesomplete_js(awe_id, awesomplete_opts), script_opts)
   end
 
   @doc ~S"""
@@ -661,20 +693,15 @@ defmodule PhoenixFormAwesomplete do
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});</script>"}
 
   """
-  def awesomplete_script(form, field, %{nonce: csp_nonce_value} = awesomplete_opts) do
-    script(awesomplete_js(form, field, Map.delete(awesomplete_opts, :nonce)), %{nonce: csp_nonce_value})
+  def awesomplete_script(form, field, %{} = awesomplete_opts) do
+    awesomplete_script(form, field, Enum.to_list(awesomplete_opts))
   end
 
   def awesomplete_script(form, field, awesomplete_opts)
       when is_list(awesomplete_opts) do
-    case Keyword.has_key?(awesomplete_opts, :nonce) do
-       true  -> {csp_nonce_value, awesomplete_opts_remainder} = Keyword.pop!(awesomplete_opts, :nonce) 
-                script(awesomplete_js(form, field, awesomplete_opts_remainder), %{nonce: csp_nonce_value})
-       false -> script(awesomplete_js(form, field, awesomplete_opts))
-    end
-  end
 
-  def awesomplete_script(form, field, awesomplete_opts) do
-    script(awesomplete_js(form, field, awesomplete_opts))
+    {script_opts, awesomplete_opts} = extract_script_options(awesomplete_opts)
+
+    script(awesomplete_js(form, field, awesomplete_opts), script_opts)
   end
 end

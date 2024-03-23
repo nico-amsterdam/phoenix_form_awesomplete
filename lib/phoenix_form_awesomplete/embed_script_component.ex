@@ -2,8 +2,8 @@ defmodule PhoenixFormAwesomplete.EmbedScriptComponent do
 
   @moduledoc """
   Provides function components for the Awesomplete script generator component,
-  to provide autocomplete functionality outside liveview.
-  The generator provides the javascript to be embedded in the HTML page.
+  to embed autocomplete functionality in the HTML pages.
+  Can only be used outside LiveView.
   """
 
   use Phoenix.Component
@@ -14,7 +14,7 @@ defmodule PhoenixFormAwesomplete.EmbedScriptComponent do
   attr :forField, :any, required: true, doc: "Phoenix.HTML.FormField struct or field name."
   attr :forForm, :any, default: nil, doc: "Phoenix.HTML.Form struct or form name. Not needed when FormField is used."
   attr :rest, :global,
-    include: ~w(ajax assign autoFirst combobox convertInput convertResponse data debounce descr descrSearch filter item label list loadall limit maxItems minChars multiple prepop replace sort url urlEnd value),
+    include: ~w(ajax assign autoFirst combobox container convertInput convertResponse data debounce descr descrSearch filter id item label list listLabel loadall limit maxItems minChars multiple prepop replace sort type url urlEnd value),
     doc: "the options for awesomplete_script."
   def autocomplete(%{forField: %Phoenix.HTML.FormField{}} = assigns) do
     ~H"""

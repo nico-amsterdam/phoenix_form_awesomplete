@@ -2,9 +2,9 @@ defmodule PhoenixFormAwesomplete.HookComponent do
 
   @moduledoc """
   Provides function components for the Awesomplete component,
-  which provides autocomplete functionality.
+  for autocomplete functionality.
   Uses a hook for the javascript code.
-  Usable in both inside and outside LiveView.
+  Usable inside and outside LiveView.
   """
 
   use Phoenix.Component
@@ -17,7 +17,7 @@ defmodule PhoenixFormAwesomplete.HookComponent do
   attr :forForm, :any, doc: "Phoenix.HTML.Form struct or form name. Not needed when FormField is used."
   attr :nonce, :any, doc: "In liveview the nonce will be ignored."
   attr :rest, :global,
-    include: ~w(ajax assign autoFirst combobox convertInput convertResponse data debounce descr descrSearch filter item label list loadall limit maxItems minChars multiple prepop replace sort url urlEnd value),
+    include: ~w(ajax assign autoFirst combobox container convertInput convertResponse data debounce descr descrSearch filter item label list listLabel loadall limit maxItems minChars multiple prepop replace sort url urlEnd value),
     doc: "the options for awesomplete_script."
   def autocomplete(%{forField: %Phoenix.HTML.FormField{}} = assigns) do
     assigns = assign_new(assigns, :id, fn -> assigns.forField.id <> "-autocomplete" end)
