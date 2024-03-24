@@ -22,7 +22,7 @@ defmodule PhoenixFormAwesomplete.HookComponent do
   def autocomplete(%{forField: %Phoenix.HTML.FormField{}} = assigns) do
     assigns = assign_new(assigns, :id, fn -> assigns.forField.id <> "-autocomplete" end)
     ~H"""
-    <span id={@id} phx-hook="Autocomplete" forField={@forField.id} {@rest} ></span>
+    <span id={@id} phx-hook="Autocomplete" class="hidden" forField={@forField.id} {@rest} ></span>
     """
   end
 
@@ -33,7 +33,7 @@ defmodule PhoenixFormAwesomplete.HookComponent do
       |> assign(:forField, %{id: for_id})
       |> assign_new(:id, fn -> for_id <> "-autocomplete" end)
     ~H"""
-    <span id={@id} phx-hook="Autocomplete" forField={@forField.id} {@rest} ></span>
+    <span id={@id} phx-hook="Autocomplete" class="hidden" forField={@forField.id} {@rest} ></span>
     """
   end
 
@@ -57,7 +57,7 @@ defmodule PhoenixFormAwesomplete.HookComponent do
       assigns
       |> assign_new(:id, fn -> copy2id_default_id(assigns.field.id, assigns.target) end)
     ~H"""
-    <span id={@id} phx-hook="AutocompleteCopyValueToId" field={@field.id} target={@target} {@rest} ></span>
+    <span id={@id} phx-hook="AutocompleteCopyValueToId" class="hidden" field={@field.id} target={@target} {@rest} ></span>
     """
   end
 
@@ -68,7 +68,7 @@ defmodule PhoenixFormAwesomplete.HookComponent do
       |> assign(:field, %{id: for_id})
       |> assign_new(:id, fn -> copy2id_default_id(for_id, assigns.target) end)
     ~H"""
-    <span id={@id} phx-hook="AutocompleteCopyValueToId" field={@field.id} target={@target} {@rest} ></span>
+    <span id={@id} phx-hook="AutocompleteCopyValueToId" class="hidden" field={@field.id} target={@target} {@rest} ></span>
     """
   end
 
@@ -87,7 +87,7 @@ defmodule PhoenixFormAwesomplete.HookComponent do
       assigns
       |> assign_new(:id, fn -> "awe-" <> assigns.sourceField.id <> "-2fld-" <> assigns.targetField.id end)
     ~H"""
-    <span id={@id} phx-hook="AutocompleteCopyValueToId" field={@sourceField.id} targetField={@targetField.id} {@rest} ></span>
+    <span id={@id} phx-hook="AutocompleteCopyValueToId" class="hidden" field={@sourceField.id} targetField={@targetField.id} {@rest} ></span>
     """
   end
 

@@ -1,7 +1,7 @@
 defmodule PhoenixFormAwesomplete.Mixfile do
   use Mix.Project
 
-  @version "0.3.1"
+  @version "1.0.0"
   @source_url "https://github.com/nico-amsterdam/phoenix_form_awesomplete"
 
   def project do
@@ -49,7 +49,7 @@ defmodule PhoenixFormAwesomplete.Mixfile do
   defp deps do
     [
       {:phoenix_html, "~> 2.10 or ~> 3.0"},   # mix test of this project requires >= 3.3.0
-      {:phoenix_live_view, "~> 0.20.13", override: true},
+      {:phoenix_live_view, "~> 0.20.14", override: true},
       {:ex_doc, "~> 0.30.9", only: :dev},
       {:esbuild, "~> 0.8", only: [:dev, :test]}
     ]
