@@ -68,7 +68,7 @@ defmodule PhoenixFormAwesomplete do
   >
     <div phx-update="ignore" id={"#{@form[:country].id}-domspace"}>
 
-      <.input field={@form[:country]} type="text" placeholder="Country" autocomplete="off" />
+      <.input field={@form[:country]} type="text" placeholder="Country" />
 
       <.autocomplete    forField={@form[:country]}
                         url="https://restcountries.com/v2/all"
@@ -98,7 +98,7 @@ defmodule PhoenixFormAwesomplete do
 
   ```elixir
   <.simple_form :let={f} for={@changeset} action={@action}>
-    <.input field={f[:country]} type="text" label="Country" autocomplete="off" />
+    <.input field={f[:country]} type="text" label="Country" />
     <.autocomplete    forField={f[:country]}
                       url="https://restcountries.com/v2/all"
                       loadall="true"
