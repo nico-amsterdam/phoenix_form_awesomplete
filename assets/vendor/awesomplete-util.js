@@ -139,7 +139,7 @@ var AwesompleteUtil = function() {
         function _onKeydown(ev) {
           var awe = this;
           if (ev.target === awe.input && ev.keyCode === 9) { // TAB key
-            awe.select();       // take current selected item
+            awe.select(undefined, undefined, ev);       // take current selected item
           }
         }
 
@@ -294,11 +294,13 @@ var AwesompleteUtil = function() {
         }
 
         // item function (as specified in Awesomplete) which just creates the 'li' HTML tag.
-        function _item(html /* , input, item_id */) {
+        function _item(html, input, item_id) {
           return $.create('li', {
             innerHTML: html,
             'role': 'option',
-            'aria-selected': 'false'
+            'aria-selected': 'false',
+            'tabindex': '0',
+            'id': 'awesomplete_list_' + this.count + '_item_' + item_id // for aria-activedescendant on the input element
           });
         }
 
@@ -487,17 +489,17 @@ var AwesompleteUtil = function() {
             arr[0] = _mark(arr[0], input);
             text = arr.join('<p>');
           }
-          return _item(text, input, item_id);
+          return _item.call(this, text, input, item_id);
         },
 
         // highlight items: mark all occurrences of the input text
         itemMarkAll: function(text, input, item_id) {
-          return _item(input.trim() === '' ? '' + text : _mark('' + text, input), input, item_id);
+          return _item.call(this, input.trim() === '' ? '' + text : _mark('' + text, input), input, item_id);
         },
 
         // highlight items: mark input in the begin text
         itemStartsWith: function(text, input, item_id) {
-          return _item(input.trim() === '' ? '' + text : _mark('' + text, input, true), input, item_id);
+          return _item.call(this, input.trim() === '' ? '' + text : _mark('' + text, input, true), input, item_id);
         },
 
         // highlight items: highlight matching words
@@ -514,7 +516,7 @@ var AwesompleteUtil = function() {
             }
             text = arr.join('<');
           }
-          return _item(text, input, item_id);
+          return _item.call(this, text, input, item_id);
         },
 
         // create Awesomplete object for input control elemId. opts are passed unchanged to Awesomplete.
@@ -691,10 +693,10 @@ var AwesompleteUtil = function() {
 
 // Expose AwesompleteUtil as a CommonJS module
 if (typeof module === "object" && module.exports) {
-	module.exports = AwesompleteUtil;
+    module.exports = AwesompleteUtil;
 }
 
 // Make sure to export AwesompleteUtil on self when in a browser
 if (typeof self !== "undefined") {
-	self.AwesompleteUtil = AwesompleteUtil;
+    self.AwesompleteUtil = AwesompleteUtil;
 }
