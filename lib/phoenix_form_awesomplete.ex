@@ -300,8 +300,11 @@ defmodule PhoenixFormAwesomplete do
   end
   
   defp script_to_html(script, script_attributes) do
-    attributes = Enum.map_join(script_attributes, " ", fn{k, v} -> "#{k}=\"#{v}\"" end)
-    HTML.raw(~s(<script #{attributes}>#{script}</script>))
+    # attributes = Enum.map_join(script_attributes, " ", fn{k, v} -> "#{k}=\"#{v}\"" end)
+    # Enum.map_join([a: "<&>"], " ", fn{k, v} -> {:safe, safe_text} = Phoenix.HTML.html_escape(v); if v != nil, do: "#{k}=\"#{safe_text}\""; end)
+    # nog beter
+    {:safe, attributes} = HTML.attributes_escape(script_attributes)
+    HTML.raw(~s(<script#{attributes}>#{script}</script>))
   end
 
   @doc ~S"""
@@ -567,6 +570,19 @@ defmodule PhoenixFormAwesomplete do
     GenJS.awesomplete_js(awe_id, awesomplete_opts)
   end
 
+  # text_input is removed from Phoenix.HTML.Form.
+  # avoid new dependency with PhoenixHTMLHelpers.
+  defp text_input(form, field, opts) do
+    {:safe, attributes} = 
+      opts
+      |> Keyword.put_new(:id, Form.input_id(form, field))
+      |> Keyword.put_new(:name, Form.input_name(form, field))
+      |> Keyword.put_new(:type, "text")
+      |> Enum.sort
+      |> HTML.attributes_escape
+    HTML.raw(~s(<input#{attributes}>))
+  end
+
   @doc ~S"""
   This method generates an input tag and inline javascript code that starts Awesomplete. Use this in (L)EEx templates. For HEEx templates it recommended to use <.input in combination with awesomplete_script/2.
 
@@ -626,7 +642,8 @@ defmodule PhoenixFormAwesomplete do
       when is_nil(opts) or is_list(opts) do
     # In HEEx it is possible to call this function with f.form, f.field, but it is better to use <.input and combine that with awesomplete_script/2
     script = awesomplete_script(form, field, awesomplete_opts)
-    HTML.html_escape([Form.text_input(form, field, opts), script])
+    input = text_input(form, field, opts)
+    HTML.html_escape([input, script])
   end
 
   # extract nonce, type and id from awesomplete_opts to script_opts
