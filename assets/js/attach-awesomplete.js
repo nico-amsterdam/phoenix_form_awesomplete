@@ -202,7 +202,7 @@ const
     }
     if (listLabel) awesompleteOpts['listLabel'] = listLabel
     if (statusNoResults) awesompleteOpts['statusNoResults'] = statusNoResults
-    if (statusXResults) awesompleteOpts['statusXResults'] = statusXResults
+    if (statusXResults)  awesompleteOpts['statusXResults']  = statusXResults
     if (statusTypeXChar) awesompleteOpts['statusTypeXChar'] = statusTypeXChar
     if (sort === 'false' || sort === false) {
       awesompleteOpts['sort'] = false  // turn off sorting

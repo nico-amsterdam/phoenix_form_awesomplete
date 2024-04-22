@@ -300,9 +300,6 @@ defmodule PhoenixFormAwesomplete do
   end
   
   defp script_to_html(script, script_attributes) do
-    # attributes = Enum.map_join(script_attributes, " ", fn{k, v} -> "#{k}=\"#{v}\"" end)
-    # Enum.map_join([a: "<&>"], " ", fn{k, v} -> {:safe, safe_text} = Phoenix.HTML.html_escape(v); if v != nil, do: "#{k}=\"#{safe_text}\""; end)
-    # nog beter
     {:safe, attributes} = HTML.attributes_escape(script_attributes)
     HTML.raw(~s(<script#{attributes}>#{script}</script>))
   end
@@ -570,8 +567,12 @@ defmodule PhoenixFormAwesomplete do
     GenJS.awesomplete_js(awe_id, awesomplete_opts)
   end
 
-  # text_input is removed from Phoenix.HTML.Form.
-  # avoid new dependency with PhoenixHTMLHelpers.
+  # Function below is a text_input replacement.
+  # The text_input is removed from Phoenix.HTML.Form in Phoenix.HTML version 4.0.
+  # Avoid a new dependency with PhoenixHTMLHelpers, which is meant for compatibility with old Phoenix versions,
+  # and undesirable for most projects.
+  # text_input will not be called anyway when using the supplied function components,
+  # because there the input tag is separated from the awesomplete script.
   defp text_input(form, field, opts) do
     {:safe, attributes} = 
       opts
@@ -612,6 +613,9 @@ defmodule PhoenixFormAwesomplete do
    * `prepop`          - true/false. If true do lookup initial/autofilled value and send awesomplete-prepop event. Default: false 
    * `replace`         - Replace function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `sort`            - Sort function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
+   * `statusNoResults` - Screen reader text to replace the default: 'No results found'
+   * `statusXResults`  - Screen reader text to replace the default: '{0} results found'. The placeholder {0} will be replaced with the number of results.
+   * `statusTypeXChar` - Screen reader text to replace the default: 'Type {0} or more characters for results'. The placeholder {0} will be replaced with the minimum number of characters (minChars).
    * `url`             - url for ajax calls.
    * `urlEnd`          - Addition at the end of the url for the ajax call, after the input value. Or a function, which receives the value and must return the last part of the url after the base url. 
    * `value`           - Name of the field in the data list (the JSON response) that contains the value.
@@ -640,7 +644,6 @@ defmodule PhoenixFormAwesomplete do
   """
   def awesomplete(form, field, opts \\ [], awesomplete_opts)  
       when is_nil(opts) or is_list(opts) do
-    # In HEEx it is possible to call this function with f.form, f.field, but it is better to use <.input and combine that with awesomplete_script/2
     script = awesomplete_script(form, field, awesomplete_opts)
     input = text_input(form, field, opts)
     HTML.html_escape([input, script])
