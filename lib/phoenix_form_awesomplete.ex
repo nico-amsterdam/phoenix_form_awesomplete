@@ -614,8 +614,8 @@ defmodule PhoenixFormAwesomplete do
    * `replace`         - Replace function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `sort`            - Sort function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `statusNoResults` - Screen reader text to replace the default: 'No results found'
-   * `statusXResults`  - Screen reader text to replace the default: '{0} results found'. The placeholder {0} will be replaced with the number of results.
    * `statusTypeXChar` - Screen reader text to replace the default: 'Type {0} or more characters for results'. The placeholder {0} will be replaced with the minimum number of characters (minChars).
+   * `statusXResults`  - Screen reader text to replace the default: '{0} results found'. The placeholder {0} will be replaced with the number of results.
    * `url`             - url for ajax calls.
    * `urlEnd`          - Addition at the end of the url for the ajax call, after the input value. Or a function, which receives the value and must return the last part of the url after the base url. 
    * `value`           - Name of the field in the data list (the JSON response) that contains the value.
