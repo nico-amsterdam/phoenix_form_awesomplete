@@ -572,11 +572,11 @@ defmodule PhoenixFormAwesomplete do
   # Avoid a new dependency with PhoenixHTMLHelpers, which is meant for compatibility with old Phoenix versions,
   # and undesirable for most projects.
   # text_input will not be called anyway when using the supplied function components,
-  # because there the input tag is separated from the awesomplete script.
+  # because these separate the input tag from the awesomplete script.
   defp text_input(form, field, opts) do
     {:safe, attributes} = 
       opts
-      |> Keyword.put_new(:id, Form.input_id(form, field))
+      |> Keyword.put_new(:id,     Form.input_id(form, field))
       |> Keyword.put_new(:name, Form.input_name(form, field))
       |> Keyword.put_new(:type, "text")
       |> Enum.sort
