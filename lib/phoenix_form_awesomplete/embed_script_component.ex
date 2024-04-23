@@ -14,7 +14,7 @@ defmodule PhoenixFormAwesomplete.EmbedScriptComponent do
   attr :forField, :any, required: true, doc: "Phoenix.HTML.FormField struct or field name."
   attr :forForm, :any, default: nil, doc: "Phoenix.HTML.Form struct or form name. Not needed when FormField is used."
   attr :rest, :global,
-    include: ~w(ajax assign autoFirst combobox container convertInput convertResponse data debounce descr descrSearch filter id item label list listLabel loadall limit maxItems minChars multiple prepop replace sort type url urlEnd value),
+    include: ~w(ajax assign autoFirst combobox container convertInput convertResponse data debounce descr descrSearch filter id item label list listLabel loadall limit maxItems minChars multiple prepop replace sort statusNoResults statusTypeXChar statusXResults type url urlEnd value),
     doc: "the options for awesomplete_script."
   def autocomplete(%{forField: %Phoenix.HTML.FormField{}} = assigns) do
     ~H"""
