@@ -40,6 +40,7 @@ var require_awesomplete = __commonJS({
         this.isOpened = false;
         this.input = $(input);
         this.input.setAttribute("autocomplete", "off");
+        this.input.setAttribute("aria-autocomplete", "list");
         this.input.setAttribute("aria-expanded", "false");
         this.input.setAttribute("aria-owns", "awesomplete_list_" + this.count);
         this.input.setAttribute("role", "combobox");
@@ -55,7 +56,11 @@ var require_awesomplete = __commonJS({
           item: _.ITEM,
           replace: _.REPLACE,
           tabSelect: false,
-          listLabel: "Results List"
+          listLabel: "Results List",
+          statusNoResults: "No results found",
+          statusXResults: "{0} results found",
+          // uses index placeholder {0}
+          statusTypeXChar: "Type {0} or more characters for results"
         }, o);
         this.index = -1;
         this.container = this.container(input);
@@ -72,7 +77,8 @@ var require_awesomplete = __commonJS({
           "aria-live": "assertive",
           "aria-atomic": true,
           inside: this.container,
-          textContent: this.minChars != 0 ? "Type " + this.minChars + " or more characters for results." : "Begin typing for results."
+          textContent: ""
+          // live region should start empty. Only when the text is changed it will be read by the screen reader.
         });
         this._events = {
           input: {
@@ -196,6 +202,9 @@ var require_awesomplete = __commonJS({
           }
           this.input.removeAttribute("autocomplete");
           this.input.removeAttribute("aria-autocomplete");
+          this.input.removeAttribute("aria-expanded");
+          this.input.removeAttribute("aria-owns");
+          this.input.removeAttribute("role");
           var indexOfAwesomplete = _.all.indexOf(this);
           if (indexOfAwesomplete !== -1) {
             _.all.splice(indexOfAwesomplete, 1);
@@ -219,7 +228,6 @@ var require_awesomplete = __commonJS({
           this.index = i;
           if (i > -1 && lis.length > 0) {
             lis[i].setAttribute("aria-selected", "true");
-            this.status.textContent = lis[i].textContent + ", list item " + (i + 1) + " of " + lis.length;
             this.input.setAttribute("aria-activedescendant", this.ul.id + "_item_" + this.index);
             this.ul.scrollTop = lis[i].offsetTop - this.ul.clientHeight + lis[i].clientHeight;
             $.fire(this.input, "awesomplete-highlight", {
@@ -269,15 +277,19 @@ var require_awesomplete = __commonJS({
               me.ul.appendChild(me.item(text, value, index));
             });
             if (this.ul.children.length === 0) {
-              this.status.textContent = "No results found";
+              this.status.textContent = this.statusNoResults;
               this.close({ reason: "nomatches" });
             } else {
               this.open();
-              this.status.textContent = this.ul.children.length + " results found";
+              this.status.textContent = this.statusXResults.replaceAll("{0}", this.ul.children.length);
             }
           } else {
             this.close({ reason: "nomatches" });
-            this.status.textContent = "No results found";
+            if (this.minChar <= 1 || value.length >= this.minChars) {
+              this.status.textContent = this.statusNoResults;
+            } else {
+              this.status.textContent = this.statusTypeXChar.replaceAll("{0}", this.minChars);
+            }
           }
         }
       };
@@ -306,6 +318,8 @@ var require_awesomplete = __commonJS({
           innerHTML: html,
           "role": "option",
           "aria-selected": "false",
+          "tabindex": "0",
+          // for the Talkback screen reader
           "id": "awesomplete_list_" + this.count + "_item_" + item_id
         });
       };
@@ -507,7 +521,7 @@ var require_awesomplete_util = __commonJS({
       function _onKeydown(ev) {
         var awe = this;
         if (ev.target === awe.input && ev.keyCode === 9) {
-          awe.select();
+          awe.select(void 0, void 0, ev);
         }
       }
       function _select(ev) {
@@ -609,11 +623,14 @@ var require_awesomplete_util = __commonJS({
           _update(awe, val);
         }
       }
-      function _item(html) {
+      function _item(html, input, item_id) {
         return $.create("li", {
           innerHTML: html,
           "role": "option",
-          "aria-selected": "false"
+          "aria-selected": "false",
+          "tabindex": "0",
+          "id": "awesomplete_list_" + this.count + "_item_" + item_id
+          // for aria-activedescendant on the input element
         });
       }
       function _htmlEscape(text) {
@@ -749,15 +766,15 @@ var require_awesomplete_util = __commonJS({
             arr[0] = _mark(arr[0], input);
             text = arr.join("<p>");
           }
-          return _item(text, input, item_id);
+          return _item.call(this, text, input, item_id);
         },
         // highlight items: mark all occurrences of the input text
         itemMarkAll: function(text, input, item_id) {
-          return _item(input.trim() === "" ? "" + text : _mark("" + text, input), input, item_id);
+          return _item.call(this, input.trim() === "" ? "" + text : _mark("" + text, input), input, item_id);
         },
         // highlight items: mark input in the begin text
         itemStartsWith: function(text, input, item_id) {
-          return _item(input.trim() === "" ? "" + text : _mark("" + text, input, true), input, item_id);
+          return _item.call(this, input.trim() === "" ? "" + text : _mark("" + text, input, true), input, item_id);
         },
         // highlight items: highlight matching words
         itemWords: function(text, input, item_id) {
@@ -769,7 +786,7 @@ var require_awesomplete_util = __commonJS({
             }
             text = arr.join("<");
           }
-          return _item(text, input, item_id);
+          return _item.call(this, text, input, item_id);
         },
         // create Awesomplete object for input control elemId. opts are passed unchanged to Awesomplete.
         create: function(elemId, utilOpts, opts) {
@@ -1036,7 +1053,7 @@ var attachAwesomplete = (node, customCtx, defaultSettings) => {
   customCtx = customCtx || {};
   const b = node.getAttribute.bind(node), a = function(attr) {
     return b(attr) || defaultSettings[attr];
-  }, ajax = a("ajax"), assign = a("assign"), autoFirst = a("autoFirst"), combobox = a("combobox"), container = a("container"), convertInput = a("convertInput"), convertResponse = a("convertResponse"), data = a("data"), debounce = a("debounce"), descr = a("descr"), descrSearch2 = a("descrSearch"), item = a("item"), filter = a("filter"), forField = a("forField"), label = a("label"), limit = a("limit"), list = a("list"), loadall = a("loadall"), listLabel = a("listLabel"), maxItems = a("maxItems"), minChars = a("minChars"), multiple = a("multiple"), prepop = a("prepop"), replace = a("replace"), sort = a("sort"), value = a("value"), url = a("url"), urlEnd = a("urlEnd"), convertInputFun = getCustomFunction(customCtx, convertInput, "convertInput"), dataFun = getCustomFunction(customCtx, data, "data"), filterFun = getCustomFunction(customCtx, filter, "filter"), itemFun = getCustomFunction(customCtx, item, "item"), replaceFun = getCustomFunction(customCtx, replace, "replace"), filterAtStart = filterFun === Awesomplete.FILTER_STARTSWITH || filterFun === UTIL.filterStartsWith, isDescrSearch = descrSearch2 === "true" || descrSearch2 === true;
+  }, ajax = a("ajax"), assign = a("assign"), autoFirst = a("autoFirst"), combobox = a("combobox"), container = a("container"), convertInput = a("convertInput"), convertResponse = a("convertResponse"), data = a("data"), debounce = a("debounce"), descr = a("descr"), descrSearch2 = a("descrSearch"), item = a("item"), filter = a("filter"), forField = a("forField"), label = a("label"), limit = a("limit"), list = a("list"), loadall = a("loadall"), listLabel = a("listLabel"), maxItems = a("maxItems"), minChars = a("minChars"), multiple = a("multiple"), prepop = a("prepop"), replace = a("replace"), sort = a("sort"), statusNoResults = a("statusNoResults"), statusTypeXChar = a("statusTypeXChar"), statusXResults = a("statusXResults"), value = a("value"), url = a("url"), urlEnd = a("urlEnd"), convertInputFun = getCustomFunction(customCtx, convertInput, "convertInput"), dataFun = getCustomFunction(customCtx, data, "data"), filterFun = getCustomFunction(customCtx, filter, "filter"), itemFun = getCustomFunction(customCtx, item, "item"), replaceFun = getCustomFunction(customCtx, replace, "replace"), filterAtStart = filterFun === Awesomplete.FILTER_STARTSWITH || filterFun === UTIL.filterStartsWith, isDescrSearch = descrSearch2 === "true" || descrSearch2 === true;
   if (forField === void 0)
     throw new Error("Missing forField attribute.");
   let opts = {}, awesompleteOpts = {}, multipleChar = null, separator = null, re = null;
@@ -1092,6 +1109,12 @@ var attachAwesomplete = (node, customCtx, defaultSettings) => {
   }
   if (listLabel)
     awesompleteOpts["listLabel"] = listLabel;
+  if (statusNoResults)
+    awesompleteOpts["statusNoResults"] = statusNoResults;
+  if (statusXResults)
+    awesompleteOpts["statusXResults"] = statusXResults;
+  if (statusTypeXChar)
+    awesompleteOpts["statusTypeXChar"] = statusTypeXChar;
   if (sort === "false" || sort === false) {
     awesompleteOpts["sort"] = false;
   } else if (sort) {

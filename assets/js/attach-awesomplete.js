@@ -140,6 +140,9 @@ const
     , prepop = a('prepop')
     , replace = a('replace')
     , sort = a('sort')
+    , statusNoResults = a('statusNoResults')
+    , statusTypeXChar = a('statusTypeXChar')
+    , statusXResults = a('statusXResults')
     , value = a('value')
     , url = a('url')
     , urlEnd = a('urlEnd')
@@ -198,6 +201,9 @@ const
       awesompleteOpts['list'] = ('function' === typeof customCtx[list] ? customCtx[list]() : customCtx[list]) || list
     }
     if (listLabel) awesompleteOpts['listLabel'] = listLabel
+    if (statusNoResults) awesompleteOpts['statusNoResults'] = statusNoResults
+    if (statusXResults)  awesompleteOpts['statusXResults']  = statusXResults
+    if (statusTypeXChar) awesompleteOpts['statusTypeXChar'] = statusTypeXChar
     if (sort === 'false' || sort === false) {
       awesompleteOpts['sort'] = false  // turn off sorting
     } else if (sort) {

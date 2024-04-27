@@ -71,7 +71,7 @@ In lib/\<your context\>\_web/components/layouts/root.html.heex add inside the he
   div.awesomplete .awe-found {border: 2px solid green}
   .hide-not-found div.awesomplete .awe-not-found {border-color: lightblue}
   div.awesomplete .awe-not-found {border: 2px solid red}
-  .awe-btn .caron {pointer-events: none}
+  .awe-btn .caron { pointer-events: none }
 </style>
 ```
 
