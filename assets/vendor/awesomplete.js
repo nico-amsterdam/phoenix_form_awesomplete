@@ -194,6 +194,7 @@ _.prototype = {
 		this.index = -1;
 
 		this.status.setAttribute("hidden", "");
+		this.input.setAttribute("aria-activedescendant", "");
 
 		$.fire(this.input, "awesomplete-close", o || {});
 	},
@@ -343,6 +344,8 @@ _.prototype = {
 				this.close({ reason: "nomatches" });
 
 			} else {
+				this.input.setAttribute("aria-activedescendant", ""); // none of the list items currently has aria-selected="true"
+
 				this.open();
 
 				this.status.textContent = this.statusXResults.replaceAll('{0}', this.ul.children.length); // N results found;
