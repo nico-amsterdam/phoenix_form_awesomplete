@@ -180,6 +180,7 @@ var require_awesomplete = __commonJS({
           this.isOpened = false;
           this.index = -1;
           this.status.setAttribute("hidden", "");
+          this.input.setAttribute("aria-activedescendant", "");
           $.fire(this.input, "awesomplete-close", o || {});
         },
         open: function() {
@@ -280,6 +281,7 @@ var require_awesomplete = __commonJS({
               this.status.textContent = this.statusNoResults;
               this.close({ reason: "nomatches" });
             } else {
+              this.input.setAttribute("aria-activedescendant", "");
               this.open();
               this.status.textContent = this.statusXResults.replaceAll("{0}", this.ul.children.length);
             }
