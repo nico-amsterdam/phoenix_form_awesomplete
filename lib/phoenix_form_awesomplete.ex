@@ -127,9 +127,8 @@ defmodule PhoenixFormAwesomplete do
 
   ### Trusted web services
 
-  Use only trusted web services. As an extra safety measure it possible to sanatize or escape HTML in the JSON responses via a convertResponse function. As external web services 
-  are used directly, than this service will not only see the searched text but also the
-  client IP address. 
+  Use only trusted web services. As a safety measure against cross-site scripting (XSS) it is possible to sanatize or escape HTML in the JSON responses via a convertResponse function.
+  When an external web service is used directly, than this service will not only see the searched text but also the client IP address. 
 
   
   ## Installation
