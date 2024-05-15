@@ -69,7 +69,7 @@ defmodule PhoenixFormAwesomplete.Mixfile do
      licenses: ["MIT"],
      links: %{"GitHub" => @source_url,
               "Documentation with live examples" => "https://nico-amsterdam.github.io/awesomplete-util/phoenix.html" },
-     files: ~w(assets/js lib priv LICENSE mix.exs package.json README.md)
+     files: ~w(assets lib priv LICENSE mix.exs package.json README.md)
     ]
   end
 
