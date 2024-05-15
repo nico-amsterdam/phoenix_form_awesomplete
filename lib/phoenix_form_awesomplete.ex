@@ -153,8 +153,9 @@ defmodule PhoenixFormAwesomplete do
     ```javascript
     import { AwesompleteUtil, attachAwesomplete, copyValueToId } from "phoenix_form_awesomplete"
     ```
-  - Add the Hooks Autocomplete and AutocompleteCopyValueToId in assets/js/app.js
+  - Add the Hooks Autocomplete and AutocompleteCopyValueToId in assets/js/app.js and pass the hooks to the LiveSocket
     ```javascript
+
     const AU = AwesompleteUtil
         , customAwesompleteContext = {
 
@@ -176,6 +177,8 @@ defmodule PhoenixFormAwesomplete do
 
     }
 
+    let Hooks = {}
+
     Hooks.Autocomplete = {
       mounted() { attachAwesomplete(this.el, customAwesompleteContext, {} /* defaultSettings */ ) }
     }
@@ -183,6 +186,13 @@ defmodule PhoenixFormAwesomplete do
     Hooks.AutocompleteCopyValueToId = {
       mounted() { copyValueToId(this.el) }
     }
+
+    // modify the LiveSocket params to add the hooks
+    let liveSocket = new LiveSocket("/live", Socket, {
+      longPollFallbackMs: 2500,
+      params: {_csrf_token: csrfToken},
+      hooks: Hooks
+    })
     ```
   - Add lib/<your_project>_web/components/[awesomplete_components.ex](https://github.com/nico-amsterdam/todo_trek/blob/main/lib/todo_trek_web/components/awesomplete_components.ex) 
     
