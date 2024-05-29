@@ -38,7 +38,7 @@ In your Phoenix project:
 ```elixir
 def deps do
   [
-   {:phoenix_form_awesomplete, "~> 0.3"}
+   {:phoenix_form_awesomplete, "~> 1.0"}
   ]
 end
 ```
