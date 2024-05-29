@@ -23,11 +23,11 @@ It comes with an AwesompleteUtil [javascript library](https://nico-amsterdam.git
 
 ## Installation
 
-[Installation instructions for Phoenix 1.7](
+[Installation instructions for Phoenix 1.7 and newer](
 https://hexdocs.pm/phoenix_form_awesomplete/PhoenixFormAwesomplete.html#module-installation)
  integrated with esbuild assets management and using function components for HEEx templates and ~H sigils.
 
-### Previous installation instructions
+### Previous installation instructions for the old version 0.1
 
 In your Phoenix project:
 
@@ -38,7 +38,7 @@ In your Phoenix project:
 ```elixir
 def deps do
   [
-   {:phoenix_form_awesomplete, "~> 0.3"}
+   {:phoenix_form_awesomplete, "0.1.7"}
   ]
 end
 ```
@@ -98,6 +98,8 @@ Example:
                  }) %>
 </div>
 ```
+
+[EEx template examples](https://nico-amsterdam.github.io/awesomplete-util/phoenix_eex.html) with code.
 
 ## License
 

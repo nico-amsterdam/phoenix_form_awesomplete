@@ -3,7 +3,7 @@ defmodule PhoenixFormAwesomplete do
   alias Phoenix.HTML
   alias Phoenix.HTML.Form
 
-  @moduledoc ~S"""
+  @moduledoc ~S'''
 
   PhoenixFormAwesomplete is a [Phoenix form helper](https://hexdocs.pm/phoenix_html/Phoenix.HTML.Form.html) 
   that utilizes Lea Verou's autocomplete / autosuggest / typeahead / 
@@ -68,7 +68,7 @@ defmodule PhoenixFormAwesomplete do
   >
     <div phx-update="ignore" id={"#{@form[:country].id}-domspace"}>
 
-      <.input field={@form[:country]} type="text" placeholder="Country" />
+      <.input field={@form[:country]} type="text" placeholder="Country" phx-debounce="blur" />
 
       <.autocomplete    forField={@form[:country]}
                         url="https://restcountries.com/v2/all"
@@ -82,6 +82,76 @@ defmodule PhoenixFormAwesomplete do
     </div>
   </.simple_form>
   ```
+
+  One disadvantage with the above example in LiveView is that the <.input> function component also renders
+  the validation errors, and these won't get updated because of the phx-update="ignore".
+
+  The phx-update="ignore" is only needed on the HTML input tag, so a more finetuned approach is to add
+  this in the `core_components.ex` at the place where it is required.
+  For example add an input with a new type 'autocomplete' like this:
+
+
+  ```elixir
+  def input(%{type: "autocomplete"} = assigns) do
+    assigns = assign(assigns, span_id: assigns.id <> "-domspace")
+    ~H"""
+    <div>
+      <.label for={@id}><%= @label %></.label>
+      <span phx-update="ignore" id={@span_id}> 
+        <input
+          type="text"
+          name={@name}
+          id={@id}
+          value={Phoenix.HTML.Form.normalize_value(@type, @value)}
+          class={[
+            "block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6",
+            @border && "border-zinc-300 focus:border-zinc-400",
+            if(!@border, do: "border-0"),
+            if(@strike_through, do: "line-through")
+          ]}
+          {@rest}
+        />
+      </span> 
+      <.error :for={msg <- @errors}><%= msg %></.error>
+    </div>
+    """
+  end
+  ```
+
+  and add the `autocomplete` in the allowed types:
+
+  ```elixir
+  attr :type, :string,
+    default: "text",
+    values: ~w(autocomplete checkbox color date datetime-local email file hidden month number password
+               range radio search select tel text textarea time url week)
+  ```
+
+  and then the HEEx template can be written like this. 
+
+  ```elixir
+  <.simple_form
+    for={@form}
+    id="list-form"
+    phx-target={@myself}
+    phx-change="validate"
+    phx-submit="save"
+  >
+
+    <.input field={@form[:country]} type="autocomplete" placeholder="Country" phx-debounce="blur" />
+
+    <.autocomplete    forField={@form[:country]}
+                      url="https://restcountries.com/v2/all"
+                      loadall="true"
+                      prepop="true"
+                      minChars="1" 
+                      maxItems="8" 
+                      value="name"                          
+                      />
+
+  </.simple_form>
+  ```
+
 
   ### Use outside LiveView, a.k.a. "dead" views - via page scripts
 
@@ -292,7 +362,7 @@ defmodule PhoenixFormAwesomplete do
        :phoenix_form_awesomplete, awesomplete:  "AW"
   After changing the config/config.exs run:
        mix deps.compile --force phoenix_form_awesomplete
-  """
+  '''
 
   @doc ~S"""
   Create script tag with the supplied script. No defer or async because this is used for inline script.
