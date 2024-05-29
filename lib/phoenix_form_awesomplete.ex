@@ -127,9 +127,8 @@ defmodule PhoenixFormAwesomplete do
 
   ### Trusted web services
 
-  Use only trusted web services. As an extra safety measure it possible to sanatize or escape HTML in the JSON responses via a convertResponse function. As external web services 
-  are used directly, than this service will not only see the searched text but also the
-  client IP address. 
+  Use only trusted web services. As a safety measure against cross-site scripting (XSS) it is possible to sanatize or escape HTML in the JSON responses via a convertResponse function.
+  When an external web service is used directly, than this service will not only see the searched text but also the client IP address. 
 
   
   ## Installation
@@ -153,8 +152,9 @@ defmodule PhoenixFormAwesomplete do
     ```javascript
     import { AwesompleteUtil, attachAwesomplete, copyValueToId } from "phoenix_form_awesomplete"
     ```
-  - Add the Hooks Autocomplete and AutocompleteCopyValueToId in assets/js/app.js
+  - Add the Hooks Autocomplete and AutocompleteCopyValueToId in assets/js/app.js and pass the hooks to the LiveSocket
     ```javascript
+
     const AU = AwesompleteUtil
         , customAwesompleteContext = {
 
@@ -176,6 +176,8 @@ defmodule PhoenixFormAwesomplete do
 
     }
 
+    let Hooks = {}
+
     Hooks.Autocomplete = {
       mounted() { attachAwesomplete(this.el, customAwesompleteContext, {} /* defaultSettings */ ) }
     }
@@ -183,6 +185,13 @@ defmodule PhoenixFormAwesomplete do
     Hooks.AutocompleteCopyValueToId = {
       mounted() { copyValueToId(this.el) }
     }
+
+    // modify the LiveSocket params to add the hooks
+    let liveSocket = new LiveSocket("/live", Socket, {
+      longPollFallbackMs: 2500,
+      params: {_csrf_token: csrfToken},
+      hooks: Hooks
+    })
     ```
   - Add lib/<your_project>_web/components/[awesomplete_components.ex](https://github.com/nico-amsterdam/todo_trek/blob/main/lib/todo_trek_web/components/awesomplete_components.ex) 
     
