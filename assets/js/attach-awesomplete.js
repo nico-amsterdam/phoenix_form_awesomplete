@@ -169,6 +169,7 @@ const
     if (!value && label) throw new Error("'label' without 'value' parameter.")
     if (isDescrSearch && !descr) throw new Error('Cannot search description texts without knowing the description field. Please supply descr parameter.')
     if (convertResponse) opts['convertResponse'] = getCustomFunction(customCtx, convertResponse, 'convertResponse')
+    if (ajax) opts['ajax'] = getCustomFunction(customCtx, ajax, 'ajax')
     if (multiple && multiple !== 'false') {
       multipleChar = (multiple === 'true' || multiple === true ? ' ' : multiple)
       separator = (combobox && combobox !== 'false' ? '' : '([' + multipleChar + ']\\s*)?'),
@@ -186,7 +187,6 @@ const
     if (minChars) awesompleteOpts['minChars'] = Number(minChars)
     if (maxItems) awesompleteOpts['maxItems'] = Number(maxItems)
     if (autoFirst) awesompleteOpts['autoFirst'] = (autoFirst === 'true' || autoFirst === true)
-    if (ajax) awesompleteOpts['ajax'] = getCustomFunction(customCtx, ajax, 'ajax')
     if (container) awesompleteOpts['container'] = getCustomFunction(customCtx, container, 'container')
     if (replace || multipleChar || isDescrSearch) {
       awesompleteOpts['replace'] = makeReplaceFun(replaceFun, multipleChar, isDescrSearch)
