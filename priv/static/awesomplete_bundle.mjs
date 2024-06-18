@@ -543,23 +543,23 @@ var require_awesomplete_util = __commonJS({
       function _onLoad() {
         var t = this, awe = t.awe, xhr = t.xhr, queryVal = t.queryVal, val = awe.utilprops.val, data, prop;
         if (xhr.status === 200) {
-          data = JSON.parse(xhr.responseText);
-          if (awe.utilprops.convertResponse)
-            data = awe.utilprops.convertResponse(data);
-          if (!Array.isArray(data)) {
-            if (awe.utilprops.limit === 0 || awe.utilprops.limit === 1) {
-              data = _isEmpty(data) ? [] : [data];
-            } else {
-              for (prop in data) {
-                if (Array.isArray(data[prop])) {
-                  data = data[prop];
-                  break;
+          if (_ifNeedListUpdate(awe, val, queryVal)) {
+            data = JSON.parse(xhr.responseText);
+            if (awe.utilprops.convertResponse)
+              data = awe.utilprops.convertResponse.call(awe, data);
+            if (!Array.isArray(data)) {
+              if (awe.utilprops.limit === 0 || awe.utilprops.limit === 1) {
+                data = _isEmpty(data) ? [] : [data];
+              } else {
+                for (prop in data) {
+                  if (Array.isArray(data[prop])) {
+                    data = data[prop];
+                    break;
+                  }
                 }
               }
             }
-          }
-          if (Array.isArray(data)) {
-            if (_ifNeedListUpdate(awe, val, queryVal)) {
+            if (Array.isArray(data)) {
               _loadComplete(awe, data, queryVal || awe.utilprops.loadall);
             }
           }
@@ -1066,6 +1066,8 @@ var attachAwesomplete = (node, customCtx, defaultSettings) => {
     throw new Error("Cannot search description texts without knowing the description field. Please supply descr parameter.");
   if (convertResponse)
     opts["convertResponse"] = getCustomFunction(customCtx, convertResponse, "convertResponse");
+  if (ajax)
+    opts["ajax"] = getCustomFunction(customCtx, ajax, "ajax");
   if (multiple && multiple !== "false") {
     multipleChar = multiple === "true" || multiple === true ? " " : multiple;
     separator = combobox && combobox !== "false" ? "" : "([" + multipleChar + "]\\s*)?", re = new RegExp("[^" + multipleChar + "]*" + separator + "$");
@@ -1083,8 +1085,6 @@ var attachAwesomplete = (node, customCtx, defaultSettings) => {
     awesompleteOpts["maxItems"] = Number(maxItems);
   if (autoFirst)
     awesompleteOpts["autoFirst"] = autoFirst === "true" || autoFirst === true;
-  if (ajax)
-    awesompleteOpts["ajax"] = getCustomFunction(customCtx, ajax, "ajax");
   if (container)
     awesompleteOpts["container"] = getCustomFunction(customCtx, container, "container");
   if (replace || multipleChar || isDescrSearch) {

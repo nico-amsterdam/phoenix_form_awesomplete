@@ -187,27 +187,27 @@ var AwesompleteUtil = function() {
               data,
               prop;
           if (xhr.status === 200) {
-            data = JSON.parse(xhr.responseText);
-            if (awe.utilprops.convertResponse) data = awe.utilprops.convertResponse(data);
-            if (!Array.isArray(data)) {
-              if (awe.utilprops.limit === 0 || awe.utilprops.limit === 1) {
-                // if there is max 1 result expected, the array is not needed.
-                // Fur further processing, take the whole result and put it as one element in an array.
-                data = _isEmpty(data) ? [] : [data]
-              } else {
-                // search for the first property that contains an array
-                for (prop in data) {
-                  if (Array.isArray(data[prop])) {
-                    data = data[prop];
-                    break;
+            // are we still interested in this response?
+            if (_ifNeedListUpdate(awe, val, queryVal)) {
+              data = JSON.parse(xhr.responseText);
+              if (awe.utilprops.convertResponse) data = awe.utilprops.convertResponse.call(awe, data);
+              if (!Array.isArray(data)) {
+                if (awe.utilprops.limit === 0 || awe.utilprops.limit === 1) {
+                  // if there is max 1 result expected, the array is not needed.
+                  // Fur further processing, take the whole result and put it as one element in an array.
+                  data = _isEmpty(data) ? [] : [data]
+                } else {
+                  // search for the first property that contains an array
+                  for (prop in data) {
+                    if (Array.isArray(data[prop])) {
+                      data = data[prop];
+                      break;
+                    }
                   }
                 }
               }
-            }
-            // can only handle arrays
-            if (Array.isArray(data)) {
-              // are we still interested in this response?
-              if (_ifNeedListUpdate(awe, val, queryVal)) {
+              // can only handle arrays
+              if (Array.isArray(data)) {
                 // accept the new suggestion list
                 _loadComplete(awe, data, queryVal || awe.utilprops.loadall);
               }
