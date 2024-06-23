@@ -177,41 +177,44 @@ var AwesompleteUtil = function() {
           _fire(awe.input, _AWE_LOAD, queryVal);
         }
 
+        function _updateList(awe, data, queryVal, forceUpdate) {
+          var prop;
+          // are we still interested in this response?
+          if (forceUpdate || _ifNeedListUpdate(awe, awe.utilprops.val, queryVal)) {
+            if ('string' === typeof data) data = JSON.parse(data)
+            if (awe.utilprops.convertResponse) data = awe.utilprops.convertResponse.call(awe, data);
+            if (!Array.isArray(data)) {
+              if (awe.utilprops.limit === 0 || awe.utilprops.limit === 1) {
+                // if there is max 1 result expected, the array is not needed.
+                // Fur further processing, take the whole result and put it as one element in an array.
+                data = _isEmpty(data) ? [] : [data]
+              } else {
+                // search for the first property that contains an array
+                for (prop in data) {
+                  if (Array.isArray(data[prop])) {
+                    data = data[prop];
+                    break;
+                  }
+                }
+              }
+            }
+            // can only handle arrays
+            if (Array.isArray(data)) {
+              // accept the new suggestion list
+              _loadComplete(awe, data, queryVal || awe.utilprops.loadall);
+            }
+          }
+          return awe;
+        }
+
         // Handle ajax response. Expects HTTP OK (200) response with JSON object with suggestion(s) (array).
         function _onLoad() {
           var t = this,
               awe = t.awe,
               xhr = t.xhr,
-              queryVal = t.queryVal,
-              val = awe.utilprops.val,
-              data,
-              prop;
+              queryVal = t.queryVal;
           if (xhr.status === 200) {
-            // are we still interested in this response?
-            if (_ifNeedListUpdate(awe, val, queryVal)) {
-              data = JSON.parse(xhr.responseText);
-              if (awe.utilprops.convertResponse) data = awe.utilprops.convertResponse.call(awe, data);
-              if (!Array.isArray(data)) {
-                if (awe.utilprops.limit === 0 || awe.utilprops.limit === 1) {
-                  // if there is max 1 result expected, the array is not needed.
-                  // Fur further processing, take the whole result and put it as one element in an array.
-                  data = _isEmpty(data) ? [] : [data]
-                } else {
-                  // search for the first property that contains an array
-                  for (prop in data) {
-                    if (Array.isArray(data[prop])) {
-                      data = data[prop];
-                      break;
-                    }
-                  }
-                }
-              }
-              // can only handle arrays
-              if (Array.isArray(data)) {
-                // accept the new suggestion list
-                _loadComplete(awe, data, queryVal || awe.utilprops.loadall);
-              }
-            }
+            _updateList(awe, xhr.responseText, queryVal, false);
           }
         }
 
@@ -473,7 +476,7 @@ var AwesompleteUtil = function() {
         item: _item,
 
         // Set a new suggestion list. Trigger loadcomplete event.
-        // load(awesomplete, list, queryVal)
+        // load(awesomplete, list, queryValue)
         load: _loadComplete,
 
         // Return text with mark tags arround matching input. Don't replace inside <HTML> tags.
@@ -567,6 +570,13 @@ var AwesompleteUtil = function() {
         update: function(awe, value, prepop) {
           awe.input.value = value;
           return _update(awe, value, prepop);
+        },
+
+        // replace the current list with suggestions with a new list.
+        // queryResult should contain an array or an object with an array or a json string.
+        // By default forceUpdate is false and it only replaces the list if the queryValue matches the current input value.
+        updateList: function(awe, queryResult, queryValue, forceUpdate) {
+          return _updateList(awe, queryResult, queryValue, forceUpdate);
         },
 
         // create and attach Awesomplete object for input control elemId. opts are passed unchanged to Awesomplete.
