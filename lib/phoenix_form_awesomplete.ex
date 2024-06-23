@@ -31,11 +31,12 @@ defmodule PhoenixFormAwesomplete do
   This Awesomplete component can be applied for these cases:
   - Outside and inside LiveView. It is even possible to make a HEEx fragment with autocomplete that works in both. See the next chapter.
   - It is specially suitable for suggestions supplied by HTTP web services that produce JSON.
+  - The widget has been tested for accessibility.
+  - The list with suggestions can be customized, for example to show an extra description. Any HTML can be used in the suggestions.
   - It can give suggestions for a list with multiple values.
-  - It doesn't force the user to pick on of the suggestions; other values can be entered.
+  - It doesn't force the user to pick one of the suggestions; other values can be entered.
   - It can highlight the input field when there is a match or no match.
-  - The list with suggestions can be customized, for example to show an extra description.
-  - The client stops interacting with the backend, and filters on it's own when enough characters have been typed and the suggestion list has become smaller than the search result limit.
+  - The client stops interacting with the backend, and filters on it's own when enough characters have been typed, and the suggestion list has become smaller than the search result limit.
   - Search requests can be cached by the browser, if the web service sets HTTP Cache headers.
   - It can fill dependend readonly fields/tags. The typical example would be a productcode with a product description shown in order lines. For the existing order lines the database can join the product description to be shown on the screen, but for new entries and when changing the productcode it has te be dynamicly looked up. This can be done while typing. After leaving the input field, the product description stays visible on the screen.
 
