@@ -48,9 +48,9 @@ defmodule PhoenixFormAwesomplete.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:phoenix_html, "~> 2.10 or ~> 3.0 or ~> 4.0"},   # mix test of this project requires >= 3.3.0
-      {:phoenix_live_view, "~> 0.20.14", override: true},
-      {:ex_doc, "~> 0.32.1", only: :dev},
+      {:phoenix_html, "~> 3.3 or ~> 4.0"},
+      {:phoenix_live_view, "~> 0.20 or ~> 1.0"},
+      {:ex_doc, "~> 0.34.1", only: :dev},
       {:esbuild, "~> 0.8", only: [:dev, :test]}
     ]
   end
