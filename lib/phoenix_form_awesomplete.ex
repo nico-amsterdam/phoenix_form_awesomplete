@@ -264,12 +264,9 @@ defmodule PhoenixFormAwesomplete do
       hooks: Hooks
     })
     ```
-  - Add lib/<your_project>_web/components/[awesomplete_components.ex](https://github.com/nico-amsterdam/todo_trek/blob/main/lib/todo_trek_web/components/awesomplete_components.ex) 
-    
-    Rename the module to match your project. 
   - Add these function components in lib/<your_project>_web/components/core_components.ex:
     ```elixir
-    @awesomplete <YourProject>Web.AwesompleteComponents
+    @awesomplete PhoenixFormAwesomplete.HookComponent
 
     defdelegate autocomplete(assigns), to: @awesomplete
     defdelegate copy_value_to_id(assigns), to: @awesomplete
@@ -299,12 +296,9 @@ defmodule PhoenixFormAwesomplete do
     ```sh
     mix deps.get
     ```
-  - Add lib/<your_project>_web/components/[awesomplete_script_components.ex](https://github.com/nico-amsterdam/phoenix-csp-outside-liveview/blob/main/hello_world/lib/hello_world_web/components/awesomplete_script_components.ex).
-
-    Rename the module to match your project. 
   - Add these function components in lib/<your_project>_web/components/core_components.ex:
     ```elixir
-    @awesomplete <YourProject>Web.AwesompleteScriptComponents
+    @awesomplete PhoenixFormAwesomplete.EmbedScriptComponent
 
     defdelegate autocomplete(assigns), to: @awesomplete
     defdelegate copy_value_to_id(assigns), to: @awesomplete
