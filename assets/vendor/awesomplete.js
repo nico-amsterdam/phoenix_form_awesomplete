@@ -398,7 +398,7 @@ _.ITEM = function (text, input, item_id) {
 		innerHTML: html,
 		"role": "option",
 		"aria-selected": "false",
-		"tabindex": '0', // for the Talkback screen reader
+		"tabindex": "-1", // for the Talkback screen reader
 		"id": "awesomplete_list_" + this.count + "_item_" + item_id
 	});
 };
