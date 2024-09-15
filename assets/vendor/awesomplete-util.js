@@ -96,7 +96,7 @@ var AwesompleteUtil = function() {
             } // end loop
 
             // if the result differs from the previous result
-            if (utilprops.prevSelected !== result) {
+            // if (utilprops.prevSelected !== result) { // is always true
               // if there is an exact match
               if (result.length > 0) {
                 // if prepopulation phase (initial/autofill value); not triggered by user input
@@ -123,7 +123,7 @@ var AwesompleteUtil = function() {
                   classList.remove(_CLS_NOT_FOUND);
                 }
               }
-            }
+            // }
           }
         }
 

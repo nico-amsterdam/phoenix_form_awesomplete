@@ -487,29 +487,27 @@ var require_awesomplete_util = __commonJS({
               result.push(rec);
             }
           }
-          if (utilprops.prevSelected !== result) {
-            if (result.length > 0) {
-              if (prepop) {
-                _fire(input, _AWE_PREPOP, result);
-              } else if (utilprops.changed) {
-                utilprops.prevSelected = result;
-                classList.remove(_CLS_NOT_FOUND);
-                classList.add(_CLS_FOUND);
-                _fire(input, _AWE_MATCH, result);
-              }
-            } else if (prepop) {
-              _fire(input, _AWE_PREPOP, []);
+          if (result.length > 0) {
+            if (prepop) {
+              _fire(input, _AWE_PREPOP, result);
             } else if (utilprops.changed) {
-              utilprops.prevSelected = [];
-              classList.remove(_CLS_FOUND);
-              if (!opened || input !== document.activeElement) {
-                if (val !== "") {
-                  classList.add(_CLS_NOT_FOUND);
-                  _fire(input, _AWE_MATCH, []);
-                }
-              } else {
-                classList.remove(_CLS_NOT_FOUND);
+              utilprops.prevSelected = result;
+              classList.remove(_CLS_NOT_FOUND);
+              classList.add(_CLS_FOUND);
+              _fire(input, _AWE_MATCH, result);
+            }
+          } else if (prepop) {
+            _fire(input, _AWE_PREPOP, []);
+          } else if (utilprops.changed) {
+            utilprops.prevSelected = [];
+            classList.remove(_CLS_FOUND);
+            if (!opened || input !== document.activeElement) {
+              if (val !== "") {
+                classList.add(_CLS_NOT_FOUND);
+                _fire(input, _AWE_MATCH, []);
               }
+            } else {
+              classList.remove(_CLS_NOT_FOUND);
             }
           }
         }

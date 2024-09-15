@@ -200,6 +200,7 @@ defmodule PhoenixFormAwesomplete do
   ### Trusted web services
 
   Use only trusted web services. As a safety measure against cross-site scripting (XSS) it is possible to sanatize or escape HTML in the JSON responses via a convertResponse function.
+  Most web services can only be accessed with a valid token in the request header. Use a custom ajax function to pass on the token.
   When an external web service is used directly, than this service will not only see the searched text but also the client IP address.
 
   ## Installation
@@ -377,7 +378,7 @@ defmodule PhoenixFormAwesomplete do
   const awe = attachAwesomplete(this.el, customAwesompleteContext, {} /* defaultSettings */ );
   this.handleEvent(`update-list-${awe.input.id}`,
     ({queryResult, queryValue}) => { AwesompleteUtil.updateList(awe, queryResult, queryValue); }
-  )
+  );
   ```
 
   In the HEEx template, in the .input add `phx-target` and in the .autocomplete refer to the new ajax function and change the url
@@ -753,7 +754,7 @@ defmodule PhoenixFormAwesomplete do
    * `autoFirst`       - true/false. Automatically select the first element. Default: false.
    * `combobox`        - Id of the combobox button. true/false/id. If true the assumed button id is 'awe\_btn\_' + id of the input tag. Default: false
    * `container`       - Container function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). By default a div element is added as the parent of the input element.
-   * `convertInput`    - Convert input function. Internally convert input for comparison with the data list items. By default it trims the input and converts it to lowercase for a case-insensitive comparison.
+   * `convertInput`    - Convert input function to normalize the input text. Internally convert the input text for search calls and for comparison with the suggestions. By default it trims the input and converts it to lowercase for a case-insensitive comparison. It is applied to both the input text and the suggestion text before comparing. In advanced cases like the multiple values, the convertInput is used to extract the search text.
    * `convertResponse` - Convert JSON response from ajax calls. This function is called with the parsed JSON, and allows conversion of the data before further processing. Default: nil - no conversion.
    * `data`            - Data function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `debounce`        - Time in milliseconds to wait for additional user input before doing the ajax call to retrieve suggestions. It limits the rate at which the json service is called per user session.
@@ -771,7 +772,7 @@ defmodule PhoenixFormAwesomplete do
    * `multiple`        - true/false/characters. Separators to allow multiple values. If true, the separator will be the space character. Default: false
    * `nonce`           - Content-Security-Policy nonce attribute for the script tag. Default: no nonce. If specified it must contain a non-empty value.
    * `prepop`          - true/false. If true do lookup initial/autofilled value and send awesomplete-prepop event. Default: false
-   * `replace`         - Replace function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
+   * `replace`         - Replace function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). The replace function will be called for suggestions, to determine whether the input text matches a suggestion after replacement.
    * `sort`            - Sort function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `statusNoResults` - Screen reader text to replace the default: 'No results found'
    * `statusTypeXChar` - Screen reader text to replace the default: 'Type {0} or more characters for results'. The placeholder {0} will be replaced with the minimum number of characters (minChars).
