@@ -50,7 +50,7 @@ defmodule PhoenixFormAwesomplete.Mixfile do
     [
       {:phoenix_html, "~> 3.3 or ~> 4.0"},
       {:phoenix_live_view, "~> 0.20 or ~> 1.0"},
-      {:ex_doc, "~> 0.34.1", only: :dev},
+      {:ex_doc, "~> 0.34", only: :dev},
       {:esbuild, "~> 0.8", only: [:dev, :test]}
     ]
   end
@@ -76,7 +76,7 @@ defmodule PhoenixFormAwesomplete.Mixfile do
 
   defp aliases do
     [
-      "assets.build": ["esbuild module", "esbuild main", "esbuild css"]
+      "assets.build": ["esbuild module", "esbuild main", "esbuild cdn", "esbuild css"]
     ]
   end
 end

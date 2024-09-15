@@ -190,6 +190,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
     {replace_fun,       awesomplete_opts} = Keyword.pop(awesomplete_opts, :replace)
     {url,               awesomplete_opts} = Keyword.pop(awesomplete_opts, :url)
     {url_end,           awesomplete_opts} = Keyword.pop(awesomplete_opts, :urlEnd)
+     min_chars                            = Keyword.get(awesomplete_opts, :minChars, 2)
 
     # 
       # Convert descr_search to boolean
@@ -239,6 +240,16 @@ defmodule PhoenixFormAwesomplete.GenJS do
         "input.match(/[^#{multiple_char}]*#{filter_match_sep}$/)[0]"
       end
 
+    min_char_check_str = 
+      if is_nil(multiple_char) or min_chars < 2 do
+        "" 
+      else
+        "if (inputPart.trimStart().length < #{min_chars}) return false;"
+      end
+
+    input_part_check_str   = if min_char_check_str == "", do: "", else: " var inputPart = #{filter_str};#{min_char_check_str}"
+    input_part_use_str     = if min_char_check_str == "", do: "#{filter_str}", else: "inputPart"
+
     # when there is no descr_fld or label_fld we let the data function just return one string instead of a value and label
     data_val =
       if is_nil(fld_name) or (is_nil(descr_fld) and is_nil(label_fld)) do
@@ -249,7 +260,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
 
     starts_with_filter_fun = cond do
       is_nil(descr_fld) and is_nil(label_fld) and filter_fun == "Awesomplete.FILTER_STARTSWITH" -> "#{@awe}.FILTER_STARTSWITH"
-      descr_search -> "function(data, input) { return #{@util}.filterStartsWith(data, #{filter_str}) || #{@awe}.FILTER_STARTSWITH(data.value.substring(data.value.lastIndexOf('|')+1), #{filter_str}); }"
+      descr_search -> "function(data, input) { var inputPart = #{filter_str}; #{min_char_check_str} return #{@util}.filterStartsWith(data, inputPart) || #{@awe}.FILTER_STARTSWITH(data.value.substring(data.value.lastIndexOf('|')+1), inputPart); }"
       true -> "#{@util}.filterStartsWith"
     end
 
@@ -262,9 +273,9 @@ defmodule PhoenixFormAwesomplete.GenJS do
       is_nil(multiple_char) and starts_with -> [filter: starts_with_filter_fun]
       is_nil(multiple_char) -> [filter: "function(data, input) { return (#{filter_fun})(data.value, input); }"]
       starts_with and descr_search -> [filter: starts_with_filter_fun]
-      starts_with -> [filter: "function(data, input) { return #{@awe}.FILTER_STARTSWITH(#{data_val}, #{filter_str}); }"]
-      is_nil(filter_fun) -> [filter: "function(data, input) { return #{@awe}.FILTER_CONTAINS(#{data_val}, #{filter_str}); }"]
-      true -> [filter: "function(data, input) { return (#{filter_fun}).call(this, #{data_val}, #{filter_str}); }"]
+      starts_with -> [filter: "function(data, input) {#{input_part_check_str} return #{@awe}.FILTER_STARTSWITH(#{data_val}, #{input_part_use_str}); }"]
+      is_nil(filter_fun) -> [filter: "function(data, input) {#{input_part_check_str} return #{@awe}.FILTER_CONTAINS(#{data_val}, #{input_part_use_str}); }"]
+      true -> [filter: "function(data, input) {#{input_part_check_str} return (#{filter_fun}).call(this, #{data_val}, #{input_part_use_str}); }"]
     end 
     
     # add item: in filter_opts

@@ -54,14 +54,14 @@ const
       if (descrSearch) {
         // description search i.c.w. start-with filter needs special threatment
         // to search at the beginning in both value and description.
-        return function(dat, inp) {
-          var inputPart = re ? inp.match(re)[0] : inp;
-          return UTIL.filterStartsWith(dat, inputPart)
-            || AWE.FILTER_STARTSWITH(dat.value.substring(dat.value.lastIndexOf('|') + 1), inputPart);
+        applyThisFilter = function(datValue, inputPart) {
+          return AWE.FILTER_STARTSWITH(datValue, inputPart)
+              || AWE.FILTER_STARTSWITH(datValue.substring(datValue.lastIndexOf('|') + 1), inputPart);
         }
+      } else {
+        if (!re) return UTIL.filterStartsWith // do not search in label, search in value
+        applyThisFilter = AWE.FILTER_STARTSWITH
       }
-      if (!re) return UTIL.filterStartsWith // do not search in label, search in value
-      applyThisFilter = AWE.FILTER_STARTSWITH
     } else if (!filterFun
                || filterFun === UTIL.filterContains
                || filterFun === AWE.FILTER_CONTAINS) {
@@ -70,7 +70,10 @@ const
     }
     return function(dat, inp) {
       // For simplicity, call enclosed filter with just the text string, not a Suggestion object.
-      return (applyThisFilter).call(this, !labelOrDescrAttr ? dat : dat.value, re ? inp.match(re)[0] : inp);
+      const inputPart = re ? inp.match(re)[0] : inp;
+      // In multiple mode an extra check on minChars is needed; only show suggestions when minChars is reached.
+      if (re && this.minChars > 1 && inputPart.trimStart().length < this.minChars) return false;
+      return (applyThisFilter).call(this, !labelOrDescrAttr ? dat : dat.value, inputPart);
     }
   }, // end makeFilterFun
 

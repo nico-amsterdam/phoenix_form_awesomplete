@@ -5,11 +5,11 @@ defmodule PhoenixFormAwesomplete do
 
   @moduledoc ~S'''
 
-  PhoenixFormAwesomplete is a [Phoenix form helper](https://hexdocs.pm/phoenix_html/Phoenix.HTML.Form.html) 
-  that utilizes Lea Verou's autocomplete / autosuggest / typeahead / 
+  PhoenixFormAwesomplete is a [Phoenix form helper](https://hexdocs.pm/phoenix_html/Phoenix.HTML.Form.html)
+  that utilizes Lea Verou's autocomplete / autosuggest / typeahead /
   inputsearch [Awesomplete widget](https://leaverou.github.io/awesomplete/index.html).
 
-  It comes with an AwesompleteUtil [javascript library](https://nico-amsterdam.github.io/awesomplete-util/index.html) 
+  It comes with an AwesompleteUtil [javascript library](https://nico-amsterdam.github.io/awesomplete-util/index.html)
   which adds the following features:
 
   - Dynamic remote data loading; based on what is typed-in it performs an ajax lookup.
@@ -17,7 +17,7 @@ defmodule PhoenixFormAwesomplete do
   - Show when there is an exact match.
   - Show when there isn't a match.
   - When there is an exact match show related data (supplied in the remote data) in other parts of the page.
-  - Select the highlighted item with the tab-key. 
+  - Select the highlighted item with the tab-key.
 
   [Online demo](https://nico-amsterdam.github.io/awesomplete-util/phoenix.html)
 
@@ -26,30 +26,31 @@ defmodule PhoenixFormAwesomplete do
   An autocomplete component is a free text input that provides suggestions while typing. It is not necessary to choose one of the suggestions, but of course a form validator can reject disallowed input.
 
   The HTML combobox is very suitable for this. The combobox looks like a <select> but it doesn't limit the input. It consists of a <input type="text"> element combined with a <datalist> with <option> elements. When the standard combobox doesn't meet the requirements, a solution involving javascript can be used.
-  When using LiveView the datalist of the HTML combobox can be made dynamic, with different suggestions based on the typed input. Like [this dictionary search demo](https://github.com/chrismccord/phoenix_live_view_example/blob/master/lib/demo_web/live/search_live.ex). And there are some fancy LiveView components available like the [Live Select](https://hex.pm/packages/live_select) with a stylish multiselect. These solutions are dynamic and don't necessary require a web service. However, you have to handle the input state on the server (again like [this](https://github.com/chrismccord/phoenix_live_view_example/blob/master/lib/demo_web/live/search_live.ex#L22)) and it only works in LiveView components.
+  When using LiveView the datalist of the HTML combobox can be made dynamic, with different suggestions based on the typed input. Like [this dictionary search demo](https://github.com/chrismccord/phoenix_live_view_example/blob/master/lib/demo_web/live/search_live.ex). And there are some fancy looking, although noncompliant with accessibility standards, LiveView components available like the [Live Select](https://hex.pm/packages/live_select). These solutions are dynamic and don't necessary require a web service. However, you
+  have to handle the input state on the server (again like [this](https://github.com/chrismccord/phoenix_live_view_example/blob/master/lib/demo_web/live/search_live.ex#L22)) and it only works in a LiveView.
 
   This Awesomplete component can be applied for these cases:
   - Outside and inside LiveView. It is even possible to make a HEEx fragment with autocomplete that works in both. See the next chapter.
   - It is specially suitable for suggestions supplied by HTTP web services that produce JSON.
-  - The widget has been tested for accessibility.
+  - The widget has been tested for accessibility (Section 508, WCAG).
   - The list with suggestions can be customized, for example to show an extra description. Any HTML can be used in the suggestions.
   - It can give suggestions for a list with multiple values.
   - It doesn't force the user to pick one of the suggestions; other values can be entered.
-  - It can highlight the input field when there is a match or no match.
-  - The client stops interacting with the backend, and filters on it's own when enough characters have been typed, and the suggestion list has become smaller than the search result limit.
+  - It can highlight the input field when there is a match (green) or when there isn't (red).
+  - The client stops interacting with the backend, and filters on it's own when enough characters have been typed. This is when the suggestion list has become smaller than the search result limit. The client side filter is not affected by network latency, so it responds really quick.
   - Search requests can be cached by the browser, if the web service sets HTTP Cache headers.
-  - It can fill dependend readonly fields/tags. The typical example would be a productcode with a product description shown in order lines. For the existing order lines the database can join the product description to be shown on the screen, but for new entries and when changing the productcode it has te be dynamicly looked up. This can be done while typing. After leaving the input field, the product description stays visible on the screen.
+  - It can fill dependent readonly fields/tags. The typical example would be a productcode with a product description shown in order lines. For the existing order lines the database can join the product description to be shown on the screen, but for new entries and when changing the productcode it has te be dynamicly looked up. This can be done while typing. After leaving the input field, the product description stays visible on the screen.
 
   ## Phoenix function components
 
-  In HEEx templates and ~H sigils, function components offer a method of reuse.  
+  In HEEx templates and ~H sigils, function components offer a method of reuse.
   And they make the HEEx markup arguable more readable.
 
 
   ### Use both inside and outside LiveView - via hooks
 
   For security reasons, LiveView doesn't execute the javascript in dynamicly loaded script tags. Adding new javascript after the page is loaded via the HTTP-request is what every malicious Cross Site Scripting (XSS) code tries to do. Via the Content-Security-Policy HTTP-header, it is possible to prevent dynamicly loaded scripts to be executed.
-  In LiveView the javascript code is loaded as a static asset, and 
+  In LiveView the javascript code is loaded as a static asset, and
    [client hooks via the phx-hook](https://hexdocs.pm/phoenix_live_view/js-interop.html#client-hooks-via-phx-hook) can be used to execute javascript code for
    dynamicly added DOM elements.
   Instead of generating javascript code for every autocomplete field, a javascript hook
@@ -75,9 +76,9 @@ defmodule PhoenixFormAwesomplete do
                         url="https://restcountries.com/v2/all"
                         loadall="true"
                         prepop="true"
-                        minChars="1" 
-                        maxItems="8" 
-                        value="name"                          
+                        minChars="1"
+                        maxItems="8"
+                        value="name"
                         />
 
     </div>
@@ -98,7 +99,7 @@ defmodule PhoenixFormAwesomplete do
     ~H"""
     <div>
       <.label for={@id}><%= @label %></.label>
-      <span phx-update="ignore" id={@span_id}> 
+      <span phx-update="ignore" id={@span_id}>
         <input
           type="text"
           name={@name}
@@ -112,7 +113,7 @@ defmodule PhoenixFormAwesomplete do
           ]}
           {@rest}
         />
-      </span> 
+      </span>
       <.error :for={msg <- @errors}><%= msg %></.error>
     </div>
     """
@@ -128,7 +129,7 @@ defmodule PhoenixFormAwesomplete do
                range radio search select tel text textarea time url week)
   ```
 
-  and then the HEEx template can be written like this. 
+  and then the HEEx template can be written like this.
 
   ```elixir
   <.simple_form
@@ -145,9 +146,9 @@ defmodule PhoenixFormAwesomplete do
                       url="https://restcountries.com/v2/all"
                       loadall="true"
                       prepop="true"
-                      minChars="1" 
-                      maxItems="8" 
-                      value="name"                          
+                      minChars="1"
+                      maxItems="8"
+                      value="name"
                       />
 
   </.simple_form>
@@ -156,10 +157,10 @@ defmodule PhoenixFormAwesomplete do
 
   ### Use outside LiveView, a.k.a. "dead" views - via page scripts
 
-  The advantage of embedded page scripts is that anonymous functions and 
-  functions defined on the same page can be used. 
+  The advantage of embedded page scripts is that anonymous functions and
+  functions defined on the same page can be used.
   It also offers a smoother migration path from version 0.1.
-  The EEx templates can be rewritten to use function components. 
+  The EEx templates can be rewritten to use function components.
   The input tag is separated from the script tag of Awesomplete,
   which makes it easier to customize the style of the input field.
 
@@ -174,8 +175,8 @@ defmodule PhoenixFormAwesomplete do
                       url="https://restcountries.com/v2/all"
                       loadall="true"
                       prepop="true"
-                      minChars="1" 
-                      maxItems="8" 
+                      minChars="1"
+                      maxItems="8"
                       value="name"
                       nonce={@script_src_nonce}
                       />
@@ -183,10 +184,10 @@ defmodule PhoenixFormAwesomplete do
   ```
 
   The nonce in the example above, is to allow inline script to be executed
-  in combination with a Content-Security-Policy that doesn't 
+  in combination with a Content-Security-Policy that doesn't
   allow unsafe evals or unsafe inline scripts.
 
- 
+
   ## Security
 
   ### Content-Security-Policy
@@ -199,13 +200,11 @@ defmodule PhoenixFormAwesomplete do
   ### Trusted web services
 
   Use only trusted web services. As a safety measure against cross-site scripting (XSS) it is possible to sanatize or escape HTML in the JSON responses via a convertResponse function.
-  When an external web service is used directly, than this service will not only see the searched text but also the client IP address. 
+  When an external web service is used directly, than this service will not only see the searched text but also the client IP address.
 
-  
   ## Installation
 
-
-  ### Installation for using both inside and outside LiveView  
+  ### Installation for using both inside and outside LiveView
 
   - Add `phoenix_form_awesomplete`to the list of dependencies in `mix.exs`:
     ```elixir
@@ -237,7 +236,7 @@ defmodule PhoenixFormAwesomplete do
     , filterWords:      AU.filterWords
     , filterOff:        AU.filterOff
 
-    , item:             AU.item          // does NOT mark matching text 
+    , item:             AU.item          // does NOT mark matching text
     // , itemContains:     AU.itemContains  // this is the default, no need to specify it.
     , itemStartsWith:   AU.itemStartsWith
     , itemMarkAll:      AU.itemMarkAll   // also mark matching text inside the description
@@ -282,7 +281,7 @@ defmodule PhoenixFormAwesomplete do
     mix phx.server
     ```
 
-  ### Installation for use outside LiveView only 
+  ### Installation for use outside LiveView only
 
   - Add `phoenix_form_awesomplete`to the list of dependencies in `mix.exs`:
     ```elixir
@@ -303,7 +302,7 @@ defmodule PhoenixFormAwesomplete do
     defdelegate autocomplete(assigns), to: @awesomplete
     defdelegate copy_value_to_id(assigns), to: @awesomplete
     defdelegate copy_value_to_field(assigns), to: @awesomplete
-    ``` 
+    ```
   - Add this code in assets/js/app.js
     ```javascript
     import { Awesomplete, AwesompleteUtil } from "phoenix_form_awesomplete"
@@ -324,12 +323,99 @@ defmodule PhoenixFormAwesomplete do
     ```
 
 
+  ## Accessibility
+
+  The Awesomplete widget is accessible (Section 508, WCAG).
+  However, when using custom HTML in the suggestion list, this solution must be tested separately for compliance.
+
+  The red/green border color to indicate if there a match or not is not helpfull for people with red-green color blindness.
+  The 2 pixel border size might be not enough for people with a low vision.  And if they use a screen reader, the screen reader will paint it's own border around the focused element, hiding the red/green border color.
+
+  ## FAQ
+
+  ### On mobile suggestions are shown behind the virtual keyboard. Do you have a solution?
+
+  With a bit of javascript it is possible to scroll up the input field to the top of the screen when suggestions are shown on small devices.
+  ```javascript
+  window.addEventListener('awesomplete-open', (el) => {
+    if (window.innerWidth < 577 && window.innerHeight < 800) el.target.scrollIntoView();
+  });
+  ```
+  Put this in [scroll.js](https://nico-amsterdam.github.io/awesomplete-util/js/scroll.js) and add this
+  javascript file in the header of the page.
+
+  Also, set maxItems to a low value when the used on a small device.
+
+  ### Is it possible to use Phoenix channels instead of ajax calls?
+
+  Yes, the ajax call can be replaced.
+
+  As `url` we will use the keyword `livesocket`.  Add this in `assets/js/app.js`
+  ```javascript
+  function ajax2live(url, urlEnd, val, fn, xhr) {
+    if (url && url.startsWith('livesocket:')) {
+        const awe = this
+            , phxEvent = url.substr(url.indexOf(':') + 1)
+            , phxData = {'value':val, 'id':awe.input.id}
+        // secretly use this internal function to push events
+        liveSocket.execJSHookPush(awe.input, phxEvent, phxData, () => { console.log('sent ' + val) } );
+    }
+    else
+    {
+        AwesompleteUtil.ajax(url, urlEnd, val, fn, xhr);
+    }
+  };
+  ```
+
+  In `assets/js/app.js` add in `customAwesompleteContext` the above function
+  ```javascript
+    , ajax2live:  ajax2live
+  ```
+
+  In `assets/js/app.js` add in the `mounted` function, add a function to handle server response
+  ```javascript
+  const awe = attachAwesomplete(this.el, customAwesompleteContext, {} /* defaultSettings */ );
+  this.handleEvent(`update-list-${awe.input.id}`,
+    ({queryResult, queryValue}) => { AwesompleteUtil.updateList(awe, queryResult, queryValue); }
+  )
+  ```
+
+  In the HEEx template, in the .input add `phx-target` and in the .autocomplete refer to the new ajax function and change the url
+  ```elixir
+  <.input field={@form[:country]} type="text" placeholder="Country" phx-target={@myself} phx-debounce="blur" />
+
+  <.autocomplete    forField={@form[:country]}
+    url="livesocket:update-country-list"
+    minChars="1"
+    maxItems="5"
+    ajax="ajax2live"
+    />
+  ```
+
+  Handle the event in LiveView:
+  ```elixir
+  def handle_event("update-country-list", %{"value" => val, "id" => id}, socket) do
+    newCountryList = ... your query logic here ...
+    {:noreply, push_event(socket, "update-list-#{id}", %{queryResult: newCountryList, queryValue: val})}
+  end
+  ```
+
+  ### Is it possible to group suggestions?
+
+  You can add the group in description to show for each suggestion to which group it belongs,
+  but the Awesomplete widget has not the option to show suggestions in groups.
+
+  Alternatives:
+  - Split the input in two fields: one to select the group, and in the autocomplete field show only items of the selected group.
+  - The HTML select element supports the optgroup tag.
+  - This javascript component [kraaden autocomplete](https://github.com/kraaden/autocomplete#grouping-suggestions) has a grouping feature.
+
   ## PhoenixFormAwesomplete raw example
 
   ### IEx
 
       iex> {:safe, [input, script]} = PhoenixFormAwesomplete.awesomplete(:user, :drinks,
-      ...> ["data-list": "beer, gin, soda, sprite, water, vodga, whine, whisky"], 
+      ...> ["data-list": "beer, gin, soda, sprite, water, vodga, whine, whisky"],
       ...> %{ minChars: 1 } )
       iex> to_string input
       "<input data-list=\"beer, gin, soda, sprite, water, vodga, whine, whisky\"" <>
@@ -340,18 +426,18 @@ defmodule PhoenixFormAwesomplete do
   The first three parameters are passed on unchanged to the Phoenix form [text_input](https://hexdocs.pm/phoenix_html/Phoenix.HTML.Form.html#text_input/3) which generates the input tag.
   `minChars` is an option for the Awesomplete object which is started with inline javascript.
   Just adding the `multiple` option changes the generated javascript code completely, the PhoenixFormAwesomplete module
-  takes care of that. 
-  Instead of an server side generated data-list it is possible to specify an url of a JSON web service and 
-  let the client-code lookup the data list on-demand while typing. 
+  takes care of that.
+  Instead of an server side generated data-list it is possible to specify an url of a JSON web service and
+  let the client-code lookup the data list on-demand while typing.
   Look at the [live examples](https://nico-amsterdam.github.io/awesomplete-util/phoenix.html) with code.
 
 
-  It is possible to use aliases for the javascript library references in the generated page scripts 
+  It is possible to use aliases for the javascript library references in the generated page scripts
   via the environment variables `util` and `awesomplete`.
   The default names, `AwesompleteUtil` and `Awesomplete` respectively, are a bit long.
   This can shorten the average page size.
-  For example use this javascript: 
-       var AU = AwesompleteUtil, AW = Awesomplete; 
+  For example use this javascript:
+       var AU = AwesompleteUtil, AW = Awesomplete;
   and change the variables via the application config:
        :phoenix_form_awesomplete, util:         "AU"
        :phoenix_form_awesomplete, awesomplete:  "AW"
@@ -372,7 +458,7 @@ defmodule PhoenixFormAwesomplete do
       when is_binary(script) do
     HTML.raw("<script>#{script}</script>")
   end
-  
+
   defp script_to_html(script, script_attributes) do
     {:safe, attributes} = HTML.attributes_escape(script_attributes)
     HTML.raw(~s(<script#{attributes}>#{script}</script>))
@@ -399,7 +485,7 @@ defmodule PhoenixFormAwesomplete do
   end
 
   def script(script, script_attributes)
-      when is_binary(script) 
+      when is_binary(script)
       and script_attributes == %{} do
     HTML.raw("<script>#{script}</script>")
   end
@@ -411,8 +497,8 @@ defmodule PhoenixFormAwesomplete do
     if Keyword.has_key?(script_attributes, :nonce) do
       if length(Keyword.get_values(script_attributes, :nonce)) > 1, do: raise(ArgumentError, "Script with multiple nonce attributes")
       :ok = case Keyword.get(script_attributes, :nonce) do
-         nil -> raise(ArgumentError, "Script nonce attribute is nil") 
-         "" -> raise(ArgumentError, "Script nonce attribute is empty") 
+         nil -> raise(ArgumentError, "Script nonce attribute is nil")
+         "" -> raise(ArgumentError, "Script nonce attribute is empty")
          _ -> :ok
       end
     end
@@ -422,8 +508,8 @@ defmodule PhoenixFormAwesomplete do
   def script(script, %{nonce: csp_nonce_value} = script_attributes)
       when is_binary(script) do
     :ok = case csp_nonce_value do
-         nil -> raise(ArgumentError, "Script nonce attribute is nil") 
-         "" -> raise(ArgumentError, "Script nonce attribute is empty") 
+         nil -> raise(ArgumentError, "Script nonce attribute is nil")
+         "" -> raise(ArgumentError, "Script nonce attribute is empty")
          _ -> :ok
     end
     script_to_html(script, script_attributes)
@@ -437,18 +523,18 @@ defmodule PhoenixFormAwesomplete do
   @doc ~S"""
   Create javascript that listens to `awesomplete-prepop` and `awesomplete-match` events,
   and copies the `data_field` to the DOM element with the given target id.
-  The `target id` is passed to the DOM document querySelector, and is typically 
+  The `target id` is passed to the DOM document querySelector, and is typically
   set as a hash character with an element id.
   The `target_id` can also be a javascript function.
 
   ## Example
 
-      iex> ff = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
-      iex> PhoenixFormAwesomplete.copy_value_to_id_js(ff, "label", "#awe-color-result") 
+      iex> ff = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil}
+      iex> PhoenixFormAwesomplete.copy_value_to_id_js(ff, "label", "#awe-color-result")
       "AwesompleteUtil.startCopy('#palet_color', 'label', '#awe-color-result');"
 
   """
-  def copy_value_to_id_js(%{id: awe_id} = _ff, data_field \\ nil, target_id) 
+  def copy_value_to_id_js(%{id: awe_id} = _ff, data_field \\ nil, target_id)
       when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) do
     GenJS.copy_to_id_js("#" <> awe_id, data_field, target_id)
   end
@@ -460,11 +546,11 @@ defmodule PhoenixFormAwesomplete do
 
   ## Example
 
-      iex> PhoenixFormAwesomplete.copy_to_id_js(:user, :color, "label", "#awe-color-result") 
+      iex> PhoenixFormAwesomplete.copy_to_id_js(:user, :color, "label", "#awe-color-result")
       "AwesompleteUtil.startCopy('#user_color', 'label', '#awe-color-result');"
 
   """
-  def copy_to_id_js(source_form, source_field, data_field \\ nil, target_id) 
+  def copy_to_id_js(source_form, source_field, data_field \\ nil, target_id)
       when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) do
     source_id = "#" <> Form.input_id(source_form, source_field)
     GenJS.copy_to_id_js(source_id, data_field, target_id)
@@ -473,18 +559,18 @@ defmodule PhoenixFormAwesomplete do
   @doc ~S"""
   Create script tag with javascript that listens to `awesomplete-prepop` and `awesomplete-match` events,
   and copies the `data_field` to the DOM element with the given target id.
-  The `target id` is passed to the DOM document querySelector, and is typically 
+  The `target id` is passed to the DOM document querySelector, and is typically
   set as a hash character with an element id.
   The `target_id` can also be a javascript function.
 
   ## Example
-      iex> ff = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
-      iex> PhoenixFormAwesomplete.copy_value_to_id(ff, "label", "#awe-color-result") 
+      iex> ff = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil}
+      iex> PhoenixFormAwesomplete.copy_value_to_id(ff, "label", "#awe-color-result")
       {:safe,
        "<script>AwesompleteUtil.startCopy('#palet_color', 'label', '#awe-color-result');</script>"}
 
   """
-  def copy_value_to_id(%{id: awe_id} = _ff, data_field \\ nil, target_id) 
+  def copy_value_to_id(%{id: awe_id} = _ff, data_field \\ nil, target_id)
       when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) do
     script(GenJS.copy_to_id_js("#" <> awe_id, data_field, target_id))
   end
@@ -496,12 +582,12 @@ defmodule PhoenixFormAwesomplete do
 
   ## Example
 
-      iex> PhoenixFormAwesomplete.copy_to_id(:user, :color, "label", "#awe-color-result") 
+      iex> PhoenixFormAwesomplete.copy_to_id(:user, :color, "label", "#awe-color-result")
       {:safe,
        "<script>AwesompleteUtil.startCopy('#user_color', 'label', '#awe-color-result');</script>"}
 
   """
-  def copy_to_id(source_form, source_field, data_field \\ nil, target_id) 
+  def copy_to_id(source_form, source_field, data_field \\ nil, target_id)
       when (is_nil(data_field) or is_binary(data_field)) and is_binary(target_id) do
     script(copy_to_id_js(source_form, source_field, data_field, target_id))
   end
@@ -511,15 +597,15 @@ defmodule PhoenixFormAwesomplete do
 
   ## Example
 
-      iex> ff = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
+      iex> ff = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil}
       iex> PhoenixFormAwesomplete.copy_value_to_id_script(ff, "label", "#awe-color-result", [nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S"])
       {:safe,
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.startCopy('#palet_color', 'label', '#awe-color-result');</script>"}
 
   """
-  def copy_value_to_id_script(%{id: awe_id} = _ff, data_field \\ nil, target_id, script_attributes) 
+  def copy_value_to_id_script(%{id: awe_id} = _ff, data_field \\ nil, target_id, script_attributes)
       when (is_nil(data_field) or is_binary(data_field))
-       and is_binary(awe_id)    and awe_id != "" 
+       and is_binary(awe_id)    and awe_id != ""
        and is_binary(target_id) and target_id != "" do
     script(GenJS.copy_to_id_js("#" <> awe_id, data_field, target_id), script_attributes)
   end
@@ -534,7 +620,7 @@ defmodule PhoenixFormAwesomplete do
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.startCopy('#user_color', 'label', '#awe-color-result');</script>"}
 
   """
-  def copy_to_id_script(source_form, source_field, data_field \\ nil, target_id, script_attributes) 
+  def copy_to_id_script(source_form, source_field, data_field \\ nil, target_id, script_attributes)
       when (is_nil(data_field) or is_binary(data_field))
        and is_binary(target_id) do
     script(copy_to_id_js(source_form, source_field, data_field, target_id), script_attributes)
@@ -546,33 +632,33 @@ defmodule PhoenixFormAwesomplete do
 
   ## Example
 
-      iex> ff_source = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
-      iex> ff_target = %Phoenix.HTML.FormField{form: "palet", field: "paint", id: "palet_paint", name: "palet[paint]", errors: [], value: nil} 
-      iex> PhoenixFormAwesomplete.copy_value_to_field(ff_source, "label", ff_target)  
+      iex> ff_source = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil}
+      iex> ff_target = %Phoenix.HTML.FormField{form: "palet", field: "paint", id: "palet_paint", name: "palet[paint]", errors: [], value: nil}
+      iex> PhoenixFormAwesomplete.copy_value_to_field(ff_source, "label", ff_target)
       {:safe,
        "<script>AwesompleteUtil.startCopy('#palet_color', 'label', '#palet_paint');</script>"}
 
   """
-  def copy_value_to_field(%{id: source_id} = _source_ff, data_field \\ nil, %{id: target_id} = _target_ff) 
-      when (is_nil(data_field) or is_binary(data_field)) 
-       and is_binary(source_id) and source_id != "" 
+  def copy_value_to_field(%{id: source_id} = _source_ff, data_field \\ nil, %{id: target_id} = _target_ff)
+      when (is_nil(data_field) or is_binary(data_field))
+       and is_binary(source_id) and source_id != ""
        and is_binary(target_id) and target_id != ""  do
     script(GenJS.copy_to_id_js("#" <> source_id, data_field, "#" <> target_id))
   end
 
   @doc ~S"""
   As copy_value_to_field/3 but with form and field parameters as used in Phoenix.HTML.Form functions
-  instead of the Phoenix.HTML.FormField's. 
+  instead of the Phoenix.HTML.FormField's.
   The source_form and target_form parameters are either a Phoenix.HTML.Form struct or an atom.
 
   ## Example
 
-      iex> PhoenixFormAwesomplete.copy_to_field(:user, :color, "label", :door, :paint)  
+      iex> PhoenixFormAwesomplete.copy_to_field(:user, :color, "label", :door, :paint)
       {:safe,
        "<script>AwesompleteUtil.startCopy('#user_color', 'label', '#door_paint');</script>"}
 
   """
-  def copy_to_field(source_form, source_field, data_field \\ nil, target_form, target_field) 
+  def copy_to_field(source_form, source_field, data_field \\ nil, target_form, target_field)
       when is_nil(data_field) or is_binary(data_field) do
     target_id = "#" <> Form.input_id(target_form, target_field)
     script(copy_to_id_js(source_form, source_field, data_field, target_id))
@@ -583,16 +669,16 @@ defmodule PhoenixFormAwesomplete do
 
   ## Example
 
-      iex> ff_source = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil} 
-      iex> ff_target = %Phoenix.HTML.FormField{form: "palet", field: "paint", id: "palet_paint", name: "palet[paint]", errors: [], value: nil} 
+      iex> ff_source = %Phoenix.HTML.FormField{form: "palet", field: "color", id: "palet_color", name: "palet[color]", errors: [], value: nil}
+      iex> ff_target = %Phoenix.HTML.FormField{form: "palet", field: "paint", id: "palet_paint", name: "palet[paint]", errors: [], value: nil}
       iex> PhoenixFormAwesomplete.copy_value_to_field_script(ff_source, "label", ff_target, [nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S"])
       {:safe,
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.startCopy('#palet_color', 'label', '#palet_paint');</script>"}
 
   """
-  def copy_value_to_field_script(%{id: source_id} = _source_ff, data_field \\ nil, %{id: target_id} = _target_ff, script_attributes) 
-      when (is_nil(data_field) or is_binary(data_field)) 
-       and is_binary(source_id) and source_id != "" 
+  def copy_value_to_field_script(%{id: source_id} = _source_ff, data_field \\ nil, %{id: target_id} = _target_ff, script_attributes)
+      when (is_nil(data_field) or is_binary(data_field))
+       and is_binary(source_id) and source_id != ""
        and is_binary(target_id) and target_id != "" do
     script(GenJS.copy_to_id_js("#" <> source_id, data_field, "#" <> target_id), script_attributes)
   end
@@ -607,7 +693,7 @@ defmodule PhoenixFormAwesomplete do
        "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.startCopy('#user_color', 'label', '#door_paint');</script>"}
 
   """
-  def copy_to_field_script(source_form, source_field, data_field \\ nil, target_form, target_field, script_attributes) 
+  def copy_to_field_script(source_form, source_field, data_field \\ nil, target_form, target_field, script_attributes)
       when (is_nil(data_field) or is_binary(data_field)) do
     target_id = "#" <> Form.input_id(target_form, target_field)
     script(copy_to_id_js(source_form, source_field, data_field, target_id), script_attributes)
@@ -618,8 +704,8 @@ defmodule PhoenixFormAwesomplete do
 
   ## Example
 
-      iex> ff = %Phoenix.HTML.FormField{form: "user", field: "hobby", id: "user_hobby", name: "user[hobby]", errors: [], value: nil} 
-      iex> PhoenixFormAwesomplete.awesomplete_js(ff , %{ minChars: 1 } )    
+      iex> ff = %Phoenix.HTML.FormField{form: "user", field: "hobby", id: "user_hobby", name: "user[hobby]", errors: [], value: nil}
+      iex> PhoenixFormAwesomplete.awesomplete_js(ff , %{ minChars: 1 } )
       "AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});"
 
   """
@@ -648,7 +734,7 @@ defmodule PhoenixFormAwesomplete do
   # text_input will not be called anyway when using the supplied function components,
   # because these separate the input tag from the awesomplete script.
   defp text_input(form, field, opts) do
-    {:safe, attributes} = 
+    {:safe, attributes} =
       opts
       |> Keyword.put_new(:id,     Form.input_id(form, field))
       |> Keyword.put_new(:name, Form.input_name(form, field))
@@ -662,52 +748,52 @@ defmodule PhoenixFormAwesomplete do
   This method generates an input tag and inline javascript code that starts Awesomplete. Use this in (L)EEx templates. For HEEx templates it recommended to use <.input in combination with awesomplete_script/2.
 
   Awesomplete options:
-   * `ajax`            - Replace ajax function. Supplied function receives these parameters: (url, urlEnd, val, fn, xhr). fn is the callback function. Default: AwesompleteUtil.ajax. 
+   * `ajax`            - Replace ajax function. Supplied function receives these parameters: (url, urlEnd, val, fn, xhr). fn is the callback function. Default: AwesompleteUtil.ajax.
    * `assign`          - Assign the Awesomplete object to a variable. true/false/name. If true the variable name will be 'awe\_' + id of input tag. Default: false
-   * `autoFirst`       - true/false. Automatically select the first element. Default: false. 
+   * `autoFirst`       - true/false. Automatically select the first element. Default: false.
    * `combobox`        - Id of the combobox button. true/false/id. If true the assumed button id is 'awe\_btn\_' + id of the input tag. Default: false
    * `container`       - Container function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). By default a div element is added as the parent of the input element.
    * `convertInput`    - Convert input function. Internally convert input for comparison with the data list items. By default it trims the input and converts it to lowercase for a case-insensitive comparison.
-   * `convertResponse` - Convert JSON response from ajax calls. This function is called with the parsed JSON, and allows conversion of the data before further processing. Default: nil - no conversion. 
+   * `convertResponse` - Convert JSON response from ajax calls. This function is called with the parsed JSON, and allows conversion of the data before further processing. Default: nil - no conversion.
    * `data`            - Data function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `debounce`        - Time in milliseconds to wait for additional user input before doing the ajax call to retrieve suggestions. It limits the rate at which the json service is called per user session.
    * `descr`           - Name of the field in the data list (the JSON response) that contains the description text to show below the value in the suggestion list. Default: no description
    * `descrSearch`     - true/false. Filter must also search the input value in the description field. Default: false
    * `filter`          - Filter function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). Mostly use Awesomplete.FILTER\_STARTSWITH or Awesomplete.FILTER\_CONTAINS. If label is different as value, filter on value with AweompleteUtil.filterStartsWith, AwesompleteUtil.filterContains or AwesompleteUtil.filterWords. To turn off filtering, use AwesompleteUtil.filterOff.
    * `item`            - Item function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). Default is to highlight all occurrences of the input text. Use AwesompleteUtil.itemStartsWith if that matches with the used filter.
-   * `label`           - Name of the field in the data list (the JSON response) that contains the text that should be shown instead of the value. 
+   * `label`           - Name of the field in the data list (the JSON response) that contains the text that should be shown instead of the value.
    * `list`            - Data list as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility).
    * `listLabel`       - Denotes a label to be used as aria-label on the generated autocomplete list.
    * `loadall`         - true/false. Use true if the data list contains all items, and the input value should not be used in ajax calls. Default: false
-   * `limit`           - number. If a limit is specified, and the number of items returned by the server is equal or more as this limit, the AwesompleteUtil code assumes that there are more results, so it will re-query if more characters are typed to get more refined results. The limit:1 tells that not more than 1 result is expected, so the json service doesn’t have to return an array. With limit:0 it will always re-query if more characters are typed and the result doesn't have to be an array either. Limit:-1 will always requery and the expected result is an array. When no limit is specified, the code assumes that all possible suggestions are returned based on the typed characters, and it will not re-query if more characters are typed. It uses the specified filter for the suggestions in the dropdown. Default: no limit 
-   * `maxItems`        - Maximum number of suggestions to display. Default: 10 
-   * `minChars`        - Minimum characters the user has to type before the autocomplete popup shows up. Default: 2 
+   * `limit`           - number. If a limit is specified, and the number of items returned by the server is equal or more as this limit, the AwesompleteUtil code assumes that there are more results, so it will re-query if more characters are typed to get more refined results. The limit:1 tells that not more than 1 result is expected, so the json service doesn’t have to return an array. With limit:0 it will always re-query if more characters are typed and the result doesn't have to be an array either. Limit:-1 will always requery and the expected result is an array. When no limit is specified, the code assumes that all possible suggestions are returned based on the typed characters, and it will not re-query if more characters are typed. It uses the specified filter for the suggestions in the dropdown. Default: no limit
+   * `maxItems`        - Maximum number of suggestions to display. Default: 10
+   * `minChars`        - Minimum characters the user has to type before the autocomplete popup shows up. Default: 2
    * `multiple`        - true/false/characters. Separators to allow multiple values. If true, the separator will be the space character. Default: false
    * `nonce`           - Content-Security-Policy nonce attribute for the script tag. Default: no nonce. If specified it must contain a non-empty value.
-   * `prepop`          - true/false. If true do lookup initial/autofilled value and send awesomplete-prepop event. Default: false 
+   * `prepop`          - true/false. If true do lookup initial/autofilled value and send awesomplete-prepop event. Default: false
    * `replace`         - Replace function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `sort`            - Sort function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `statusNoResults` - Screen reader text to replace the default: 'No results found'
    * `statusTypeXChar` - Screen reader text to replace the default: 'Type {0} or more characters for results'. The placeholder {0} will be replaced with the minimum number of characters (minChars).
    * `statusXResults`  - Screen reader text to replace the default: '{0} results found'. The placeholder {0} will be replaced with the number of results.
    * `url`             - url for ajax calls.
-   * `urlEnd`          - Addition at the end of the url for the ajax call, after the input value. Or a function, which receives the value and must return the last part of the url after the base url. 
+   * `urlEnd`          - Addition at the end of the url for the ajax call, after the input value. Or a function, which receives the value and must return the last part of the url after the base url.
    * `value`           - Name of the field in the data list (the JSON response) that contains the value.
 
   ## Example
 
-      iex> {:safe, [inp, scr]} = PhoenixFormAwesomplete.awesomplete(:user, :eyes, 
+      iex> {:safe, [inp, scr]} = PhoenixFormAwesomplete.awesomplete(:user, :eyes,
       ...> ["data-list": "blue, brown, green"],
       ...>  %{ minChars: 1, multiple: ",;", nonce: "KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S" } )
       iex> to_string inp
       "<input data-list=\"blue, brown, green\" id=\"user_eyes\" name=\"user[eyes]\" type=\"text\">"
       iex> scr
-      "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.start('#user_eyes', " <> 
+      "<script nonce=\"KG2FJFSN4LaCNyVRwTxRJjCB94Bdc41S\">AwesompleteUtil.start('#user_eyes', " <>
       "{convertInput: function(input) {" <>
       " return input.replace(/[,;]\\s*$/, '').match(/[^,;]*$/)[0].trim().toLowerCase(); }}, " <>
-      "{minChars: 1, " <> 
+      "{minChars: 1, " <>
       "replace: function(data) {" <>
-      " var text=data.value;" <> 
+      " var text=data.value;" <>
       " this.input.value = this.input.value.match(/^.+[,;]\\s*|/)[0] + text + ', '; }, " <>
       "filter: function(data, input) {" <>
       " return Awesomplete.FILTER_CONTAINS(data, input.match(/[^,;]*([,;]\\s*)?$/)[0]); }, " <>
@@ -716,7 +802,7 @@ defmodule PhoenixFormAwesomplete do
       "</script>"
 
   """
-  def awesomplete(form, field, opts \\ [], awesomplete_opts)  
+  def awesomplete(form, field, opts \\ [], awesomplete_opts)
       when is_nil(opts) or is_list(opts) do
     script = awesomplete_script(form, field, awesomplete_opts)
     input = text_input(form, field, opts)
@@ -748,7 +834,7 @@ defmodule PhoenixFormAwesomplete do
 
   ## Example
 
-      iex> ff = %Phoenix.HTML.FormField{form: "user", field: "hobby", id: "user_hobby", name: "user[hobby]", errors: [], value: nil} 
+      iex> ff = %Phoenix.HTML.FormField{form: "user", field: "hobby", id: "user_hobby", name: "user[hobby]", errors: [], value: nil}
       iex> PhoenixFormAwesomplete.awesomplete_script(ff, %{ minChars: 1 } )
       {:safe,
        "<script>AwesompleteUtil.start('#user_hobby', {}, {minChars: 1});</script>"}

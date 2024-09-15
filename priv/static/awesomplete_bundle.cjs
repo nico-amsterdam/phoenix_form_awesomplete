@@ -42,7 +42,7 @@ var require_awesomplete = __commonJS({
         this.input.setAttribute("autocomplete", "off");
         this.input.setAttribute("aria-autocomplete", "list");
         this.input.setAttribute("aria-expanded", "false");
-        this.input.setAttribute("aria-owns", "awesomplete_list_" + this.count);
+        this.input.setAttribute("aria-controls", "awesomplete_list_" + this.count);
         this.input.setAttribute("role", "combobox");
         this.options = o = o || {};
         configure(this, {
@@ -204,7 +204,7 @@ var require_awesomplete = __commonJS({
           this.input.removeAttribute("autocomplete");
           this.input.removeAttribute("aria-autocomplete");
           this.input.removeAttribute("aria-expanded");
-          this.input.removeAttribute("aria-owns");
+          this.input.removeAttribute("aria-controls");
           this.input.removeAttribute("role");
           var indexOfAwesomplete = _.all.indexOf(this);
           if (indexOfAwesomplete !== -1) {
@@ -1015,21 +1015,24 @@ var makeFilterFun = (filterFun, filterAtStart, re, labelOrDescrAttr) => {
   const AWE = Awesomplete;
   if (filterAtStart) {
     if (descrSearch) {
-      return function(dat, inp) {
-        var inputPart = re ? inp.match(re)[0] : inp;
-        return UTIL.filterStartsWith(dat, inputPart) || AWE.FILTER_STARTSWITH(dat.value.substring(dat.value.lastIndexOf("|") + 1), inputPart);
+      applyThisFilter = function(datValue, inputPart) {
+        return AWE.FILTER_STARTSWITH(datValue, inputPart) || AWE.FILTER_STARTSWITH(datValue.substring(datValue.lastIndexOf("|") + 1), inputPart);
       };
+    } else {
+      if (!re)
+        return UTIL.filterStartsWith;
+      applyThisFilter = AWE.FILTER_STARTSWITH;
     }
-    if (!re)
-      return UTIL.filterStartsWith;
-    applyThisFilter = AWE.FILTER_STARTSWITH;
   } else if (!filterFun || filterFun === UTIL.filterContains || filterFun === AWE.FILTER_CONTAINS) {
     if (!re)
       return UTIL.filterContains;
     applyThisFilter = AWE.FILTER_CONTAINS;
   }
   return function(dat, inp) {
-    return applyThisFilter.call(this, !labelOrDescrAttr ? dat : dat.value, re ? inp.match(re)[0] : inp);
+    const inputPart = re ? inp.match(re)[0] : inp;
+    if (re && this.minChars > 1 && inputPart.trimStart().length < this.minChars)
+      return false;
+    return applyThisFilter.call(this, !labelOrDescrAttr ? dat : dat.value, inputPart);
   };
 };
 var makeDataFun = (dataFun, valueAttr, labelAttr, descrAttr, descrSearch2) => {
