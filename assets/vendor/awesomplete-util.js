@@ -524,14 +524,14 @@ var AwesompleteUtil = function() {
 
         // create Awesomplete object for input control elemId. opts are passed unchanged to Awesomplete.
         create: function(elemId, utilOpts, opts) {
-          opts.item = opts.item || this.itemContains; /* by default uses itemContains, can be overriden */
+          opts.item = opts.item || this.itemContains; /* by default uses itemContains, can be overridden */
           var awe = new Awesomplete(elemId, opts);
           awe.utilprops = utilOpts || {};
           // loadall is true if there is no url (there is a static data-list)
           if (!awe.utilprops.url && 'undefined' === typeof awe.utilprops.loadall) {
             awe.utilprops.loadall = true;
           }
-          awe.utilprops.ajax = awe.utilprops.ajax || this.ajax; /* default ajax function can be overriden */
+          awe.utilprops.ajax = awe.utilprops.ajax || this.ajax; /* default ajax function can be overridden */
           awe.utilprops.convertInput = awe.utilprops.convertInput || this.convertInput; /* the same applies for convertInput */
           return awe;
         },

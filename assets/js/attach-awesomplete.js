@@ -36,8 +36,8 @@ const
       }
     }
     if (!re) return itemFun;
-    return function(text, inp) {
-      return (itemFun).call(this, text, inp.match(re)[0]);
+    return function(text, inp, item_id) {
+      return (itemFun).call(this, text, inp.match(re)[0], item_id);
     }
   }, // end makeItemFun
 
