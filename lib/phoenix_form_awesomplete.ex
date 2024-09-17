@@ -7,7 +7,8 @@ defmodule PhoenixFormAwesomplete do
 
   PhoenixFormAwesomplete is a [Phoenix form helper](https://hexdocs.pm/phoenix_html/Phoenix.HTML.Form.html)
   that utilizes Lea Verou's autocomplete / autosuggest / typeahead /
-  inputsearch [Awesomplete widget](https://leaverou.github.io/awesomplete/index.html).
+  inputsearch [Awesomplete widget](https://leaverou.github.io/awesomplete/index.html), 
+  complying to accessibility standards (Section 508, WCAG).
 
   It comes with an AwesompleteUtil [javascript library](https://nico-amsterdam.github.io/awesomplete-util/index.html)
   which adds the following features:
@@ -25,21 +26,24 @@ defmodule PhoenixFormAwesomplete do
 
   An autocomplete component is a free text input that provides suggestions while typing. It is not necessary to choose one of the suggestions, but of course a form validator can reject disallowed input.
 
-  The HTML combobox is very suitable for this. The combobox looks like a <select> but it doesn't limit the input. It consists of a <input type="text"> element combined with a <datalist> with <option> elements. When the standard combobox doesn't meet the requirements, a solution involving javascript can be used.
-  When using LiveView the datalist of the HTML combobox can be made dynamic, with different suggestions based on the typed input. Like [this dictionary search demo](https://github.com/chrismccord/phoenix_live_view_example/blob/master/lib/demo_web/live/search_live.ex). And there are some fancy looking, although noncompliant with accessibility standards, LiveView components available like the [Live Select](https://hex.pm/packages/live_select). These solutions are dynamic and don't necessary require a web service. However, you
-  have to handle the input state on the server (again like [this](https://github.com/chrismccord/phoenix_live_view_example/blob/master/lib/demo_web/live/search_live.ex#L22)) and it only works in a LiveView.
+  The HTML combobox is very suitable for this. The combobox looks like a <select> but it doesn't limit the input. It consists of a <input type="text"> or <input type="search"> element combined with a <datalist> with <option> elements.
+  The options cannot contain HTML markup.
+  When using LiveView the datalist of the HTML combobox can be made dynamic, with different suggestions based on the typed input. Like [this dictionary search demo](https://github.com/chrismccord/phoenix_live_view_example/blob/master/lib/demo_web/live/search_live.ex).
+  If you use options with a text that differs from the value, the combobox will behave [different in different browsers](https://github.com/whatwg/html/issues/9986). 
+  When the standard combobox doesn't meet the requirements, a solution involving javascript can be used.
+  For LiveView there is for example this [Live Select](https://hex.pm/packages/live_select) component, but this component is not compliant with accessibility standards.
 
-  This Awesomplete component can be applied for these cases:
-  - Outside and inside LiveView. It is even possible to make a HEEx fragment with autocomplete that works in both. See the next chapter.
-  - It is specially suitable for suggestions supplied by HTTP web services that produce JSON.
-  - The widget has been tested for accessibility (Section 508, WCAG).
+  This Awesomplete component can be applied for any of these cases:
+  - Use outside and inside LiveView. It is even possible to make a HEEx fragment with autocomplete that works in both. See the next chapter.
+  - It is specially suitable for suggestions supplied by HTTP web services that produce JSON. Although the default is to use Ajax calls, it is [possible to use Phoenix channels](#module-faq). And, as long as the responses can be converted to Javascript arrays, it is also fine.
+  - When accessibility is important; the widget has been tested for accessibility (Section 508, WCAG).
   - The list with suggestions can be customized, for example to show an extra description. Any HTML can be used in the suggestions.
-  - It can give suggestions for a list with multiple values.
+  - It can give suggestions for an input field with multiple values.
   - It doesn't force the user to pick one of the suggestions; other values can be entered.
   - It can highlight the input field when there is a match (green) or when there isn't (red).
   - The client stops interacting with the backend, and filters on it's own when enough characters have been typed. This is when the suggestion list has become smaller than the search result limit. The client side filter is not affected by network latency, so it responds really quick.
   - Search requests can be cached by the browser, if the web service sets HTTP Cache headers.
-  - It can fill dependent readonly fields/tags. The typical example would be a productcode with a product description shown in order lines. For the existing order lines the database can join the product description to be shown on the screen, but for new entries and when changing the productcode it has te be dynamicly looked up. This can be done while typing. After leaving the input field, the product description stays visible on the screen.
+  - It can fill dependent readonly fields/tags. The typical example would be a productcode with a product description shown in order lines. For the existing order lines the database can join the product description to be shown on the screen, but for new entries and when changing the productcode it has te be dynamicly looked up. The description can be shown in the suggestion list, and when one suggestion is selected the description can be shown near the combobox.
 
   ## Phoenix function components
 
@@ -159,7 +163,7 @@ defmodule PhoenixFormAwesomplete do
 
   The advantage of embedded page scripts is that anonymous functions and
   functions defined on the same page can be used.
-  It also offers a smoother migration path from version 0.1.
+  It also offers a smoother migration path from Awesomplete version 0.1.
   The EEx templates can be rewritten to use function components.
   The input tag is separated from the script tag of Awesomplete,
   which makes it easier to customize the style of the input field.
@@ -200,8 +204,12 @@ defmodule PhoenixFormAwesomplete do
   ### Trusted web services
 
   Use only trusted web services. As a safety measure against cross-site scripting (XSS) it is possible to sanatize or escape HTML in the JSON responses via a convertResponse function.
-  Most web services can only be accessed with a valid token in the request header. Use a custom ajax function to pass on the token.
+
   When an external web service is used directly, than this service will not only see the searched text but also the client IP address.
+
+  Most web services can only be accessed with a session cookie or a valid token in the request header.
+  Use a custom ajax function to set withCredential to true on the XMLHttpRequest object to send session cookies, or 
+  set the necessairy request headers when XHR is in opened state.
 
   ## Installation
 
@@ -334,19 +342,6 @@ defmodule PhoenixFormAwesomplete do
 
   ## FAQ
 
-  ### On mobile suggestions are shown behind the virtual keyboard. Do you have a solution?
-
-  With a bit of javascript it is possible to scroll up the input field to the top of the screen when suggestions are shown on small devices.
-  ```javascript
-  window.addEventListener('awesomplete-open', (el) => {
-    if (window.innerWidth < 577 && window.innerHeight < 800) el.target.scrollIntoView();
-  });
-  ```
-  Put this in [scroll.js](https://nico-amsterdam.github.io/awesomplete-util/js/scroll.js) and add this
-  javascript file in the header of the page.
-
-  Also, set maxItems to a low value when the used on a small device.
-
   ### Is it possible to use Phoenix channels instead of ajax calls?
 
   Yes, the ajax call can be replaced.
@@ -401,14 +396,27 @@ defmodule PhoenixFormAwesomplete do
   end
   ```
 
+  ### On mobile suggestions are shown behind the virtual keyboard. Do you have a solution?
+
+  With a bit of javascript it is possible to scroll up the input field to the top of the screen when suggestions are shown on small devices.
+  ```javascript
+  window.addEventListener('awesomplete-open', (el) => {
+    if (window.innerWidth < 577 && window.innerHeight < 800) el.target.scrollIntoView();
+  });
+  ```
+  Put this in [scroll.js](https://nico-amsterdam.github.io/awesomplete-util/js/scroll.js) and add this
+  javascript file in the header of the page.
+
+  Also, set maxItems to a low value when the used on a small device.
+
   ### Is it possible to group suggestions?
 
-  You can add the group in description to show for each suggestion to which group it belongs,
+  You can add the group in the description to show for each suggestion to which group it belongs,
   but the Awesomplete widget has not the option to show suggestions in groups.
 
   Alternatives:
   - Split the input in two fields: one to select the group, and in the autocomplete field show only items of the selected group.
-  - The HTML select element supports the optgroup tag.
+  - Use the HTML select element. It supports the optgroup tag.
   - This javascript component [kraaden autocomplete](https://github.com/kraaden/autocomplete#grouping-suggestions) has a grouping feature.
 
   ## PhoenixFormAwesomplete raw example
@@ -754,14 +762,14 @@ defmodule PhoenixFormAwesomplete do
    * `autoFirst`       - true/false. Automatically select the first element. Default: false.
    * `combobox`        - Id of the combobox button. true/false/id. If true the assumed button id is 'awe\_btn\_' + id of the input tag. Default: false
    * `container`       - Container function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). By default a div element is added as the parent of the input element.
-   * `convertInput`    - Convert input function to normalize the input text. Internally convert the input text for search calls and for comparison with the suggestions. By default it trims the input and converts it to lowercase for a case-insensitive comparison. It is applied to both the input text and the suggestion text before comparing. In advanced cases like the multiple values, the convertInput is used to extract the search text.
+   * `convertInput`    - Convert input function which receives the input text as parameter. This function is used normalize the input text. Internally convert the input text for search calls and for comparison with the suggestions. By default it trims the input and converts it to lowercase for a case-insensitive comparison. It is applied to both the input text and the suggestion text before comparing. In advanced cases like the multiple values, the convertInput is used to extract the search text.
    * `convertResponse` - Convert JSON response from ajax calls. This function is called with the parsed JSON, and allows conversion of the data before further processing. Default: nil - no conversion.
    * `data`            - Data function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
    * `debounce`        - Time in milliseconds to wait for additional user input before doing the ajax call to retrieve suggestions. It limits the rate at which the json service is called per user session.
    * `descr`           - Name of the field in the data list (the JSON response) that contains the description text to show below the value in the suggestion list. Default: no description
    * `descrSearch`     - true/false. Filter must also search the input value in the description field. Default: false
    * `filter`          - Filter function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). Mostly use Awesomplete.FILTER\_STARTSWITH or Awesomplete.FILTER\_CONTAINS. If label is different as value, filter on value with AweompleteUtil.filterStartsWith, AwesompleteUtil.filterContains or AwesompleteUtil.filterWords. To turn off filtering, use AwesompleteUtil.filterOff.
-   * `item`            - Item function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). Default is to highlight all occurrences of the input text. Use AwesompleteUtil.itemStartsWith if that matches with the used filter.
+   * `item`            - Item function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility) with parameters text, input and itemId. Default is to highlight all occurrences of the input text. Use AwesompleteUtil.itemStartsWith or AwesompleteUtil.itemWords if that matches with the used filter.
    * `label`           - Name of the field in the data list (the JSON response) that contains the text that should be shown instead of the value.
    * `list`            - Data list as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility).
    * `listLabel`       - Denotes a label to be used as aria-label on the generated autocomplete list.
@@ -778,7 +786,7 @@ defmodule PhoenixFormAwesomplete do
    * `statusTypeXChar` - Screen reader text to replace the default: 'Type {0} or more characters for results'. The placeholder {0} will be replaced with the minimum number of characters (minChars).
    * `statusXResults`  - Screen reader text to replace the default: '{0} results found'. The placeholder {0} will be replaced with the number of results.
    * `url`             - url for ajax calls.
-   * `urlEnd`          - Addition at the end of the url for the ajax call, after the input value. Or a function, which receives the value and must return the last part of the url after the base url.
+   * `urlEnd`          - Addition at the end of the url for the ajax call, after the input value. Or a function, which receives the value and must return the last part of the url.
    * `value`           - Name of the field in the data list (the JSON response) that contains the value.
 
   ## Example
