@@ -76,7 +76,7 @@ defmodule PhoenixFormAwesomplete.Mixfile do
 
   defp aliases do
     [
-      "assets.build": ["esbuild module", "esbuild main", "esbuild cdn", "esbuild css"]
+      "assets.build": ["esbuild module", "esbuild main", "esbuild cdn --minify", "esbuild css"]
     ]
   end
 end
