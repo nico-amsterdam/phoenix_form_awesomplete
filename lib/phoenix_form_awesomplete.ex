@@ -28,8 +28,10 @@ defmodule PhoenixFormAwesomplete do
 
   The HTML combobox is very suitable for this. The combobox looks like a <select> but it doesn't limit the input. It consists of a <input type="text"> or <input type="search"> element combined with a <datalist> with <option> elements.
   The options cannot contain HTML markup.
+
   When using LiveView the datalist of the HTML combobox can be made dynamic, with different suggestions based on the typed input. Like [this dictionary search demo](https://github.com/chrismccord/phoenix_live_view_example/blob/master/lib/demo_web/live/search_live.ex).
-  If you use options with a text that differs from the value, the combobox will behave [different in different browsers](https://github.com/whatwg/html/issues/9986). 
+  However, when options are used with a text that differs from the value, the combobox will behave [different in different browsers](https://github.com/whatwg/html/issues/9986). 
+
   When the standard combobox doesn't meet the requirements, a solution involving javascript can be used.
   For LiveView there is for example this [Live Select](https://hex.pm/packages/live_select) component, but this component is not compliant with accessibility standards.
 
@@ -42,7 +44,8 @@ defmodule PhoenixFormAwesomplete do
   - It doesn't force the user to pick one of the suggestions; other values can be entered.
   - It can highlight the input field when there is a match (green) or when there isn't (red).
   - The client stops interacting with the backend, and filters on it's own when enough characters have been typed. This is when the suggestion list has become smaller than the search result limit. The client side filter is not affected by network latency, so it responds really quick.
-  - Search requests can be cached by the browser, if the web service sets HTTP Cache headers.
+  - Search requests with their responses can be cached by the browser, if the web service sets HTTP Cache headers.
+  - A service worker can also be used for caching, if the standard ajax function is replaced with a function that uses the fetch api.
   - It can fill dependent readonly fields/tags. The typical example would be a productcode with a product description shown in order lines. For the existing order lines the database can join the product description to be shown on the screen, but for new entries and when changing the productcode it has te be dynamicly looked up. The description can be shown in the suggestion list, and when one suggestion is selected the description can be shown near the combobox.
 
   ## Phoenix function components
@@ -53,87 +56,9 @@ defmodule PhoenixFormAwesomplete do
 
   ### Use both inside and outside LiveView - via hooks
 
-  For security reasons, LiveView doesn't execute the javascript in dynamicly loaded script tags. Adding new javascript after the page is loaded via the HTTP-request is what every malicious Cross Site Scripting (XSS) code tries to do. Via the Content-Security-Policy HTTP-header, it is possible to prevent dynamicly loaded scripts to be executed.
-  In LiveView the javascript code is loaded as a static asset, and
-   [client hooks via the phx-hook](https://hexdocs.pm/phoenix_live_view/js-interop.html#client-hooks-via-phx-hook) can be used to execute javascript code for
-   dynamicly added DOM elements.
-  Instead of generating javascript code for every autocomplete field, a javascript hook
-  is used which gets it's parameters at runtime.
-
   The beauty of the client hooks is that this can be used both inside and outside LiveView as they both use the mounted callback. This makes it possible define a reusable component with autocomplete fields, which can be incorporated inside and outside LiveView.
-
+  
   Example:
-
-  ```elixir
-  <.simple_form
-    for={@form}
-    id="list-form"
-    phx-target={@myself}
-    phx-change="validate"
-    phx-submit="save"
-  >
-    <div phx-update="ignore" id={"#{@form[:country].id}-domspace"}>
-
-      <.input field={@form[:country]} type="text" placeholder="Country" phx-debounce="blur" />
-
-      <.autocomplete    forField={@form[:country]}
-                        url="https://restcountries.com/v2/all"
-                        loadall="true"
-                        prepop="true"
-                        minChars="1"
-                        maxItems="8"
-                        value="name"
-                        />
-
-    </div>
-  </.simple_form>
-  ```
-
-  One disadvantage with the above example in LiveView is that the <.input> function component also renders
-  the validation errors, and these won't get updated because of the phx-update="ignore".
-
-  The phx-update="ignore" is only needed on the HTML input tag, so a more finetuned approach is to add
-  this in the `core_components.ex` at the place where it is required.
-  For example add an input with a new type 'autocomplete' like this:
-
-
-  ```elixir
-  def input(%{type: "autocomplete"} = assigns) do
-    assigns = assign(assigns, span_id: assigns.id <> "-domspace")
-    ~H"""
-    <div>
-      <.label for={@id}><%= @label %></.label>
-      <span phx-update="ignore" id={@span_id}>
-        <input
-          type="text"
-          name={@name}
-          id={@id}
-          value={Phoenix.HTML.Form.normalize_value(@type, @value)}
-          class={[
-            "block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6",
-            @border && "border-zinc-300 focus:border-zinc-400",
-            if(!@border, do: "border-0"),
-            if(@strike_through, do: "line-through")
-          ]}
-          {@rest}
-        />
-      </span>
-      <.error :for={msg <- @errors}><%= msg %></.error>
-    </div>
-    """
-  end
-  ```
-
-  and add the `autocomplete` in the allowed types:
-
-  ```elixir
-  attr :type, :string,
-    default: "text",
-    values: ~w(autocomplete checkbox color date datetime-local email file hidden month number password
-               range radio search select tel text textarea time url week)
-  ```
-
-  and then the HEEx template can be written like this.
 
   ```elixir
   <.simple_form
@@ -146,24 +71,32 @@ defmodule PhoenixFormAwesomplete do
 
     <.input field={@form[:country]} type="autocomplete" placeholder="Country" phx-debounce="blur" />
 
-    <.autocomplete    forField={@form[:country]}
-                      url="https://restcountries.com/v2/all"
-                      loadall="true"
-                      prepop="true"
-                      minChars="1"
-                      maxItems="8"
-                      value="name"
-                      />
+    <.autocomplete forField={@form[:country]}
+                   url="https://restcountries.com/v2/all"
+                   loadall="true"
+                   prepop="true"
+                   minChars="1"
+                   maxItems="8"
+                   value="name"
+                   />
 
   </.simple_form>
   ```
 
+  #### Why are hooks used instead of dynamically generated scripts?
+
+  For security reasons, LiveView doesn't execute the javascript in dynamicly loaded script tags. Adding new javascript after the page is loaded via the HTTP-request is what every malicious Cross Site Scripting (XSS) code tries to do. Via the Content-Security-Policy HTTP-header, it is possible to prevent dynamicly loaded scripts to be executed.
+  In LiveView the javascript code is loaded as a static asset, and
+   [client hooks via the phx-hook](https://hexdocs.pm/phoenix_live_view/js-interop.html#client-hooks-via-phx-hook) can be used to execute javascript code for
+   dynamicly added DOM elements.
+  Instead of generating javascript code for every autocomplete field, a javascript hook
+  is used which gets it's parameters at runtime.
 
   ### Use outside LiveView, a.k.a. "dead" views - via page scripts
 
   The advantage of embedded page scripts is that anonymous functions and
   functions defined on the same page can be used.
-  It also offers a smoother migration path from Awesomplete version 0.1.
+  It also offers a smoother migration path from PhoenixFormAwesomplete version 0.1.
   The EEx templates can be rewritten to use function components.
   The input tag is separated from the script tag of Awesomplete,
   which makes it easier to customize the style of the input field.
@@ -174,20 +107,23 @@ defmodule PhoenixFormAwesomplete do
 
   ```elixir
   <.simple_form :let={f} for={@changeset} action={@action}>
+
     <.input field={f[:country]} type="text" label="Country" />
-    <.autocomplete    forField={f[:country]}
-                      url="https://restcountries.com/v2/all"
-                      loadall="true"
-                      prepop="true"
-                      minChars="1"
-                      maxItems="8"
-                      value="name"
-                      nonce={@script_src_nonce}
-                      />
+
+    <.autocomplete forField={f[:country]}
+                   url="https://restcountries.com/v2/all"
+                   loadall="true"
+                   prepop="true"
+                   minChars="1"
+                   maxItems="8"
+                   value="name"
+                   nonce={@script_src_nonce}
+                   />
+
   </.simple_form>
   ```
 
-  The nonce in the example above, is to allow inline script to be executed
+  The nonce in the example above, is to allow the inline script to be executed
   in combination with a Content-Security-Policy that doesn't
   allow unsafe evals or unsafe inline scripts.
 
@@ -198,7 +134,7 @@ defmodule PhoenixFormAwesomplete do
 
   As mentioned before, use a safe Content-Security-Policy (CSP):
   - do not allow unsafe eval
-  - do not allow unsafe inline script
+  - do not allow unsafe inline scripts
   - In the connect_src whitelist only the url's of trusted sites. Make sure that the url's of Awesomplete cannot be tampered with.
 
   ### Trusted web services
@@ -251,6 +187,8 @@ defmodule PhoenixFormAwesomplete do
     , itemMarkAll:      AU.itemMarkAll   // also mark matching text inside the description
     , itemWords:        AU.itemWords     // mark matching words
 
+    , jsonFlatten:      AU.jsonFlatten   // Utility to flatten deep JSON structures
+
       // add your custom functions and/or lists here
 
     }
@@ -280,11 +218,55 @@ defmodule PhoenixFormAwesomplete do
     defdelegate copy_value_to_id(assigns), to: @awesomplete
     defdelegate copy_value_to_field(assigns), to: @awesomplete
     ```
+
+  - Add a new input type called `autocomplete` in lib/<your_project>_web/components/core_components.ex:
+
+    The `core_components.ex` file may look different for every project, but here we assume there is a
+    function to handle `input` for `type="text"`. Copy this function to handle the new `autocomplete` type
+    like in the example below. Pattern match the new type in the function argument.
+
+    Surrounding the `input` tag there must be a `span` or `div` tag with a unique id, and with the `phx&#x2011;update="ignore"` attribute.
+    LiveView should not do DOM updates on the `input` tag that is manipulated by the Awesomplete widget.
+    The errors below the input field can and should be updated by LiveView.
+  
+    ```elixir
+    def input(%{type: "autocomplete"} = assigns) do
+      assigns = assign(assigns, span_id: assigns.id <> "-domspace")
+      ~H"""
+      <div>
+        <.label for={@id}><%= @label %></.label>
+        <span phx-update="ignore" id={@span_id}>
+          <input
+            type="text"
+            name={@name}
+            id={@id}
+            value={Phoenix.HTML.Form.normalize_value(@type, @value)}
+            class={[
+              "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6"
+            ]}
+            {@rest}
+          />
+        </span>
+        <.error :for={msg <- @errors}><%= msg %></.error>
+      </div>
+      """
+    end
+    ```
+  
+    and add the `autocomplete` in the allowed types:
+  
+    ```elixir
+    attr :type, :string,
+      default: "text",
+      values: ~w(autocomplete checkbox color date datetime-local email file hidden month number password
+                 range radio search select tel text textarea time url week)
+    ```
+  
   - Add in assets/css/app.css
     ```css
     @import "../../deps/phoenix_form_awesomplete/priv/static/awesomplete_bundle.css";
     ```
-    If you want to modify this file, copy it to your assets/css directory and import that css file.
+    To modify this file, copy it to your assets/css directory and import that css file.
   - Run
     ```sh
     mix phx.server
@@ -325,7 +307,7 @@ defmodule PhoenixFormAwesomplete do
     ```elixir
     @import "../../deps/phoenix_form_awesomplete/priv/static/awesomplete_bundle.css";
     ```
-    If you want to modify this file, copy it to your assets/css directory and import that css file.
+    To modify this file, copy it to your assets/css directory and import that css file.
   - Run
     ```sh
     mix phx.server
@@ -342,7 +324,7 @@ defmodule PhoenixFormAwesomplete do
 
   ## FAQ
 
-  ### Is it possible to use Phoenix channels instead of ajax calls?
+  ### Is it possible to use Phoenix channels instead of ajax web service calls?
 
   Yes, the ajax call can be replaced.
 
@@ -380,7 +362,8 @@ defmodule PhoenixFormAwesomplete do
   ```elixir
   <.input field={@form[:country]} type="text" placeholder="Country" phx-target={@myself} phx-debounce="blur" />
 
-  <.autocomplete    forField={@form[:country]}
+  <.autocomplete
+    forField={@form[:country]}
     url="livesocket:update-country-list"
     minChars="1"
     maxItems="5"
@@ -396,7 +379,7 @@ defmodule PhoenixFormAwesomplete do
   end
   ```
 
-  ### On mobile suggestions are shown behind the virtual keyboard. Do you have a solution?
+  ### On mobile devices the suggestions are shown behind the virtual keyboard. Do you have a solution?
 
   With a bit of javascript it is possible to scroll up the input field to the top of the screen when suggestions are shown on small devices.
   ```javascript
@@ -407,7 +390,7 @@ defmodule PhoenixFormAwesomplete do
   Put this in [scroll.js](https://nico-amsterdam.github.io/awesomplete-util/js/scroll.js) and add this
   javascript file in the header of the page.
 
-  Also, set maxItems to a low value when the used on a small device.
+  Also, set maxItems to a low value when it is used on a small device.
 
   ### Is it possible to group suggestions?
 
