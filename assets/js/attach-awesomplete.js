@@ -1,3 +1,7 @@
+/*eslint-env browser*/
+/*global Awesomplete, AwesompleteUtil*/
+/*exported attachAwesomplete*/
+
 const
   UTIL = AwesompleteUtil,
   getCustomFunction = (customCtx, lookupValue, name) => {
@@ -41,7 +45,7 @@ const
     }
   }, // end makeItemFun
 
-  makeFilterFun = (filterFun, filterAtStart, re, labelOrDescrAttr) => {
+  makeFilterFun = (filterFun, filterAtStart, re, labelOrDescrAttr, descrSearch) => {
     // Label/descr without value attr is not allowed.
     // When there is a labelAttr or a descrAttr, a data function
     // which returns value + label will be used. This label might contain HTML, so search in value.
@@ -82,7 +86,7 @@ const
   let resultDataFun = null;
     if (labelAttr || descrAttr) {
       resultDataFun =
-        function(rec, input) {
+        function(rec, _input) {
           return {
             label: (rec[labelAttr || valueAttr] || '').replace('<p>', '<p >')
                  + (descrAttr ? '<p>' + (rec[descrAttr] || '') : ''),
@@ -91,7 +95,7 @@ const
           };
         }
     } else if (valueAttr) {
-      resultDataFun = function(rec, input) { return rec[valueAttr] || ''; }
+      resultDataFun = function(rec, _input) { return rec[valueAttr] || ''; }
     } else { // dataFun is not null, valueAttr is null
       return dataFun;
     }
@@ -180,7 +184,7 @@ const
     }
 
     const madeConvertInputFun = makeConvertInputFun(convertInputFun, multipleChar)
-    , madeFilterFun = makeFilterFun(filterFun, filterAtStart, re, label || descr)
+    , madeFilterFun = makeFilterFun(filterFun, filterAtStart, re, label || descr, isDescrSearch)
     , madeItemFun = makeItemFun(itemFun, filterAtStart, re, isDescrSearch)
 
     if (madeConvertInputFun) opts['convertInput'] = madeConvertInputFun
