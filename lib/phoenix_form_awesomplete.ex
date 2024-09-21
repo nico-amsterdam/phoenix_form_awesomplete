@@ -225,7 +225,7 @@ defmodule PhoenixFormAwesomplete do
     function to handle `input` for `type="text"`. Copy this function to handle the new `autocomplete` type
     like in the example below. Pattern match the new type in the function argument.
 
-    Surrounding the `input` tag there must be a `span` or `div` tag with a unique id, and with the `phx&#x2011;update="ignore"` attribute.
+    Surrounding the `input` tag there must be a `span` or `div` tag with a unique id, and with the `phx‑update="ignore"` attribute.
     LiveView should not do DOM updates on the `input` tag that is manipulated by the Awesomplete widget.
     The errors below the input field can and should be updated by LiveView.
   

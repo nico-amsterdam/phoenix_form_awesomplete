@@ -471,8 +471,8 @@ var AwesompleteUtil = function() {
           return 'string' === typeof text ? text.trim().toLowerCase() : '';
         },
 
-        // item function as defined in Awesomplete.
-        // item(html, input). input is optional and ignored in this implementation
+        // item function as defined in Awesomplete, but without mark tags.
+        // item(html, input, item_id). input is ignored in this implementation
         item: _item,
 
         // Set a new suggestion list. Trigger loadcomplete event.
