@@ -672,7 +672,7 @@ var AwesompleteUtil = function() {
         },
 
         // Do not filter; rely on server responses to filter the results.
-        filterOff: function(data, input) {
+        filterOff: function(_data, _input) {
           return true;
         },
 
