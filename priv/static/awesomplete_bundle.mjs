@@ -750,8 +750,8 @@ var require_awesomplete_util = __commonJS({
         convertInput: function(text) {
           return "string" === typeof text ? text.trim().toLowerCase() : "";
         },
-        // item function as defined in Awesomplete.
-        // item(html, input). input is optional and ignored in this implementation
+        // item function as defined in Awesomplete, but without mark tags.
+        // item(html, input, item_id). input is ignored in this implementation
         item: _item,
         // Set a new suggestion list. Trigger loadcomplete event.
         // load(awesomplete, list, queryValue)
@@ -915,7 +915,7 @@ var require_awesomplete_util = __commonJS({
           return Awesomplete.FILTER_STARTSWITH(data.value, input);
         },
         // Do not filter; rely on server responses to filter the results.
-        filterOff: function(data, input) {
+        filterOff: function(_data, _input) {
           return true;
         },
         // filter on words without caring about word order.
@@ -960,7 +960,7 @@ var getCustomFunction = (customCtx, lookupValue, name) => {
     throw new Error("Unknown " + name + " function " + lookupValue);
   return customCtx[lookupValue];
 };
-var makeReplaceFun = (replaceFun, multipleChar, descrSearch2) => {
+var makeReplaceFun = (replaceFun, multipleChar, descrSearch) => {
   var re = null, separator;
   if (multipleChar) {
     re = new RegExp("^.+[" + multipleChar + "]\\s*|");
@@ -969,7 +969,7 @@ var makeReplaceFun = (replaceFun, multipleChar, descrSearch2) => {
       separator += " ";
   }
   return function(data) {
-    var selectedValue = descrSearch2 ? data.value.substring(0, data.value.lastIndexOf("|")) : data.value, replaceText = re ? this.input.value.match(re)[0] + selectedValue + separator : selectedValue;
+    var selectedValue = descrSearch ? data.value.substring(0, data.value.lastIndexOf("|")) : data.value, replaceText = re ? this.input.value.match(re)[0] + selectedValue + separator : selectedValue;
     if (replaceFun) {
       replaceFun.call(this, replaceText);
     } else {
@@ -977,9 +977,9 @@ var makeReplaceFun = (replaceFun, multipleChar, descrSearch2) => {
     }
   };
 };
-var makeItemFun = (itemFun, filterAtStart, re, descrSearch2) => {
+var makeItemFun = (itemFun, filterAtStart, re, descrSearch) => {
   if (!itemFun) {
-    if (descrSearch2) {
+    if (descrSearch) {
       itemFun = UTIL.itemMarkAll;
     } else if (filterAtStart) {
       itemFun = UTIL.itemStartsWith;
@@ -993,7 +993,7 @@ var makeItemFun = (itemFun, filterAtStart, re, descrSearch2) => {
     return itemFun.call(this, text, inp.match(re)[0], item_id);
   };
 };
-var makeFilterFun = (filterFun, filterAtStart, re, labelOrDescrAttr) => {
+var makeFilterFun = (filterFun, filterAtStart, re, labelOrDescrAttr, descrSearch) => {
   if (!re && !labelOrDescrAttr)
     return filterFun;
   let applyThisFilter = filterFun;
@@ -1020,17 +1020,17 @@ var makeFilterFun = (filterFun, filterAtStart, re, labelOrDescrAttr) => {
     return applyThisFilter.call(this, !labelOrDescrAttr ? dat : dat.value, inputPart);
   };
 };
-var makeDataFun = (dataFun, valueAttr, labelAttr, descrAttr, descrSearch2) => {
+var makeDataFun = (dataFun, valueAttr, labelAttr, descrAttr, descrSearch) => {
   let resultDataFun = null;
   if (labelAttr || descrAttr) {
-    resultDataFun = function(rec, input) {
+    resultDataFun = function(rec, _input) {
       return {
         label: (rec[labelAttr || valueAttr] || "").replace("<p>", "<p >") + (descrAttr ? "<p>" + (rec[descrAttr] || "") : ""),
-        value: (rec[valueAttr] || "") + (descrSearch2 ? "|" + (rec[descrAttr] || "").replace("|", " ") : "")
+        value: (rec[valueAttr] || "") + (descrSearch ? "|" + (rec[descrAttr] || "").replace("|", " ") : "")
       };
     };
   } else if (valueAttr) {
-    resultDataFun = function(rec, input) {
+    resultDataFun = function(rec, _input) {
       return rec[valueAttr] || "";
     };
   } else {
@@ -1056,7 +1056,7 @@ var attachAwesomplete = (node, customCtx, defaultSettings) => {
   customCtx = customCtx || {};
   const b = node.getAttribute.bind(node), a = function(attr) {
     return b(attr) || defaultSettings[attr];
-  }, ajax = a("ajax"), assign = a("assign"), autoFirst = a("autoFirst"), combobox = a("combobox"), container = a("container"), convertInput = a("convertInput"), convertResponse = a("convertResponse"), data = a("data"), debounce = a("debounce"), descr = a("descr"), descrSearch2 = a("descrSearch"), item = a("item"), filter = a("filter"), forField = a("forField"), label = a("label"), limit = a("limit"), list = a("list"), loadall = a("loadall"), listLabel = a("listLabel"), maxItems = a("maxItems"), minChars = a("minChars"), multiple = a("multiple"), prepop = a("prepop"), replace = a("replace"), sort = a("sort"), statusNoResults = a("statusNoResults"), statusTypeXChar = a("statusTypeXChar"), statusXResults = a("statusXResults"), value = a("value"), url = a("url"), urlEnd = a("urlEnd"), convertInputFun = getCustomFunction(customCtx, convertInput, "convertInput"), dataFun = getCustomFunction(customCtx, data, "data"), filterFun = getCustomFunction(customCtx, filter, "filter"), itemFun = getCustomFunction(customCtx, item, "item"), replaceFun = getCustomFunction(customCtx, replace, "replace"), filterAtStart = filterFun === Awesomplete.FILTER_STARTSWITH || filterFun === UTIL.filterStartsWith, isDescrSearch = descrSearch2 === "true" || descrSearch2 === true;
+  }, ajax = a("ajax"), assign = a("assign"), autoFirst = a("autoFirst"), combobox = a("combobox"), container = a("container"), convertInput = a("convertInput"), convertResponse = a("convertResponse"), data = a("data"), debounce = a("debounce"), descr = a("descr"), descrSearch = a("descrSearch"), item = a("item"), filter = a("filter"), forField = a("forField"), label = a("label"), limit = a("limit"), list = a("list"), loadall = a("loadall"), listLabel = a("listLabel"), maxItems = a("maxItems"), minChars = a("minChars"), multiple = a("multiple"), prepop = a("prepop"), replace = a("replace"), sort = a("sort"), statusNoResults = a("statusNoResults"), statusTypeXChar = a("statusTypeXChar"), statusXResults = a("statusXResults"), value = a("value"), url = a("url"), urlEnd = a("urlEnd"), convertInputFun = getCustomFunction(customCtx, convertInput, "convertInput"), dataFun = getCustomFunction(customCtx, data, "data"), filterFun = getCustomFunction(customCtx, filter, "filter"), itemFun = getCustomFunction(customCtx, item, "item"), replaceFun = getCustomFunction(customCtx, replace, "replace"), filterAtStart = filterFun === Awesomplete.FILTER_STARTSWITH || filterFun === UTIL.filterStartsWith, isDescrSearch = descrSearch === "true" || descrSearch === true;
   if (forField === void 0)
     throw new Error("Missing forField attribute.");
   let opts = {}, awesompleteOpts = {}, multipleChar = null, separator = null, re = null;
@@ -1086,7 +1086,7 @@ var attachAwesomplete = (node, customCtx, defaultSettings) => {
     multipleChar = multiple === "true" || multiple === true ? " " : multiple;
     separator = combobox && combobox !== "false" ? "" : "([" + multipleChar + "]\\s*)?", re = new RegExp("[^" + multipleChar + "]*" + separator + "$");
   }
-  const madeConvertInputFun = makeConvertInputFun(convertInputFun, multipleChar), madeFilterFun = makeFilterFun(filterFun, filterAtStart, re, label || descr), madeItemFun = makeItemFun(itemFun, filterAtStart, re, isDescrSearch);
+  const madeConvertInputFun = makeConvertInputFun(convertInputFun, multipleChar), madeFilterFun = makeFilterFun(filterFun, filterAtStart, re, label || descr, isDescrSearch), madeItemFun = makeItemFun(itemFun, filterAtStart, re, isDescrSearch);
   if (madeConvertInputFun)
     opts["convertInput"] = madeConvertInputFun;
   if (madeFilterFun)
