@@ -334,9 +334,9 @@ defmodule PhoenixFormAwesomplete do
     if (url && url.startsWith('livesocket:')) {
         const awe = this
             , phxEvent = url.substr(url.indexOf(':') + 1)
-            , phxData = {'value':val, 'id':awe.input.id}
+            , phxData = {'value':val, 'id':awe.input.id};
         // secretly use this internal function to push events
-        liveSocket.execJSHookPush(awe.input, phxEvent, phxData, () => { console.log('sent ' + val) } );
+        liveSocket.execJSHookPush(awe.input, phxEvent, phxData, () => { console.log('sent ' + val); } );
     }
     else
     {
