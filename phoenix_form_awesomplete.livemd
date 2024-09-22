@@ -158,7 +158,7 @@ if Enum.member?(:ets.all(), :my_lb_cache) == false do
   :ets.new(:my_lb_cache, [:set, :public, :named_table])
 end
 
-:ets.insert_new(:my_lb_cache, {"product_category_list", product_category_list})
+:ets.insert(:my_lb_cache, {"product_category_list", product_category_list})
 
 Kino.start_child!(
   {Bandit, plug: WebProductCategory, port: 6789, http_options: [log_protocol_errors: false]}
@@ -191,7 +191,7 @@ defmodule KinoDocs.Awesomplete do
         <label>
           Product category
           <input name="mytest" type="text" style="width:400px" autocomplete="off"
-                  id="mytest"
+                  id="mytest" class="autocomplete"
                   onfocus="attachAwesomplete(this)" />
         </label>
         <button type="reset">Clear</button>
@@ -211,6 +211,7 @@ defmodule KinoDocs.Awesomplete do
       {
          console.log('Loaded awesomplete styling assets');
       })
+      ctx.importCSS("main.css")
       ctx.root.innerHTML = html
       // Attach Awesomplete event handlers:
       self.attachAwesomplete = (e) => {
@@ -234,6 +235,14 @@ defmodule KinoDocs.Awesomplete do
         }
       }
       """
+  end
+
+  asset "main.css" do
+    """
+    input.autocomplete:focus-visible {
+      outline: unset
+    }
+    """
   end
 end
 
