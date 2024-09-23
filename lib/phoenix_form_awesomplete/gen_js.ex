@@ -58,6 +58,7 @@ defmodule PhoenixFormAwesomplete.GenJS do
   defp add_item(filter_opts, item_fun, starts_with, multiple_char, filter_str, descr_search) do
     cond do
       is_nil(item_fun) and is_nil(multiple_char) and descr_search -> filter_opts ++ [item: "#{@util}.itemMarkAll"]
+      is_nil(item_fun) and is_nil(multiple_char) and starts_with -> filter_opts ++ [item: "#{@util}.itemStartsWith"]
       is_nil(item_fun) and is_nil(multiple_char) -> filter_opts
       is_nil(item_fun) and descr_search ->  filter_opts ++ [item: "function(text, input) { return #{@util}.itemMarkAll(text, #{filter_str}); }"]
       is_nil(item_fun) and starts_with -> filter_opts ++ [item: "function(text, input) { return #{@util}.itemStartsWith(text, #{filter_str}); }"]
@@ -269,7 +270,6 @@ defmodule PhoenixFormAwesomplete.GenJS do
       is_nil(multiple_char) and is_nil(descr_fld) and is_nil(label_fld) and (is_nil(filter_fun) or filter_fun == "Awesomplete.FILTER_CONTAINS") -> []
       is_nil(multiple_char) and (is_nil(filter_fun) or filter_fun == "Awesomplete.FILTER_CONTAINS" or filter_fun == "AwesompleteUtil.filterContains") -> [filter: "#{@util}.filterContains"]
       is_nil(multiple_char) and data_val == "data" -> [filter: filter_fun]
-      is_nil(multiple_char) and starts_with and is_nil(item_fun) -> [filter: starts_with_filter_fun , item: "#{@util}.itemStartsWith"]
       is_nil(multiple_char) and starts_with -> [filter: starts_with_filter_fun]
       is_nil(multiple_char) -> [filter: "function(data, input) { return (#{filter_fun})(data.value, input); }"]
       starts_with and descr_search -> [filter: starts_with_filter_fun]
