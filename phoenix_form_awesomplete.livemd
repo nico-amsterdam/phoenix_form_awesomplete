@@ -190,10 +190,22 @@ defmodule KinoDocs.Awesomplete do
       <form style="margin: 0 20px 780px 20px" onsubmit="return false">
         <label>
           Product category
-          <input name="mytest" type="text" style="width:400px" autocomplete="off"
-                  id="mytest" class="autocomplete"
-                  onfocus="attachWhenFocus(this)" />
+          <input name="mytest" id="mytest" type="text" style="width:400px"
+                 class="autocomplete"
+                 onfocus="attachWhenFocus(this)" />
         </label>
+
+        <span id="mytest-autocomplete" 
+              class="hidden" 
+              forfield="mytest" 
+              url="http://localhost:6789/?search-fields=name,description&contains=" 
+              maxitems="10"
+              minchars="1" 
+              value="name" 
+              descr="description"
+              descrSearch="true"
+              ></span>
+
         <button type="reset">Clear</button>
       </form>
       """
@@ -210,28 +222,46 @@ defmodule KinoDocs.Awesomplete do
       })
       ctx.importCSS("main.css")
       ctx.root.innerHTML = html
-      // Attach Awesomplete event handlers:
+
+      const AU = AwesompleteUtil,
+            customAwesompleteContext = 
+      {
+
+        // These functions and objects can be referenced by name in mytest-autocomplete 
+        // This list can be customized.
+
+          filterContains:   AU.filterContains
+        , filterStartsWith: AU.filterStartsWith
+        , filterWords:      AU.filterWords
+        , filterOff:        AU.filterOff
+
+        , item:             AU.item          // does NOT mark matching text
+        // , itemContains:     AU.itemContains  // this is the default, no need to specify it.
+        , itemStartsWith:   AU.itemStartsWith
+        , itemMarkAll:      AU.itemMarkAll   // also mark matching text inside the description
+        , itemWords:        AU.itemWords     // mark matching words
+
+        , jsonFlatten:      AU.jsonFlatten   // convertResponse utility to flatten JSON
+
+        // add your custom functions and/or lists here
+
+      }
+      
       self.attachWhenFocus = (e) => {
         if (!e.classList.contains('touched')) {
           e.classList.add('touched')
-    """ <>
-      PhoenixFormAwesomplete.awesomplete_js(
-        %{id: "mytest"},
-        %{
-          url: "http://localhost:6789/?search-fields=name,description&contains=",
-          minChars: 1,
-          maxItems: 10,
-          value: "name",
-          descr: "description",
-          descrSearch: true
+
+          // search element with the autocomplete settings 
+          let hookElem = document.getElementById('mytest-autocomplete')
+
+          let awe = attachAwesomplete(hookElem
+                                    , customAwesompleteContext
+                                    , {} /* defaultSettings */ );
         }
-      ) <>
-      """
-          }
-          e.focus()
-        }
+        e.focus()
       }
-      """
+    }
+    """
   end
 
   asset "main.css" do
