@@ -177,7 +177,7 @@ Req.get!("http://localhost:6789/?search-fields=name,description&starts-with=smal
 
 The code below will run the autocomplete functionality.
 
-Try the different options in the PhoenixFormAwesomplete.awesomplete_js call and reevaluate to see the effect.
+Try the different options in the mytest-autocomplete span tag, and reevaluate to see the effect.
 
 ```elixir
 defmodule KinoDocs.Awesomplete do
@@ -252,9 +252,9 @@ defmodule KinoDocs.Awesomplete do
           e.classList.add('touched')
 
           // search element with the autocomplete settings 
-          let hookElem = document.getElementById('mytest-autocomplete')
+          const hookElem = document.getElementById('mytest-autocomplete')
 
-          let awe = attachAwesomplete(hookElem
+          const awe = attachAwesomplete(hookElem
                                     , customAwesompleteContext
                                     , {} /* defaultSettings */ );
         }
@@ -276,11 +276,9 @@ end
 KinoDocs.Awesomplete.new()
 ```
 
-## Parameter list
+## Attribute list
 
-The first parameter of PhoenixFormAwesomplete.awesomplete_js call must be a map containing the id of the input field.
-
-The second parameter is a keyword list or a map with these options:
+Options for the mytest-autocomplete span tag:
 
 * `ajax`            - Replace ajax function. Supplied function receives these parameters: (url, urlEnd, val, fn, xhr). fn is the callback function. Default: AwesompleteUtil.ajax.
 * `assign`          - Assign the Awesomplete object to a variable. true/false/name. If true the variable name will be 'awe\_' + id of input tag. Default: false
