@@ -192,7 +192,7 @@ defmodule KinoDocs.Awesomplete do
           Product category
           <input name="mytest" type="text" style="width:400px" autocomplete="off"
                   id="mytest" class="autocomplete"
-                  onfocus="attachAwesomplete(this)" />
+                  onfocus="attachWhenFocus(this)" />
         </label>
         <button type="reset">Clear</button>
       </form>
@@ -202,19 +202,16 @@ defmodule KinoDocs.Awesomplete do
 
   asset "main.js" do
     """
+    import { Awesomplete, AwesompleteUtil, attachAwesomplete, copyValueToId } from 'https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete_bundle.min.mjs'
     export function init(ctx, html) {
-      ctx.importJS("https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete_bundle.js").then(() => 
-      {
-         console.log('Loaded awesomplete javascript assets');
-      })
       ctx.importCSS("https://nico-amsterdam.github.io/awesomplete-util/css/awesomplete_bundle.css").then(() => 
       {
-         console.log('Loaded awesomplete styling assets');
+         console.log('Loaded awesomplete styling assets')
       })
       ctx.importCSS("main.css")
       ctx.root.innerHTML = html
       // Attach Awesomplete event handlers:
-      self.attachAwesomplete = (e) => {
+      self.attachWhenFocus = (e) => {
         if (!e.classList.contains('touched')) {
           e.classList.add('touched')
     """ <>
