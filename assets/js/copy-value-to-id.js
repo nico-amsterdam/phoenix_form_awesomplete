@@ -1,4 +1,6 @@
-copyValueToId = (node) => {
+/*global AwesompleteUtil*/
+
+const copyValueToId = (node) => {
     const a = node.getAttribute.bind(node)
     , dataField = a('dataField')
     , field = a('field')

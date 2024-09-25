@@ -1155,7 +1155,7 @@ var attachAwesomplete = (node, customCtx, defaultSettings) => {
 var attach_awesomplete_default = attachAwesomplete;
 
 // js/copy-value-to-id.js
-copyValueToId = (node) => {
+var copyValueToId = (node) => {
   const a = node.getAttribute.bind(node), dataField = a("dataField"), field = a("field"), targetField = a("targetField"), target = a("target");
   if (field == null)
     throw new Error("Missing field attribute.");
