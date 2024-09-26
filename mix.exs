@@ -69,7 +69,8 @@ defmodule PhoenixFormAwesomplete.Mixfile do
      maintainers: ["Nico Hoogervorst"],
      licenses: ["MIT"],
      links: %{"GitHub" => @source_url,
-              "Documentation with live examples" => "https://nico-amsterdam.github.io/awesomplete-util/phoenix.html" },
+              "Documentation with live examples" => "https://nico-amsterdam.github.io/awesomplete-util/phoenix.html",
+              "Livebook playground" => "https://livebook.dev/run?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnico-amsterdam%2Fphoenix_form_awesomplete%2Fmaster%2Fphoenix_form_awesomplete.livemd" },
      files: ~w(assets lib priv LICENSE mix.exs package.json README.md)
     ]
   end

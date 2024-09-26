@@ -17,9 +17,14 @@ It comes with an AwesompleteUtil [javascript library](https://nico-amsterdam.git
 
 ## Examples
 
-[live examples](https://nico-amsterdam.github.io/awesomplete-util/phoenix.html) with code.
+Explore and try these
 
-[![Run in Livebook](https://livebook.dev/badge/v1/blue.svg)](https://livebook.dev/run?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnico-amsterdam%2Fphoenix_form_awesomplete%2Fmaster%2Fphoenix_form_awesomplete.livemd)
+[![examples](https://nico-amsterdam.github.io/awesomplete-util/svg/examples.svg)](https://nico-amsterdam.github.io/awesomplete-util/phoenix.html).
+
+
+Fiddle with the code yourself: 
+
+[![Run in Livebook](https://livebook.dev/badge/v1/black.svg)](https://livebook.dev/run?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnico-amsterdam%2Fphoenix_form_awesomplete%2Fmaster%2Fphoenix_form_awesomplete.livemd).
 
 ## Installation
 
