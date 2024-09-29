@@ -22,8 +22,8 @@ var _ = function (input, o) {
 	this.input.setAttribute("autocomplete", "off");
 	this.input.setAttribute("aria-autocomplete", "list");
 	this.input.setAttribute("aria-expanded", "false");
-	this.input.setAttribute("aria-controls", "awesomplete_list_" + this.count); // Since ARIA 1.1 use this instead of aria-owns.
-	// this.input.setAttribute("aria-owns", "awesomplete_list_" + this.count);  // removed, see https://www.w3.org/WAI/ARIA/apg/patterns/combobox/
+	this.input.setAttribute("aria-controls", "awesomplete_list_" + this.count); // Since ARIA 1.2 use aria-controls instead of aria-owns.
+	// this.input.setAttribute("aria-owns", "awesomplete_list_" + this.count);  // removed, see https://github.com/w3c/aria/wiki/Resolving-ARIA-1.1-Combobox-Issues#aria-10-combobox-problem
 	this.input.setAttribute("role", "combobox");
 
 	// store constructor options in case we need to distinguish
@@ -233,7 +233,7 @@ _.prototype = {
 		this.input.removeAttribute("aria-autocomplete");
 		this.input.removeAttribute("aria-expanded");
 		this.input.removeAttribute("aria-controls");
-		// this.input.removeAttribute("aria-owns"); // Since ARIA 1.1, use aria-controls
+		// this.input.removeAttribute("aria-owns"); // Since ARIA 1.2, use aria-controls
 		this.input.removeAttribute("role");
 
 		//remove this awesomeplete instance from the global array of instances
