@@ -45,10 +45,11 @@ A rest service is setup in this Livebook, to have something meaningful to test w
 For the data, a csv file with product categories is used. This file is parsed and converted to a list. There are three columns in the csv: name, code and description.
 
 ```elixir
+# productcat.csv does not contain column headers
 product_category_list =
   Kino.FS.file_path("productcat.csv")
   |> File.stream!()
-  |> NimbleCSV.RFC4180.parse_stream()
+  |> NimbleCSV.RFC4180.parse_stream(skip_headers: false)
   |> Stream.map(fn [name, code, descr] ->
     %{name: name, code: code, description: descr}
   end)
