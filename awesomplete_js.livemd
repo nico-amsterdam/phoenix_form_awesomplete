@@ -64,7 +64,7 @@ df =
   |> Explorer.DataFrame.from_csv!(header: false)
 ```
 
-In the code below a rest service on localhost:6789 is started with Bandit.
+In the code below a rest service on localhost:9876 is started with Bandit.
 The rest service can be called with these query parameters:
 
 * without parameters all product categories are returned
@@ -162,7 +162,7 @@ end
 :ets.insert(:my_lb_cache, {"product_category_list", product_category_list})
 
 Kino.start_child!(
-  {Bandit, plug: WebProductCategory, port: 6789, http_options: [log_protocol_errors: false]}
+  {Bandit, plug: WebProductCategory, port: 9876, http_options: [log_protocol_errors: false]}
 )
 ```
 
@@ -171,7 +171,7 @@ Sent a HTTP GET request to check if the service runs properly
 ```elixir
 # Test if rest service is running
 # Search in name and description fields for the starting text 'small'
-Req.get!("http://localhost:6789/?search-fields=name,description&starts-with=small").body
+Req.get!("http://localhost:9876/?search-fields=name,description&starts-with=small").body
 ```
 
 ## Playground
@@ -219,7 +219,7 @@ defmodule KinoDocs.Awesomplete do
       PhoenixFormAwesomplete.awesomplete_js(
         %{id: "mytest"},
         %{
-          url: "http://localhost:6789/?search-fields=name,description&contains=",
+          url: "http://localhost:9876/?search-fields=name,description&contains=",
           minChars: 1,
           maxItems: 10,
           value: "name",
