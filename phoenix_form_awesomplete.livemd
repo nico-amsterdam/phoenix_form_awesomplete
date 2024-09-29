@@ -282,7 +282,7 @@ KinoDocs.Awesomplete.new()
 Options for the mytest-autocomplete span tag:
 
 * `ajax`            - Replace ajax function. Supplied function receives these parameters: (url, urlEnd, val, fn, xhr). fn is the callback function. Default: AwesompleteUtil.ajax.
-* `assign`          - Assign the Awesomplete object to a variable. true/false/name. If true the variable name will be 'awe\_' + id of input tag. Default: false
+* `assign`          - Put the Awesomplete object in the customAwesompleteContext. true/false/name. If true the key will be 'awe\_' + id of the input tag. Default: false
 * `autoFirst`       - true/false. Automatically select the first element. Default: false.
 * `combobox`        - Id of the combobox button. true/false/id. If true the assumed button id is 'awe\_btn\_' + id of the input tag. Default: false
 * `container`       - Container function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). By default a div element is added as the parent of the input element.
@@ -302,7 +302,6 @@ Options for the mytest-autocomplete span tag:
 * `maxItems`        - Maximum number of suggestions to display. Default: 10
 * `minChars`        - Minimum characters the user has to type before the autocomplete popup shows up. Default: 2
 * `multiple`        - true/false/characters. Separators to allow multiple values. If true, the separator will be the space character. Default: false
-* `nonce`           - Content-Security-Policy nonce attribute for the script tag. Default: no nonce. If specified it must contain a non-empty value.
 * `prepop`          - true/false. If true do lookup initial/autofilled value and send awesomplete-prepop event. Default: false
 * `replace`         - Replace function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). The replace function will be called for suggestions, to determine whether the input text matches a suggestion after replacement.
 * `sort`            - Sort function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
