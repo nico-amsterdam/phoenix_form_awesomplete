@@ -1,0 +1,286 @@
+<!-- livebook:{"file_entries":[{"name":"productcat.csv","type":"url","url":"https://nico-amsterdam.github.io/awesomplete-util/csv/productcat.csv"}]} -->
+
+# Awesomplete playground for embedded scripts
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.14"},
+  {:bandit, "~> 1.5"},
+  {:req, "~> 0.5"},
+  {:plug, "~> 1.16"},
+  {:phoenix_html, "~> 4.0"},
+  {:phoenix_form_awesomplete, "~> 1.0.0"},
+  {:kino_explorer, "~> 0.1.11"},
+  {:nimble_csv, "~> 1.2"},
+  {:poison, "~> 6.0"}
+])
+```
+
+## Introduction
+
+This Livebook is meant to test out Awesomplete (PhoenixFormAwesomplete).
+
+## About Awesomplete
+
+PhoenixFormAwesomplete is a [Phoenix form helper](https://hexdocs.pm/phoenix_html/Phoenix.HTML.Form.html) 
+that utilizes Lea Verou's autocomplete / autosuggest / typeahead / 
+inputsearch [Awesomplete widget](https://leaverou.github.io/awesomplete/index.html).
+
+It comes with an AwesompleteUtil [javascript library](https://nico-amsterdam.github.io/awesomplete-util/index.html) 
+which adds the following features:
+
+* Dynamic remote data loading; based on what is typed-in it performs an ajax lookup.
+* Allow HTML markup in the shown items. Show value with description. Optionally search in the description text.
+* Show when there is an exact match.
+* Show when there isn't a match.
+* When there is an exact match show related data (supplied in the remote data) in other parts of the page.
+* Select the highlighted item with the tab-key.
+
+[Online demo](https://nico-amsterdam.github.io/awesomplete-util/phoenix.html)
+
+## Playground setup
+
+A rest service is setup in this Livebook, to have something meaningful to test with.
+
+For the data, a csv file with product categories is used. This file is parsed and converted to a list. There are three columns in the csv: name, code and description.
+
+```elixir
+# productcat.csv does not contain column headers
+product_category_list =
+  Kino.FS.file_path("productcat.csv")
+  |> File.stream!()
+  |> NimbleCSV.RFC4180.parse_stream(skip_headers: false)
+  |> Stream.map(fn [name, code, descr] ->
+    %{name: name, code: code, description: descr}
+  end)
+  |> Enum.to_list()
+```
+
+The content of the csv file can be examined below
+
+```elixir
+df =
+  Kino.FS.file_path("productcat.csv")
+  |> Explorer.DataFrame.from_csv!(header: false)
+```
+
+In the code below a rest service on localhost:6789 is started with Bandit.
+The rest service can be called with these query parameters:
+
+* without parameters all product categories are returned
+* with the code parameter it searches a product category by code
+* with the name parameter it searches a product category by name
+* When starts-with or contain is used, the search-fields parameter specifies in which field to search. By default is searches in the name field.
+  * with the starts-with parameter it searches the search-fields beginnen with the given text
+  * with the contains parameter it searches the search-fields containing the text
+
+```elixir
+defmodule WebProductCategory do
+  use Plug.Builder
+
+  plug(:fetch_query_params)
+  plug(:render)
+
+  defp get_product_category_list() do
+    # get it from the ets cache
+    key = "product_category_list"
+    [{^key, value}] = :ets.lookup(:my_lb_cache, key)
+    value
+  end
+
+  defp safe_downcase(text) do
+    if is_nil(text), do: nil, else: String.downcase(text)
+  end
+
+  defp filter_product_category(params) do
+    name = safe_downcase(params["name"])
+    code = safe_downcase(params["code"])
+    starts_with = safe_downcase(params["starts-with"])
+    contains = safe_downcase(params["contains"])
+
+    if is_nil(name) and is_nil(code) and is_nil(starts_with) and is_nil(contains) do
+      throw("Missing parameter name,starts-with or contains.")
+    end
+
+    search_fields_str = safe_downcase(params["search-fields"]) || "name"
+    search_fields = String.split(search_fields_str, ",")
+    search_name   = Enum.member?(search_fields, "name")
+    search_descr  = Enum.member?(search_fields, "description")
+    search_code   = Enum.member?(search_fields, "code")
+    product_category_list = get_product_category_list()
+
+    filter =
+      fn rec ->
+        (is_nil(name) or
+           String.downcase(rec.name) == name) and
+          (is_nil(code) or
+             String.downcase(rec.code) == code) and
+          (is_nil(starts_with) or
+             (search_name and String.starts_with?(String.downcase(rec.name), starts_with)) or
+             (search_code and String.starts_with?(String.downcase(rec.code), starts_with)) or
+             (search_descr and String.starts_with?(String.downcase(rec.description), starts_with))) and
+          (is_nil(contains) or
+             (search_name and String.contains?(String.downcase(rec.name), contains)) or
+             (search_code and String.contains?(String.downcase(rec.code), contains)) or
+             (search_descr and String.contains?(String.downcase(rec.description), contains)))
+      end
+
+    Enum.filter(product_category_list, filter)
+  end
+
+  def render(conn, _opts) do
+    conn =
+      put_resp_content_type(conn, "application/json")
+      |> put_resp_header("Access-Control-Allow-Origin", "*")
+
+    try do
+      params = conn.params
+
+      product_category_list =
+        if Enum.empty?(params) do
+          get_product_category_list()
+          |> Enum.to_list()
+        else
+          filter_product_category(params)
+        end
+
+      Plug.Conn.send_resp(conn, 200, Poison.encode!(%{productcat: product_category_list}))
+    catch
+      thrownValue ->
+        Plug.Conn.send_resp(conn, 403, Poison.encode!(%{error: thrownValue}))
+    end
+  end
+end
+
+# end WebProductCategory
+
+# create ets table
+if Enum.member?(:ets.all(), :my_lb_cache) == false do
+  :ets.new(:my_lb_cache, [:set, :public, :named_table])
+end
+
+:ets.insert(:my_lb_cache, {"product_category_list", product_category_list})
+
+Kino.start_child!(
+  {Bandit, plug: WebProductCategory, port: 6789, http_options: [log_protocol_errors: false]}
+)
+```
+
+Sent a HTTP GET request to check if the service runs properly
+
+```elixir
+# Test if rest service is running
+# Search in name and description fields for the starting text 'small'
+Req.get!("http://localhost:6789/?search-fields=name,description&starts-with=small").body
+```
+
+## Playground
+
+The code below will run the autocomplete functionality.
+
+Try the different options in the PhoenixFormAwesomplete.awesomplete_js call and reevaluate to see the effect.
+
+```elixir
+defmodule KinoDocs.Awesomplete do
+  use Kino.JS
+
+  def new() do
+    Kino.JS.new(
+      __MODULE__,
+      """
+      <form style="margin: 0 20px 780px 20px" onsubmit="return false">
+        <label>
+          Product category
+          <input name="mytest" type="text" style="width:400px" autocomplete="off"
+                  id="mytest" class="autocomplete"
+                  onfocus="attachWhenFocus(this)" />
+        </label>
+        <button type="reset">Clear</button>
+      </form>
+      """
+    )
+  end
+
+  asset "main.js" do
+    """
+    import { Awesomplete, AwesompleteUtil, attachAwesomplete, copyValueToId } from 'https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete_bundle.min.mjs'
+    export function init(ctx, html) {
+      ctx.importCSS("https://nico-amsterdam.github.io/awesomplete-util/css/awesomplete_bundle.css").then(() => 
+      {
+         console.log('Loaded awesomplete styling assets')
+      })
+      ctx.importCSS("main.css")
+      ctx.root.innerHTML = html
+      // Attach Awesomplete event handlers:
+      self.attachWhenFocus = (e) => {
+        if (!e.classList.contains('touched')) {
+          e.classList.add('touched')
+    """ <>
+      PhoenixFormAwesomplete.awesomplete_js(
+        %{id: "mytest"},
+        %{
+          url: "http://localhost:6789/?search-fields=name,description&contains=",
+          minChars: 1,
+          maxItems: 10,
+          value: "name",
+          descr: "description",
+          descrSearch: true
+        }
+      ) <>
+      """
+          }
+          e.focus()
+        }
+      }
+      """
+  end
+
+  asset "main.css" do
+    """
+    input.autocomplete:focus-visible {
+      outline: unset
+    }
+    """
+  end
+end
+
+KinoDocs.Awesomplete.new()
+```
+
+## Parameter list
+
+The first parameter of PhoenixFormAwesomplete.awesomplete_js call must be a map containing the id of the input field.
+
+The second parameter is a keyword list or a map with these options:
+
+* `ajax`            - Replace ajax function. Supplied function receives these parameters: (url, urlEnd, val, fn, xhr). fn is the callback function. Default: AwesompleteUtil.ajax.
+* `assign`          - Assign the Awesomplete object to a variable. true/false/name. If true the variable name will be 'awe\_' + id of the input tag. Default: false
+* `autoFirst`       - true/false. Automatically select the first element. Default: false.
+* `combobox`        - Id of the combobox button. true/false/id. If true the assumed button id is 'awe\_btn\_' + id of the input tag. Default: false
+* `container`       - Container function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). By default a div element is added as the parent of the input element.
+* `convertInput`    - Convert input function which receives the input text as parameter. This function is used normalize the input text. Internally convert the input text for search calls and for comparison with the suggestions. By default it trims the input and converts it to lowercase for a case-insensitive comparison. It is applied to both the input text and the suggestion text before comparing. In advanced cases like the multiple values, the convertInput is used to extract the search text.
+* `convertResponse` - Convert JSON response from ajax calls. This function is called with the parsed JSON, and allows conversion of the data before further processing. Default: nil - no conversion.
+* `data`            - Data function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
+* `debounce`        - Time in milliseconds to wait for additional user input before doing the ajax call to retrieve suggestions. It limits the rate at which the json service is called per user session.
+* `descr`           - Name of the field in the data list (the JSON response) that contains the description text to show below the value in the suggestion list. Default: no description
+* `descrSearch`     - true/false. Filter must also search the input value in the description field. Default: false
+* `filter`          - Filter function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). Mostly use Awesomplete.FILTER\_STARTSWITH or Awesomplete.FILTER\_CONTAINS. If label is different as value, filter on value with AweompleteUtil.filterStartsWith, AwesompleteUtil.filterContains or AwesompleteUtil.filterWords. To turn off filtering, use AwesompleteUtil.filterOff.
+* `item`            - Item function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility) with parameters text, input and itemId. Default is to highlight all occurrences of the input text. Use AwesompleteUtil.itemStartsWith or AwesompleteUtil.itemWords if that matches with the used filter.
+* `label`           - Name of the field in the data list (the JSON response) that contains the text that should be shown instead of the value.
+* `list`            - Data list as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility).
+* `listLabel`       - Denotes a label to be used as aria-label on the generated autocomplete list.
+* `loadall`         - true/false. Use true if the data list contains all items, and the input value should not be used in ajax calls. Default: false
+* `limit`           - number. If a limit is specified, and the number of items returned by the server is equal or more as this limit, the AwesompleteUtil code assumes that there are more results, so it will re-query if more characters are typed to get more refined results. The limit:1 tells that not more than 1 result is expected, so the json service doesn’t have to return an array. With limit:0 it will always re-query if more characters are typed and the result doesn't have to be an array either. Limit:-1 will always requery and the expected result is an array. When no limit is specified, the code assumes that all possible suggestions are returned based on the typed characters, and it will not re-query if more characters are typed. It uses the specified filter for the suggestions in the dropdown. Default: no limit
+* `maxItems`        - Maximum number of suggestions to display. Default: 10
+* `minChars`        - Minimum characters the user has to type before the autocomplete popup shows up. Default: 2
+* `multiple`        - true/false/characters. Separators to allow multiple values. If true, the separator will be the space character. Default: false
+* `nonce`           - Content-Security-Policy nonce attribute for the script tag. Default: no nonce. If specified it must contain a non-empty value.
+* `prepop`          - true/false. If true do lookup initial/autofilled value and send awesomplete-prepop event. Default: false
+* `replace`         - Replace function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility). The replace function will be called for suggestions, to determine whether the input text matches a suggestion after replacement.
+* `sort`            - Sort function as defined in [Awesomplete](http://leaverou.github.io/awesomplete/index.html#extensibility)
+* `statusNoResults` - Screen reader text to replace the default: 'No results found'
+* `statusTypeXChar` - Screen reader text to replace the default: 'Type {0} or more characters for results'. The placeholder {0} will be replaced with the minimum number of characters (minChars).
+* `statusXResults`  - Screen reader text to replace the default: '{0} results found'. The placeholder {0} will be replaced with the number of results.
+* `url`             - url for ajax calls.
+* `urlEnd`          - Addition at the end of the url for the ajax call, after the input value. Or a function, which receives the value and must return the last part of the url.
+* `value`           - Name of the field in the data list (the JSON response) that contains the value.
