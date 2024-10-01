@@ -130,9 +130,8 @@ defmodule KinoDocs.Awesomplete do
 
     filter =
       fn rec ->
-        String.contains?(String.downcase(rec.name), search) 
-        or
-        String.contains?(String.downcase(rec.description), search)
+        String.contains?(String.downcase(rec.name), search) or
+          String.contains?(String.downcase(rec.description), search)
       end
 
     Enum.filter(product_category_list, filter)
@@ -142,26 +141,26 @@ defmodule KinoDocs.Awesomplete do
   def init(html, ctx) do
     {:ok, assign(ctx, html: html)}
   end
-  
+
   @impl true
   def handle_connect(ctx) do
-     {:ok, ctx.assigns.html, ctx}
+    {:ok, ctx.assigns.html, ctx}
   end
-  
+
   @impl true
   def handle_event("update-prodcat-list", phx_data, ctx) do
     query_map = Poison.decode!(phx_data)
     value = query_map["value"]
     id = query_map["id"]
     list = filter_product_category(value)
-    broadcast_event(ctx, "update-list-#{id}", Poison.encode!(%{query: value, list: list}))
+    broadcast_event(ctx, "update-list-#{id}", %{query: value, list: list})
     {:noreply, ctx}
   end
 
   asset "main.js" do
     """
     import { Awesomplete, AwesompleteUtil, attachAwesomplete, copyValueToId } from 'https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete_bundle.min.mjs'
- 
+
     export function init(ctx, html) {
       ctx.importCSS("https://nico-amsterdam.github.io/awesomplete-util/css/awesomplete_bundle.css").then(() => 
       {
@@ -208,7 +207,7 @@ defmodule KinoDocs.Awesomplete do
         // add your custom functions and/or lists here
 
         , ajax2live:        ajax2live
-    
+
       }
       
       self.attachWhenFocus = (e) => {
@@ -222,10 +221,9 @@ defmodule KinoDocs.Awesomplete do
                                     , customAwesompleteContext
                                     , {} /* defaultSettings */ )
 
-          ctx.handleEvent("update-list-" + awe.input.id, (result) => {
-             const parsedResult = JSON.parse(result)
-             console.log('response for "' + parsedResult.query + '" has ' + parsedResult.list.length + ' items')
-             AwesompleteUtil.updateList(awe, parsedResult.list, parsedResult.query)
+          ctx.handleEvent("update-list-" + awe.input.id, ({list, query}) => {
+             console.log('response for "' + query + '" has ' + list.length + ' items')
+             AwesompleteUtil.updateList(awe, list, query)
           })
 
         }
