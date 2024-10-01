@@ -1,12 +1,10 @@
 <!-- livebook:{"file_entries":[{"name":"productcat.csv","type":"url","url":"https://nico-amsterdam.github.io/awesomplete-util/csv/productcat.csv"}]} -->
 
-# Awesomplete playground
+# Awesomplete via channel playground
 
 ```elixir
 Mix.install([
   {:kino, "~> 0.14"},
-  {:bandit, "~> 1.5"},
-  {:req, "~> 0.5"},
   {:plug, "~> 1.16"},
   {:phoenix_html, "~> 4.0"},
   {:phoenix_form_awesomplete, "~> 1.0.0"},
@@ -19,6 +17,8 @@ Mix.install([
 ## Introduction
 
 This Livebook is meant to test out Awesomplete (PhoenixFormAwesomplete).
+
+In this livebook the ajax requests are replaced with events via the Phoenix channel (= live socket).
 
 ## About Awesomplete
 
@@ -39,8 +39,6 @@ which adds the following features:
 [Online demo](https://nico-amsterdam.github.io/awesomplete-util/phoenix.html)
 
 ## Playground setup
-
-A rest service is setup in this Livebook, to have something meaningful to test with.
 
 For the data, a csv file with product categories is used. This file is parsed and converted to a list. There are three columns in the csv: name, code and description.
 
@@ -64,114 +62,15 @@ df =
   |> Explorer.DataFrame.from_csv!(header: false)
 ```
 
-In the code below a rest service on localhost:6789 is started with Bandit.
-The rest service can be called with these query parameters:
-
-* without parameters all product categories are returned
-* with the code parameter it searches a product category by code
-* with the name parameter it searches a product category by name
-* When starts-with or contain is used, the search-fields parameter specifies in which field to search. By default is searches in the name field.
-  * with the starts-with parameter it searches the search-fields beginnen with the given text
-  * with the contains parameter it searches the search-fields containing the text
+Cache the product category list in ets.
 
 ```elixir
-defmodule WebProductCategory do
-  use Plug.Builder
-
-  plug(:fetch_query_params)
-  plug(:render)
-
-  defp get_product_category_list() do
-    # get it from the ets cache
-    key = "product_category_list"
-    [{^key, value}] = :ets.lookup(:my_lb_cache, key)
-    value
-  end
-
-  defp safe_downcase(text) do
-    if is_nil(text), do: nil, else: String.downcase(text)
-  end
-
-  defp filter_product_category(params) do
-    name = safe_downcase(params["name"])
-    code = safe_downcase(params["code"])
-    starts_with = safe_downcase(params["starts-with"])
-    contains = safe_downcase(params["contains"])
-
-    if is_nil(name) and is_nil(code) and is_nil(starts_with) and is_nil(contains) do
-      throw("Missing parameter name,starts-with or contains.")
-    end
-
-    search_fields_str = safe_downcase(params["search-fields"]) || "name"
-    search_fields = String.split(search_fields_str, ",")
-    search_name   = Enum.member?(search_fields, "name")
-    search_descr  = Enum.member?(search_fields, "description")
-    search_code   = Enum.member?(search_fields, "code")
-    product_category_list = get_product_category_list()
-
-    filter =
-      fn rec ->
-        (is_nil(name) or
-           String.downcase(rec.name) == name) and
-          (is_nil(code) or
-             String.downcase(rec.code) == code) and
-          (is_nil(starts_with) or
-             (search_name and String.starts_with?(String.downcase(rec.name), starts_with)) or
-             (search_code and String.starts_with?(String.downcase(rec.code), starts_with)) or
-             (search_descr and String.starts_with?(String.downcase(rec.description), starts_with))) and
-          (is_nil(contains) or
-             (search_name and String.contains?(String.downcase(rec.name), contains)) or
-             (search_code and String.contains?(String.downcase(rec.code), contains)) or
-             (search_descr and String.contains?(String.downcase(rec.description), contains)))
-      end
-
-    Enum.filter(product_category_list, filter)
-  end
-
-  def render(conn, _opts) do
-    conn =
-      put_resp_content_type(conn, "application/json")
-      |> put_resp_header("Access-Control-Allow-Origin", "*")
-
-    try do
-      params = conn.params
-
-      product_category_list =
-        if Enum.empty?(params) do
-          get_product_category_list()
-          |> Enum.to_list()
-        else
-          filter_product_category(params)
-        end
-
-      Plug.Conn.send_resp(conn, 200, Poison.encode!(%{productcat: product_category_list}))
-    catch
-      thrownValue ->
-        Plug.Conn.send_resp(conn, 403, Poison.encode!(%{error: thrownValue}))
-    end
-  end
-end
-
-# end WebProductCategory
-
 # create ets table
 if Enum.member?(:ets.all(), :my_lb_cache) == false do
   :ets.new(:my_lb_cache, [:set, :public, :named_table])
 end
 
 :ets.insert(:my_lb_cache, {"product_category_list", product_category_list})
-
-Kino.start_child!(
-  {Bandit, plug: WebProductCategory, port: 6789, http_options: [log_protocol_errors: false]}
-)
-```
-
-Sent a HTTP GET request to check if the service runs properly
-
-```elixir
-# Test if rest service is running
-# Search in name and description fields for the starting text 'small'
-Req.get!("http://localhost:6789/?search-fields=name,description&starts-with=small").body
 ```
 
 ## Playground
@@ -183,9 +82,10 @@ Try the different options in the mytest-autocomplete span tag, and reevaluate to
 ```elixir
 defmodule KinoDocs.Awesomplete do
   use Kino.JS
+  use Kino.JS.Live
 
   def new() do
-    Kino.JS.new(
+    Kino.JS.Live.new(
       __MODULE__,
       """
       <form style="margin: 0 20px 780px 20px" onsubmit="return false">
@@ -199,7 +99,8 @@ defmodule KinoDocs.Awesomplete do
         <span id="mytest-autocomplete" 
               class="hidden" 
               forfield="mytest" 
-              url="http://localhost:6789/?search-fields=name,description&contains=" 
+              url="livesocket:update-prodcat-list"
+              ajax="ajax2live"
               maxitems="10"
               minchars="1" 
               value="name" 
@@ -213,9 +114,55 @@ defmodule KinoDocs.Awesomplete do
     )
   end
 
+  def get_product_category_list() do
+    # get it from the ets cache
+    key = "product_category_list"
+    [{^key, value}] = :ets.lookup(:my_lb_cache, key)
+    value
+  end
+
+  def safe_downcase(text) do
+    if is_nil(text), do: nil, else: String.downcase(text)
+  end
+
+  def filter_product_category(query_val) do
+    search = safe_downcase(query_val)
+    product_category_list = get_product_category_list()
+
+    filter =
+      fn rec ->
+        String.contains?(String.downcase(rec.name), search) 
+        or
+        String.contains?(String.downcase(rec.description), search)
+      end
+
+    Enum.filter(product_category_list, filter)
+  end
+
+  @impl true
+  def init(html, ctx) do
+    {:ok, assign(ctx, html: html)}
+  end
+  
+  @impl true
+  def handle_connect(ctx) do
+     {:ok, ctx.assigns.html, ctx}
+  end
+  
+  @impl true
+  def handle_event("update-prodcat-list", phx_data, ctx) do
+    query_map = Poison.decode!(phx_data)
+    value = query_map["value"]
+    id = query_map["id"]
+    list = filter_product_category(value)
+    broadcast_event(ctx, "update-list-#{id}", Poison.encode!(%{query: value, list: list}))
+    {:noreply, ctx}
+  end
+
   asset "main.js" do
     """
     import { Awesomplete, AwesompleteUtil, attachAwesomplete, copyValueToId } from 'https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete_bundle.min.mjs'
+ 
     export function init(ctx, html) {
       ctx.importCSS("https://nico-amsterdam.github.io/awesomplete-util/css/awesomplete_bundle.css").then(() => 
       {
@@ -224,6 +171,21 @@ defmodule KinoDocs.Awesomplete do
       ctx.importCSS("main.css")
       ctx.root.innerHTML = html
 
+      function ajax2live(url, urlEnd, val, fn, xhr) {
+        if (url && url.startsWith('livesocket:')) {
+            const awe = this
+                , phxEvent = url.substr(url.indexOf(':') + 1)
+                , phxData = {'value':val, 'id':awe.input.id}
+            
+            console.log('request ' + phxEvent + ' "' + val + '"')
+            ctx.pushEvent(phxEvent, JSON.stringify(phxData))
+        }
+        else
+        {
+            AwesompleteUtil.ajax(url, urlEnd, val, fn, xhr)
+        }
+      }
+          
       const AU = AwesompleteUtil,
             customAwesompleteContext = 
       {
@@ -246,6 +208,8 @@ defmodule KinoDocs.Awesomplete do
 
         // add your custom functions and/or lists here
 
+        , ajax2live:        ajax2live
+    
       }
       
       self.attachWhenFocus = (e) => {
@@ -257,7 +221,14 @@ defmodule KinoDocs.Awesomplete do
 
           const awe = attachAwesomplete(hookElem
                                     , customAwesompleteContext
-                                    , {} /* defaultSettings */ );
+                                    , {} /* defaultSettings */ )
+
+          ctx.handleEvent("update-list-" + awe.input.id, (result) => {
+             const parsedResult = JSON.parse(result)
+             console.log('response for "' + parsedResult.query + '" has ' + parsedResult.list.length + ' items')
+             AwesompleteUtil.updateList(awe, parsedResult.list, parsedResult.query)
+          })
+
         }
         e.focus()
       }
