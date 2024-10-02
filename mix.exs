@@ -57,9 +57,7 @@ defmodule PhoenixFormAwesomplete.Mixfile do
 
   defp description do
     """
-    Phoenix form helper that utilizes Lea Verou's autocomplete autosuggest
-    typeahead Awesomplete widget, featuring dynamic data loading using
-    ajax calls.
+    Phoenix component that utilizes Lea Verou's autocomplete autosuggest accessible (WCAG 2) Awesomplete widget, featuring dynamic data loading
     """
   end
 

@@ -5,10 +5,10 @@ defmodule PhoenixFormAwesomplete do
 
   @moduledoc ~S'''
 
-  PhoenixFormAwesomplete is a [Phoenix form helper](https://hexdocs.pm/phoenix_html/Phoenix.HTML.Form.html)
+  PhoenixFormAwesomplete is a [Phoenix function component](https://hexdocs.pm/phoenix_live_view/Phoenix.Component.html)
   that utilizes Lea Verou's autocomplete / autosuggest / typeahead /
   inputsearch [Awesomplete widget](https://leaverou.github.io/awesomplete/index.html), 
-  complying to accessibility standards (Section 508, WCAG).
+  complying to accessibility standards (WCAG 2, Section 508).
 
   It comes with an AwesompleteUtil [javascript library](https://nico-amsterdam.github.io/awesomplete-util/index.html)
   which adds the following features:
