@@ -38,7 +38,7 @@ defmodule PhoenixFormAwesomplete do
   This Awesomplete component can be applied for any of these cases:
   - Use outside and inside LiveView. It is even possible to make a HEEx fragment with autocomplete that works in both. See the next chapter.
   - It is specially suitable for suggestions supplied by HTTP web services that produce JSON. Although the default is to use Ajax calls, it is [possible to use Phoenix channels](#module-faq). And, as long as the responses can be converted to Javascript arrays, it is also fine.
-  - When accessibility is important; the widget has been tested for accessibility (Section 508, WCAG).
+  - When accessibility is important; the widget has been tested for accessibility (WCAG 2, Section 508).
   - The list with suggestions can be customized, for example to show an extra description. Any HTML can be used in the suggestions.
   - It can give suggestions for an input field with multiple values.
   - It doesn't force the user to pick one of the suggestions; other values can be entered.
