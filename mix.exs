@@ -50,8 +50,8 @@ defmodule PhoenixFormAwesomplete.Mixfile do
     [
       {:phoenix_html, "~> 3.3 or ~> 4.0"},
       {:phoenix_live_view, "~> 0.20 or ~> 1.0"},
-      {:ex_doc, "~> 0.34", only: :dev},
-      {:esbuild, "~> 0.8", only: [:dev, :test]}
+      {:ex_doc, "~> 0.34", only: :dev, runtime: false},
+      {:esbuild, "~> 0.8", only: [:dev, :test], runtime: false}
     ]
   end
 
@@ -68,7 +68,7 @@ defmodule PhoenixFormAwesomplete.Mixfile do
      licenses: ["MIT"],
      links: %{"GitHub" => @source_url,
               "Documentation with live examples" => "https://nico-amsterdam.github.io/awesomplete-util/phoenix.html",
-              "Livebook playground" => "https://livebook.dev/run?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnico-amsterdam%2Fphoenix_form_awesomplete%2Fmaster%2Fphoenix_form_awesomplete.livemd" },
+              "Livebook playground" => "https://livebook.dev/run?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnico-amsterdam%2Fphoenix_form_awesomplete%2Fmaster%2Fphoenix_form_awesomplete.livemd"},
      files: ~w(assets lib priv LICENSE mix.exs package.json README.md)
     ]
   end
