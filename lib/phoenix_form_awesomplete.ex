@@ -319,7 +319,7 @@ defmodule PhoenixFormAwesomplete do
   The Awesomplete widget is accessible (Section 508, WCAG).
   However, when using custom HTML in the suggestion list, this solution must be tested separately for compliance.
 
-  The red/green border color to indicate if there a match or not is not helpfull for people with red-green color blindness.
+  The red/green border color to indicate if there is a match or not is not helpfull for people with red-green color blindness.
   The 2 pixel border size might be not enough for people with a low vision.  And if they use a screen reader, the screen reader will paint it's own border around the focused element, hiding the red/green border color.
 
   ## FAQ
@@ -402,7 +402,7 @@ defmodule PhoenixFormAwesomplete do
   - Use the HTML select element. It supports the optgroup tag.
   - This javascript component [kraaden autocomplete](https://github.com/kraaden/autocomplete#grouping-suggestions) has a grouping feature.
 
-  ## PhoenixFormAwesomplete raw example
+  ## Raw core example
 
   ### IEx
 
