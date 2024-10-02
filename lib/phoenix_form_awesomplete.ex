@@ -400,7 +400,7 @@ defmodule PhoenixFormAwesomplete do
   Alternatives:
   - Split the input in two fields: one to select the group, and in the autocomplete field show only items of the selected group.
   - Use the HTML select element. It supports the optgroup tag.
-  - This javascript component [kraaden autocomplete](https://github.com/kraaden/autocomplete#grouping-suggestions) has a grouping feature.
+  - This javascript component [autocomplete(r)](https://github.com/denis-taran/autocomplete#grouping-suggestions) from Denis Taran has a grouping feature.
 
   ## Raw core example
 
