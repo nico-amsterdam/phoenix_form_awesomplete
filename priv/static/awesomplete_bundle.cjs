@@ -172,6 +172,10 @@ var require_awesomplete = __commonJS({
           return this.isOpened;
         },
         close: function(o) {
+          o = o || {};
+          if (o.reason !== "nomatches") {
+            this.status.setAttribute("hidden", "");
+          }
           if (!this.opened) {
             return;
           }
@@ -179,9 +183,8 @@ var require_awesomplete = __commonJS({
           this.ul.setAttribute("hidden", "");
           this.isOpened = false;
           this.index = -1;
-          this.status.setAttribute("hidden", "");
           this.input.setAttribute("aria-activedescendant", "");
-          $.fire(this.input, "awesomplete-close", o || {});
+          $.fire(this.input, "awesomplete-close", o);
         },
         open: function() {
           this.input.setAttribute("aria-expanded", "true");
@@ -262,6 +265,7 @@ var require_awesomplete = __commonJS({
         evaluate: function() {
           var me = this;
           var value = this.input.value;
+          this.status.removeAttribute("hidden");
           if (value.length >= this.minChars && this._list && this._list.length > 0) {
             this.index = -1;
             this.ul.innerHTML = "";
@@ -287,7 +291,7 @@ var require_awesomplete = __commonJS({
             }
           } else {
             this.close({ reason: "nomatches" });
-            if (this.minChar <= 1 || value.length >= this.minChars) {
+            if (this.minChars <= 0 || value.length >= this.minChars) {
               this.status.textContent = this.statusNoResults;
             } else {
               this.status.textContent = this.statusTypeXChar.replaceAll("{0}", this.minChars);
