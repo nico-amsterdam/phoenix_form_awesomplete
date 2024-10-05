@@ -169,6 +169,14 @@ defmodule PhoenixFormAwesomplete do
     ```
   - Add the Hooks Autocomplete and AutocompleteCopyValueToId in assets/js/app.js and pass the hooks to the LiveSocket
     ```javascript
+    let Hooks = {}
+
+    // modified the LiveSocket params to add hooks
+    let liveSocket = new LiveSocket("/live", Socket, {
+      longPollFallbackMs: 2500,
+      params: {_csrf_token: csrfToken},
+      hooks: Hooks
+    })
 
     const AU = AwesompleteUtil
         , customAwesompleteContext = {
@@ -193,8 +201,6 @@ defmodule PhoenixFormAwesomplete do
 
     }
 
-    let Hooks = {}
-
     Hooks.Autocomplete = {
       mounted() { attachAwesomplete(this.el, customAwesompleteContext, {} /* defaultSettings */ ) }
     }
@@ -202,13 +208,6 @@ defmodule PhoenixFormAwesomplete do
     Hooks.AutocompleteCopyValueToId = {
       mounted() { copyValueToId(this.el) }
     }
-
-    // modify the LiveSocket params to add the hooks
-    let liveSocket = new LiveSocket("/live", Socket, {
-      longPollFallbackMs: 2500,
-      params: {_csrf_token: csrfToken},
-      hooks: Hooks
-    })
     ```
   - Add these function components in lib/<your_project>_web/components/core_components.ex:
     ```elixir
@@ -319,7 +318,7 @@ defmodule PhoenixFormAwesomplete do
   The Awesomplete widget is accessible (Section 508, WCAG).
   However, when using custom HTML in the suggestion list, this solution must be tested separately for compliance.
 
-  The red/green border color to indicate if there is a match or not is not helpfull for people with red-green color blindness.
+  The red/green border color to indicate if there is a match or not is not helpful for people with red-green color blindness.
   The 2 pixel border size might be not enough for people with a low vision.  And if they use a screen reader, the screen reader will paint it's own border around the focused element, hiding the red/green border color.
 
   ## FAQ
@@ -328,7 +327,7 @@ defmodule PhoenixFormAwesomplete do
 
   Yes, the ajax call can be replaced.
 
-  As `url` we will use the keyword `livesocket`.  Add this in `assets/js/app.js`
+  As `url` we will use the keyword `livesocket`.  Add this in `assets/js/app.js` after the declaration of `liveSocket`
   ```javascript
   function ajax2live(url, urlEnd, val, fn, xhr) {
     if (url && url.startsWith('livesocket:')) {
@@ -345,7 +344,7 @@ defmodule PhoenixFormAwesomplete do
   };
   ```
 
-  In `assets/js/app.js` add in `customAwesompleteContext` the above function
+  In `assets/js/app.js` add in `customAwesompleteContext` the name of the function above
   ```javascript
     , ajax2live:  ajax2live
   ```
@@ -354,7 +353,7 @@ defmodule PhoenixFormAwesomplete do
   ```javascript
   const awe = attachAwesomplete(this.el, customAwesompleteContext, {} /* defaultSettings */ );
   this.handleEvent(`update-list-${awe.input.id}`,
-    ({queryResult, queryValue}) => { AwesompleteUtil.updateList(awe, queryResult, queryValue); }
+    ({searchResult, searchPhrase}) => { AwesompleteUtil.updateList(awe, searchResult, searchPhrase); }
   );
   ```
 
@@ -375,7 +374,7 @@ defmodule PhoenixFormAwesomplete do
   ```elixir
   def handle_event("update-country-list", %{"value" => val, "id" => id}, socket) do
     newCountryList = ... your query logic here ...
-    {:noreply, push_event(socket, "update-list-#{id}", %{queryResult: newCountryList, queryValue: val})}
+    {:noreply, push_event(socket, "update-list-#{id}", %{searchResult: newCountryList, searchPhrase: val})}
   end
   ```
 
