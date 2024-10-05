@@ -362,10 +362,12 @@ _.prototype = {
 
 			this.close({ reason: "nomatches" });
 
-			if (this.minChars <= 0 || value.length >= this.minChars) {
+			if (value.length >= this.minChars) {
 			   this.status.textContent = this.statusNoResults;
 			} else {
-			   this.status.textContent = this.statusTypeXChar.replaceAll('{0}', this.minChars); // Type N or more characters for results
+               // Type N or more characters for results
+               // minChar check: It is patronizing to tell anyone to type at least one 1 character in an input field.
+			   this.status.textContent = this.minChars <= 1 ? "" : this.statusTypeXChar.replaceAll('{0}', this.minChars);
 			}
 
 		}

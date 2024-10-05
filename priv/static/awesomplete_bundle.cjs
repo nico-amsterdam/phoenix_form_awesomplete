@@ -291,10 +291,10 @@ var require_awesomplete = __commonJS({
             }
           } else {
             this.close({ reason: "nomatches" });
-            if (this.minChars <= 0 || value.length >= this.minChars) {
+            if (value.length >= this.minChars) {
               this.status.textContent = this.statusNoResults;
             } else {
-              this.status.textContent = this.statusTypeXChar.replaceAll("{0}", this.minChars);
+              this.status.textContent = this.minChars <= 1 ? "" : this.statusTypeXChar.replaceAll("{0}", this.minChars);
             }
           }
         }
