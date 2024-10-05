@@ -8,8 +8,7 @@ Mix.install([
   {:phoenix_html, "~> 4.0"},
   {:phoenix_form_awesomplete, "~> 1.0.0"},
   {:kino_explorer, "~> 0.1.11"},
-  {:nimble_csv, "~> 1.2"},
-  {:poison, "~> 6.0"}
+  {:nimble_csv, "~> 1.2"}
 ])
 ```
 
@@ -124,8 +123,8 @@ defmodule KinoDocs.Awesomplete do
     if is_nil(text), do: nil, else: String.downcase(text)
   end
 
-  def filter_product_category(query_val) do
-    search = safe_downcase(query_val)
+  def filter_product_category(search_phrase) do
+    search = safe_downcase(search_phrase)
     product_category_list = get_product_category_list()
 
     filter =
@@ -148,12 +147,9 @@ defmodule KinoDocs.Awesomplete do
   end
 
   @impl true
-  def handle_event("update-prodcat-list", phx_data, ctx) do
-    query_map = Poison.decode!(phx_data)
-    value = query_map["value"]
-    id = query_map["id"]
+  def handle_event("update-prodcat-list", %{"value" => value, "id" => id}, ctx) do
     list = filter_product_category(value)
-    broadcast_event(ctx, "update-list-#{id}", %{query: value, list: list})
+    broadcast_event(ctx, "update-list-#{id}", %{searchPhrase: value, searchResult: list})
     {:noreply, ctx}
   end
 
@@ -176,7 +172,7 @@ defmodule KinoDocs.Awesomplete do
                 , phxData = {'value':val, 'id':awe.input.id}
             
             console.log('request ' + phxEvent + ' "' + val + '"')
-            ctx.pushEvent(phxEvent, JSON.stringify(phxData))
+            ctx.pushEvent(phxEvent, phxData)
         }
         else
         {
@@ -197,7 +193,7 @@ defmodule KinoDocs.Awesomplete do
         , filterOff:        AU.filterOff
 
         , item:             AU.item          // does NOT mark matching text
-        // , itemContains:     AU.itemContains  // this is the default, no need to specify it.
+        , itemContains:     AU.itemContains  // this is the default, no need to specify it.
         , itemStartsWith:   AU.itemStartsWith
         , itemMarkAll:      AU.itemMarkAll   // also mark matching text inside the description
         , itemWords:        AU.itemWords     // mark matching words
@@ -221,9 +217,9 @@ defmodule KinoDocs.Awesomplete do
                                     , customAwesompleteContext
                                     , {} /* defaultSettings */ )
 
-          ctx.handleEvent("update-list-" + awe.input.id, ({list, query}) => {
-             console.log('response for "' + query + '" has ' + list.length + ' items')
-             AwesompleteUtil.updateList(awe, list, query)
+          ctx.handleEvent("update-list-" + awe.input.id, ({searchResult, searchPhrase}) => {
+             console.log('response for "' + searchPhrase + '" has ' + searchResult.length + ' items')
+             AwesompleteUtil.updateList(awe, searchResult, searchPhrase)
           })
 
         }
