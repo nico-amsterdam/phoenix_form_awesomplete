@@ -185,10 +185,10 @@ _.prototype = {
 	},
 
 	close: function (o) {
-        o = o || {}
-        if (o.reason !== 'nomatches') {
-		    this.status.setAttribute("hidden", "");
-        }
+		o = o || {}
+		if (o.reason !== 'nomatches') {
+			this.status.setAttribute("hidden", "");
+		}
 		if (!this.opened) {
 			return;
 		}
@@ -363,11 +363,11 @@ _.prototype = {
 			this.close({ reason: "nomatches" });
 
 			if (value.length >= this.minChars) {
-			   this.status.textContent = this.statusNoResults;
+				this.status.textContent = this.statusNoResults;
 			} else {
-               // Type N or more characters for results
-               // minChar check: It is patronizing to tell anyone to type at least one 1 character in an input field.
-			   this.status.textContent = this.minChars <= 1 ? "" : this.statusTypeXChar.replaceAll('{0}', this.minChars);
+				// Type N or more characters for results
+				// minChars check: It is patronizing to tell anyone to type at least one 1 character in an input field.
+				this.status.textContent = this.minChars <= 1 ? "" : this.statusTypeXChar.replaceAll('{0}', this.minChars);
 			}
 
 		}
