@@ -21,7 +21,7 @@ Mix.install([
   {:phoenix, "~> 1.7.14"},
   {:phoenix_live_view, "~> 0.20 or ~> 1.0"},
   {:phoenix_html, "~> 4.1"},
-  {:phoenix_form_awesomplete, "~> 1.0.0"},
+  {:phoenix_form_awesomplete, "~> 1.0"},
   {:nimble_csv, "~> 1.2"}
 ])
 
