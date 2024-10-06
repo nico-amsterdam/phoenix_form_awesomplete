@@ -1,6 +1,7 @@
+#!/usr/bin/env elixir
 
 # run with:
-#    elixir awesomplete_via_channels.exs
+#    elixir awesomplete_via_channel.exs
 # when ready, open browser url:
 #    http://localhost:5001
 

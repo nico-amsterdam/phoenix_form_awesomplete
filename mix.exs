@@ -1,7 +1,7 @@
 defmodule PhoenixFormAwesomplete.Mixfile do
   use Mix.Project
 
-  @version "1.0.1"
+  @version "1.0.2"
   @source_url "https://github.com/nico-amsterdam/phoenix_form_awesomplete"
 
   def project do
@@ -68,7 +68,8 @@ defmodule PhoenixFormAwesomplete.Mixfile do
      licenses: ["MIT"],
      links: %{"GitHub" => @source_url,
               "Documentation with live examples" => "https://nico-amsterdam.github.io/awesomplete-util/phoenix.html",
-              "Livebook playground" => "https://livebook.dev/run?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnico-amsterdam%2Fphoenix_form_awesomplete%2Fmaster%2Fphoenix_form_awesomplete.livemd"},
+              "Livebook playground" => "https://livebook.dev/run?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnico-amsterdam%2Fphoenix_form_awesomplete%2Fmaster%2Fphoenix_form_awesomplete.livemd",
+              "LiveView escript" => "https://raw.githubusercontent.com/nico-amsterdam/phoenix_form_awesomplete/master/awesomplete_via_channel.exs"},
      files: ~w(assets lib priv LICENSE mix.exs package.json README.md)
     ]
   end
