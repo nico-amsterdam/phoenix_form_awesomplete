@@ -8,6 +8,7 @@
 # took https://github.com/wojtekmach/mix_install_examples/blob/main/phoenix_live_view.exs
 # and added Awesomplete
 
+
 Application.put_env(:sample, Example.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 5001],
   server: true,
@@ -153,14 +154,32 @@ defmodule Example.HomeLive do
 
       }
 
+
       Hooks.Autocomplete = {
+        destroyAwesomplete() {
+          if (this.aweCallBackRef) {
+             this.removeHandleEvent(this.aweCallBackRef)
+             delete this.aweCallBackRef
+          }
+          if (this.awe) {
+            AwesompleteUtil.detach(this.awe)
+            this.awe.destroy()
+            delete this.awe
+          }
+        },
         mounted() {
-          const awe = attachAwesomplete(this.el, customAwesompleteContext, {} /* defaultSettings */ )
-          this.handleEvent(`update-list-${awe.input.id}`,
-            ({searchResult, searchPhrase}) => {
-              AwesompleteUtil.updateList(awe, searchResult, searchPhrase)
-            }
+          this.awe = attachAwesomplete(this.el, customAwesompleteContext, {} /* defaultSettings */ )
+          this.aweCallBackRef = this.handleEvent(`update-list-${this.awe.input.id}`, 
+            ({searchResult, searchPhrase}) => 
+              AwesompleteUtil.updateList(this.awe, searchResult, searchPhrase)
           )
+        },
+        updated() {
+          this.destroyAwesomplete()
+          this.mounted()
+        },
+        destroyed() {
+          this.destroyAwesomplete()
         }
       }
 
