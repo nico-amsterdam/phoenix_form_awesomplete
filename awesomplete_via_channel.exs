@@ -119,10 +119,10 @@ defmodule DemoLive do
 
   def render(assigns) do
     ~H"""
-    <link href="https://nico-amsterdam.github.io/awesomplete-util/css/awesomplete_bundle.css" rel="stylesheet">
+    <link href="./assets/phoenix_form_awesomplete/awesomplete_bundle.css" rel="stylesheet">
     <script type="module">
       import { AwesompleteUtil, attachAwesomplete }
-        from 'https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete_bundle.min.mjs'
+        from './assets/phoenix_form_awesomplete/awesomplete_bundle.mjs'
 
       let Hooks = {}
 
