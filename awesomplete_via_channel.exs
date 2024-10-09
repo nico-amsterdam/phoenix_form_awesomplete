@@ -56,15 +56,18 @@ defmodule Demo.Data do
   end
 
   def get_product_category_list do
-    # initialize ets table
-    if Enum.member?(:ets.all(), :my_escript_cache) == false do
-      init()
-    end
-
     # get it from the ets cache
     key = "product_category_list"
-    [{^key, value}] = :ets.lookup(:my_escript_cache, key)
-    value
+    try do
+      [{^key, value}] = :ets.lookup(:my_escript_cache, key)
+      value
+    rescue
+      # handle: 1st argument: the table identifier does not refer to an existing ETS table
+      ArgumentError -> 
+        init()
+        [{^key, value}] = :ets.lookup(:my_escript_cache, key)
+        value
+    end                
   end
 
   defp safe_downcase(text) do
@@ -279,5 +282,6 @@ end
 
 :inets.start()
 :ssl.start()
+Demo.Data.init()
 PhoenixPlayground.start(endpoint: Demo.Endpoint)
 
