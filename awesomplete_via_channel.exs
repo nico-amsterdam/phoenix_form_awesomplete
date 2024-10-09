@@ -8,7 +8,6 @@
 # took https://github.com/wojtekmach/mix_install_examples/blob/main/phoenix_live_view.exs
 # and added Awesomplete
 
-
 Application.put_env(:sample, Example.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 5001],
   server: true,
@@ -104,7 +103,7 @@ defmodule Example.HomeLive do
     <script src={"https://cdn.jsdelivr.net/npm/phoenix_live_view@#{lv_vsn()}/priv/static/phoenix_live_view.min.js"}></script>
     <link href="https://nico-amsterdam.github.io/awesomplete-util/css/awesomplete_bundle.css" rel="stylesheet">
     <script type="module">
-      import { AwesompleteUtil, attachAwesomplete, copyValueToId }
+      import { AwesompleteUtil, attachAwesomplete }
         from 'https://nico-amsterdam.github.io/awesomplete-util/js/awesomplete_bundle.min.mjs'
 
       let Hooks = {}
@@ -154,9 +153,17 @@ defmodule Example.HomeLive do
 
       }
 
-
       Hooks.Autocomplete = {
-        destroyAwesomplete() {
+        mounted() {
+          this.awe = attachAwesomplete(this.el, customAwesompleteContext, {} /* defaultSettings */ )
+          this.aweCallBackRef = this.handleEvent(`update-list-${this.awe.input.id}`, 
+            ({searchResult, searchPhrase}) => 
+              AwesompleteUtil.updateList(this.awe, searchResult, searchPhrase)
+          )
+        },
+        // The code below in this Autocomplete hook is optional. 
+        // It's useful for handling changes in the hooked element with LiveReload or via LiveView assigns.
+        unmount() {
           if (this.aweCallBackRef) {
              this.removeHandleEvent(this.aweCallBackRef)
              delete this.aweCallBackRef
@@ -167,24 +174,13 @@ defmodule Example.HomeLive do
             delete this.awe
           }
         },
-        mounted() {
-          this.awe = attachAwesomplete(this.el, customAwesompleteContext, {} /* defaultSettings */ )
-          this.aweCallBackRef = this.handleEvent(`update-list-${this.awe.input.id}`, 
-            ({searchResult, searchPhrase}) => 
-              AwesompleteUtil.updateList(this.awe, searchResult, searchPhrase)
-          )
-        },
         updated() {
-          this.destroyAwesomplete()
+          this.unmount()
           this.mounted()
         },
         destroyed() {
-          this.destroyAwesomplete()
+          this.unmount()
         }
-      }
-
-      Hooks.AutocompleteCopyValueToId = {
-        mounted() { copyValueToId(this.el) }
       }
 
       liveSocket.connect()
@@ -232,11 +228,11 @@ defmodule Example.HomeLive do
       <span id="mytest-autocomplete"
             phx-hook="Autocomplete"
             class="hidden"
-            forfield="mytest"
+            forField="mytest"
             url="livesocket:update-prodcat-list"
             ajax="ajax2live"
-            maxitems="10"
-            minchars="1"
+            maxItems="10"
+            minChars="1"
             value="name"
             descr="description"
             descrSearch="true"
