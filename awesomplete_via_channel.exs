@@ -44,22 +44,26 @@ defmodule Demo.Data do
 
   def init do
     # create ets table
-    if Enum.member?(:ets.all(), :my_lb_cache) == false do
-      :ets.new(:my_lb_cache, [:set, :public, :named_table])
+    if Enum.member?(:ets.all(), :my_escript_cache) == false do
+      :ets.new(:my_escript_cache, [:set, :public, :named_table])
     end
 
     list =
       "https://nico-amsterdam.github.io/awesomplete-util/csv/productcat.csv"
       |> get_product_category_list_from_url()
 
-    :ets.insert(:my_lb_cache, {"product_category_list", list})
+    :ets.insert(:my_escript_cache, {"product_category_list", list})
   end
 
-  # call init once before calling this
   def get_product_category_list do
+    # initialize ets table
+    if Enum.member?(:ets.all(), :my_escript_cache) == false do
+      init()
+    end
+
     # get it from the ets cache
     key = "product_category_list"
-    [{^key, value}] = :ets.lookup(:my_lb_cache, key)
+    [{^key, value}] = :ets.lookup(:my_escript_cache, key)
     value
   end
 
@@ -67,7 +71,6 @@ defmodule Demo.Data do
     if is_nil(text), do: nil, else: String.downcase(text)
   end
 
-  # call init once before calling this
   def filter_product_category(search_phrase) do
     search = safe_downcase(search_phrase)
     product_category_list = get_product_category_list()
@@ -81,6 +84,10 @@ defmodule Demo.Data do
     Enum.filter(product_category_list, filter)
   end
 
+end
+
+defmodule Demo.ErrorView do
+  def render(template, _), do: Phoenix.Controller.status_message_from_template(template)
 end
 
 defmodule Demo.Router do
@@ -272,6 +279,5 @@ end
 
 :inets.start()
 :ssl.start()
-Demo.Data.init()
 PhoenixPlayground.start(endpoint: Demo.Endpoint)
 
