@@ -7,8 +7,9 @@
 
 # took https://github.com/wojtekmach/mix_install_examples/blob/main/phoenix_live_view.exs
 # and added Awesomplete
+# switched to phoenix_playground to get LiveReload working
 
-Application.put_env(:sample, Example.Endpoint,
+Application.put_env(:phoenix_playground, Demo.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 5001],
   server: true,
   live_view: [signing_salt: "aaaaaaaa"],
@@ -16,20 +17,15 @@ Application.put_env(:sample, Example.Endpoint,
 )
 
 Mix.install([
-  {:plug_cowboy, "~> 2.7"},
-  {:jason, "~> 1.4"},
-  {:phoenix, "~> 1.7.14"},
-  {:phoenix_live_view, "~> 0.20 or ~> 1.0"},
-  {:phoenix_html, "~> 4.1"},
+  {:phoenix_playground, "~> 0.1.7"},
   {:phoenix_form_awesomplete, "~> 1.0"},
   {:nimble_csv, "~> 1.2"}
 ])
 
-defmodule Example.ErrorView do
-  def render(template, _), do: Phoenix.Controller.status_message_from_template(template)
-end
-
-defmodule Example.Data do
+#
+# retrieve and filter product categories
+#
+defmodule Demo.Data do
 
   defp get_product_category_list_from_url(url) when is_binary(url) do
     # Read productcat.csv from url
@@ -67,7 +63,7 @@ defmodule Example.Data do
     value
   end
 
-  def safe_downcase(text) do
+  defp safe_downcase(text) do
     if is_nil(text), do: nil, else: String.downcase(text)
   end
 
@@ -87,20 +83,42 @@ defmodule Example.Data do
 
 end
 
-defmodule Example.HomeLive do
-  use Phoenix.LiveView, layout: {__MODULE__, :live}
+defmodule Demo.Router do
+  use Phoenix.Router
+  import Phoenix.LiveView.Router
 
-  def mount(_params, _session, socket) do
-    {:ok, assign(socket, :count, 0)}
+  pipeline :browser do
+    plug :put_root_layout, html: {PhoenixPlayground.Layout, :root}
   end
 
-  defp phx_vsn, do: Application.spec(:phoenix, :vsn)
-  defp lv_vsn, do: Application.spec(:phoenix_live_view, :vsn)
+  scope "/" do
+    pipe_through :browser
+    live "/", DemoLive
+  end
+end
 
-  def render("live.html", assigns) do
+defmodule Demo.Endpoint do
+  use Phoenix.Endpoint, otp_app: :phoenix_playground
+  plug Plug.Logger
+  socket "/live", Phoenix.LiveView.Socket
+  plug Plug.Static, from: {:phoenix, "priv/static"}, at: "/assets/phoenix"
+  plug Plug.Static, from: {:phoenix_live_view, "priv/static"}, at: "/assets/phoenix_live_view"
+  plug Plug.Static, from: {:phoenix_form_awesomplete, "priv/static"}, at: "/assets/phoenix_form_awesomplete"
+  socket "/phoenix/live_reload/socket", Phoenix.LiveReloader.Socket
+  plug Phoenix.LiveReloader
+  plug Phoenix.CodeReloader, reloader: &PhoenixPlayground.CodeReloader.reload/2
+  plug Demo.Router
+end
+
+defmodule DemoLive do
+  use Phoenix.LiveView
+
+  def mount(_params, _session, socket) do
+    {:ok, assign(socket, count: 0)}
+  end
+
+  def render(assigns) do
     ~H"""
-    <script src={"https://cdn.jsdelivr.net/npm/phoenix@#{phx_vsn()}/priv/static/phoenix.min.js"}></script>
-    <script src={"https://cdn.jsdelivr.net/npm/phoenix_live_view@#{lv_vsn()}/priv/static/phoenix_live_view.min.js"}></script>
     <link href="https://nico-amsterdam.github.io/awesomplete-util/css/awesomplete_bundle.css" rel="stylesheet">
     <script type="module">
       import { AwesompleteUtil, attachAwesomplete }
@@ -140,7 +158,7 @@ defmodule Example.HomeLive do
         , filterOff:        AU.filterOff
 
         , item:             AU.item          // does NOT mark matching text
-        // , itemContains:     AU.itemContains  // this is the default, no need to specify it.
+        , itemContains:     AU.itemContains  // this is the default, no need to specify it.
         , itemStartsWith:   AU.itemStartsWith
         , itemMarkAll:      AU.itemMarkAll   // also mark matching text inside the description
         , itemWords:        AU.itemWords     // mark matching words
@@ -202,12 +220,7 @@ defmodule Example.HomeLive do
         width: 100%
       }
     </style>
-    <%= @inner_content %>
-    """
-  end
 
-  def render(assigns) do
-    ~H"""
     <form onsubmit="return false">
 
       Live view update counter:
@@ -244,44 +257,21 @@ defmodule Example.HomeLive do
   end
 
   def handle_event("inc", _params, socket) do
-    IO.inspect "inc"
-    {:noreply, assign(socket, :count, socket.assigns.count + 1)}
+    {:noreply, update(socket, :count, &(&1 + 1))}
   end
 
   def handle_event("dec", _params, socket) do
-    {:noreply, assign(socket, :count, socket.assigns.count - 1)}
+    {:noreply, update(socket, :count, &(&1 - 1))}
   end
 
   def handle_event("update-prodcat-list", %{"value" => val, "id" => id}, socket) do
-    list = Example.Data.filter_product_category(val)
+    list = Demo.Data.filter_product_category(val)
     {:noreply, push_event(socket, "update-list-#{id}", %{searchResult: list, searchPhrase: val})}
   end
 end
 
-defmodule Example.Router do
-  use Phoenix.Router
-  import Phoenix.LiveView.Router
-
-  pipeline :browser do
-    plug(:accepts, ["html"])
-  end
-
-  scope "/", Example do
-    pipe_through(:browser)
-
-    live("/", HomeLive, :index)
-  end
-end
-
-defmodule Example.Endpoint do
-  use Phoenix.Endpoint, otp_app: :sample
-  socket("/live", Phoenix.LiveView.Socket)
-  plug(Example.Router)
-end
-
-:ok = :inets.start()
-:ok = :ssl.start()
-Example.Data.init()
-{:ok, _} = Supervisor.start_link([Example.Endpoint], strategy: :one_for_one)
-Process.sleep(:infinity)
+:inets.start()
+:ssl.start()
+Demo.Data.init()
+PhoenixPlayground.start(endpoint: Demo.Endpoint)
 
