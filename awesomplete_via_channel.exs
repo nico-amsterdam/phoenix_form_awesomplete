@@ -17,7 +17,9 @@ Application.put_env(:phoenix_playground, Demo.Endpoint,
 )
 
 Mix.install([
-  {:phoenix_playground, "~> 0.1.7"},
+  {:phoenix_live_view, "1.1.11"},
+  {:phoenix_html, "4.2.1"},
+  {:phoenix_playground, "0.1.8"},
   {:phoenix_form_awesomplete, "~> 1.0"},
   {:nimble_csv, "~> 1.2"}
 ])
@@ -145,8 +147,13 @@ defmodule DemoLive do
                 , phxData = {'value':val, 'id':awe.input.id}
 
             // secretly use this internal function to push events
-            liveSocket.execJSHookPush(awe.input, phxEvent, phxData, () => {
-              console.log('requested ' + phxEvent + ' "' + val + '"')
+            liveSocket.js().push(
+                awe.input
+              , phxEvent 
+              , {  value:    phxData
+                 , callback: () => {
+                   console.log('requested ' + phxEvent + ' "' + val + '"')
+                }
             })
         }
         else
