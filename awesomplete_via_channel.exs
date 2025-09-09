@@ -21,7 +21,7 @@ Mix.install([
   {:phoenix_html, "4.2.1"},
   {:phoenix_playground, "0.1.8"},
   {:phoenix_form_awesomplete, "~> 1.0"},
-  {:nimble_csv, "~> 1.2"}
+  {:nimble_csv, "~> 1.3"}
 ])
 
 #
@@ -152,9 +152,10 @@ defmodule DemoLive do
               , phxEvent 
               , {  value:    phxData
                  , callback: () => {
-                   console.log('requested ' + phxEvent + ' "' + val + '"')
+                      console.log('requested ' + phxEvent + ' "' + val + '"')
+                   }
                 }
-            })
+            )
         }
         else
         {
