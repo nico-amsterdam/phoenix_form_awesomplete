@@ -4,11 +4,11 @@
 
 ```elixir
 Mix.install([
-  {:kino, "~> 0.14"},
-  {:phoenix_html, "~> 4.0"},
+  {:kino, "~> 0.17"},
+  {:phoenix_html, "~> 4.2"},
   {:phoenix_form_awesomplete, "~> 1.0.0"},
-  {:kino_explorer, "~> 0.1.11"},
-  {:nimble_csv, "~> 1.2"}
+  {:kino_explorer, "~> 0.1.25"},
+  {:nimble_csv, "~> 1.3"}
 ])
 ```
 
