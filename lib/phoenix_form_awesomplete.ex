@@ -418,13 +418,36 @@ defmodule PhoenixFormAwesomplete do
   Hooks.Autocomplete = {
     mounted() {
       this.awe = attachAwesomplete(this.el, customAwesompleteContext, {} /* defaultSettings */ )
+    },
+    // The code below in this Autocomplete hook is optional. 
+    // It's useful for handling changes in the hooked element with LiveReload or via LiveView assigns.
+    unmount() {
+      if (this.awe) {
+        AwesompleteUtil.detach(this.awe)
+        this.awe.destroy()
+        delete this.awe
+      }
+    },
+    updated() {
+      this.unmount()
+      this.mounted()
+    },
+    destroyed() {
+      this.unmount()
+    }
+  ```
+
+  And when using Phoenix channels, the handler must also be destroyed, like this:
+
+  ```javascript
+  Hooks.Autocomplete = {
+    mounted() {
+      this.awe = attachAwesomplete(this.el, customAwesompleteContext, {} /* defaultSettings */ )
       this.aweCallBackRef = this.handleEvent(`update-list-${this.awe.input.id}`, 
         ({searchResult, searchPhrase}) => 
           AwesompleteUtil.updateList(this.awe, searchResult, searchPhrase)
       )
     },
-    // The code below in this Autocomplete hook is optional. 
-    // It's useful for handling changes in the hooked element with LiveReload or via LiveView assigns.
     unmount() {
       if (this.aweCallBackRef) {
          this.removeHandleEvent(this.aweCallBackRef)
