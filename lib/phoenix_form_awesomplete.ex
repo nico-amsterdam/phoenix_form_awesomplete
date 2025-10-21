@@ -333,15 +333,23 @@ defmodule PhoenixFormAwesomplete do
     if (url && url.startsWith('livesocket:')) {
         const awe = this
             , phxEvent = url.substr(url.indexOf(':') + 1)
-            , phxData = {'value':val, 'id':awe.input.id};
+            , phxData = {'value':val, 'id':awe.input.id}
         // secretly use this internal function to push events
-        liveSocket.execJSHookPush(awe.input, phxEvent, phxData, () => { console.log('sent ' + val); } );
+        liveSocket.js().push(
+            awe.input
+          , phxEvent
+          , {  value:    phxData
+             , callback: () => {
+                  console.log('requested ' + phxEvent + ' "' + val + '"')
+               }
+            }
+        )
     }
     else
     {
-        AwesompleteUtil.ajax(url, urlEnd, val, fn, xhr);
+        AwesompleteUtil.ajax(url, urlEnd, val, fn, xhr)
     }
-  };
+  }
   ```
 
   In `assets/js/app.js` add in `customAwesompleteContext` the name of the function above
@@ -351,10 +359,10 @@ defmodule PhoenixFormAwesomplete do
 
   In `assets/js/app.js` add in the `mounted` function, add a function to handle server response
   ```javascript
-  const awe = attachAwesomplete(this.el, customAwesompleteContext, {} /* defaultSettings */ );
+  const awe = attachAwesomplete(this.el, customAwesompleteContext, {} /* defaultSettings */ )
   this.handleEvent(`update-list-${awe.input.id}`,
-    ({searchResult, searchPhrase}) => { AwesompleteUtil.updateList(awe, searchResult, searchPhrase); }
-  );
+    ({searchResult, searchPhrase}) => { AwesompleteUtil.updateList(awe, searchResult, searchPhrase) }
+  )
   ```
 
   In the HEEx template, in the .input add `phx-target` and in the .autocomplete refer to the new ajax function and change the url
@@ -383,8 +391,8 @@ defmodule PhoenixFormAwesomplete do
   With a bit of javascript it is possible to scroll up the input field to the top of the screen when suggestions are shown on small devices.
   ```javascript
   window.addEventListener('awesomplete-open', (el) => {
-    if (window.innerWidth < 577 && window.innerHeight < 800) el.target.scrollIntoView();
-  });
+    if (window.innerWidth < 577 && window.innerHeight < 800) el.target.scrollIntoView()
+  })
   ```
   Put this in [scroll.js](https://nico-amsterdam.github.io/awesomplete-util/js/scroll.js) and add this
   javascript file in the header of the page.
@@ -400,6 +408,43 @@ defmodule PhoenixFormAwesomplete do
   - Split the input in two fields: one to select the group, and in the autocomplete field show only items of the selected group.
   - Use the HTML select element. It supports the optgroup tag.
   - This javascript component [autocomplete(r)](https://github.com/denis-taran/autocomplete#grouping-suggestions) from Denis Taran has a grouping feature.
+
+  ### How to hot reload the Awesomplete widget
+
+  The Awesomplete object in the browsers memory should be destroyed and recreated when it's settings are changed via hot reload.
+  To accomplish this, write the autocomplete hook with updated and destroyed functions like this: 
+
+  ```javascript
+  Hooks.Autocomplete = {
+    mounted() {
+      this.awe = attachAwesomplete(this.el, customAwesompleteContext, {} /* defaultSettings */ )
+      this.aweCallBackRef = this.handleEvent(`update-list-${this.awe.input.id}`, 
+        ({searchResult, searchPhrase}) => 
+          AwesompleteUtil.updateList(this.awe, searchResult, searchPhrase)
+      )
+    },
+    // The code below in this Autocomplete hook is optional. 
+    // It's useful for handling changes in the hooked element with LiveReload or via LiveView assigns.
+    unmount() {
+      if (this.aweCallBackRef) {
+         this.removeHandleEvent(this.aweCallBackRef)
+         delete this.aweCallBackRef
+      }
+      if (this.awe) {
+        AwesompleteUtil.detach(this.awe)
+        this.awe.destroy()
+        delete this.awe
+      }
+    },
+    updated() {
+      this.unmount()
+      this.mounted()
+    },
+    destroyed() {
+      this.unmount()
+    }
+  }
+  ```
 
   ## Raw core example
 
