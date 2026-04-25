@@ -17,7 +17,7 @@ Application.put_env(:phoenix_playground, Demo.Endpoint,
 )
 
 Mix.install([
-  {:phoenix_live_view, "1.1.15"},
+  {:phoenix_live_view, "1.1.28"},
   {:phoenix_html, "4.3.0"},
   {:phoenix_playground, "0.1.8"},
   {:phoenix_form_awesomplete, "~> 1.0"},

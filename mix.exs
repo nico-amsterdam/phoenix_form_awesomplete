@@ -50,8 +50,8 @@ defmodule PhoenixFormAwesomplete.Mixfile do
     [
       {:phoenix_html, "~> 3.3 or ~> 4.0"},
       {:phoenix_live_view, "~> 0.20 or ~> 1.0"},
-      {:ex_doc, "~> 0.34", only: :dev, runtime: false},
-      {:esbuild, "~> 0.8", only: [:dev, :test], runtime: false}
+      {:ex_doc, "~> 0.40", only: :dev, runtime: false},
+      {:esbuild, "~> 0.10", only: [:dev, :test], runtime: false}
     ]
   end
 
